@@ -23,14 +23,14 @@ var game = new Phaser.Game(config);
 
 function preload ()
 {
-    this.load.image('car', 'assets/Cars/sedan_blue.png');
+    this.load.image('car', 'assets/Cars/car_blue_small_3.png');
 }
 
 function create ()
 {
     // add player car
     player = this.physics.add.sprite(200, 100, 'car');
-    player.setScale(1.5);
+    player.setScale(0.70);
     
     // set screen bounds
     player.setCollideWorldBounds(true);
@@ -47,25 +47,46 @@ function create ()
 
 function update ()
 {
-    if (cursors.right.isDown || keys.d.isDown) {
-        player.flipX = false;
+    player.setVelocity(0);
+
+    if (cursors.right.isDown || keys.d.isDown)
+    {
+        if (cursors.up.isDown || keys.w.isDown) {
+            player.angle = 45;
+            player.setVelocityY(-160);
+        }
+        else if (cursors.down.isDown || keys.s.isDown) {
+            player.angle = 135;
+            player.setVelocityY(160);
+        }
+        else {
+            player.angle = 90;
+        }
         player.setVelocityX(160);
     }
-    else if (cursors.left.isDown || keys.a.isDown) {
-        player.flipX = true;
+    else if (cursors.left.isDown || keys.a.isDown)
+    {
+        if (cursors.up.isDown || keys.w.isDown) {
+            player.angle = -45;
+            player.setVelocityY(-160);
+        }
+        else if (cursors.down.isDown || keys.s.isDown) {
+            player.angle = -135;
+            player.setVelocityY(160);
+        }
+        else {
+            player.angle = -90;
+        }
         player.setVelocityX(-160);
     }
-    else {
-        player.setVelocityX(0);
-    }
-    
-    if (cursors.up.isDown || keys.w.isDown) {
+    else if (cursors.up.isDown || keys.w.isDown)
+    {
+        player.angle = 0;
         player.setVelocityY(-160);
     }
-    else if (cursors.down.isDown || keys.s.isDown) {
+    else if (cursors.down.isDown || keys.s.isDown)
+    {
+        player.angle = 180;
         player.setVelocityY(160);
-    }
-    else {
-        player.setVelocityY(0);
     }
 }
