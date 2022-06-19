@@ -30,7 +30,7 @@ function create ()
 {
     // add player car
     player = this.physics.add.sprite(200, 100, 'car');
-    player.setScale(0.70);
+    player.setScale(0.65);
     
     // set screen bounds
     player.setCollideWorldBounds(true);
