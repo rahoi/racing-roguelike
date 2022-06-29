@@ -1,18 +1,25 @@
-const gameState = {}
+import mapData from "./MapData.js"
+import gameScene from "./GameScene.js"
 
 const config = 
 {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    backgroundColor: "#013220",
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false
-        }
+    pixelArt: true,
+    scale: {
+        parent: "game",
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
+        width: mapData.mapWidth * mapData.tileDimension,
+        height: mapData.mapHeight * mapData.tileDimension
     },
-    scene: [GameScene]
+    backgroundColor: mapData.backgroundColor,
+    scene: [gameScene],
+    physics: {
+        default: "arcade",
+        arcade: {
+            debug: true
+        }
+    }
 }
 
 const game = new Phaser.Game(config)
