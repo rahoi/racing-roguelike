@@ -7,8 +7,8 @@ export default class Car {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
-        this.posX = 100,
-        this.posY = 100,
+        this.posX = 220,
+        this.posY = 320,
         this.speed = 0,
         this.acc = 0.10,
         this.maxSpeed = 10
@@ -64,6 +64,10 @@ export default class Car {
     }
 
     updateMap() {
+        if (!this.onTrack()) {
+            this.speed = this.speed * 0.9
+        }
+
         this.posX += Math.cos(this.angle * Math.PI / 180) * this.speed
         this.posY += Math.sin(this.angle * Math.PI / 180) * this.speed
         

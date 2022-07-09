@@ -20,9 +20,6 @@ const gameScene = {
         // add car to pixel x pixel location
         // add onTrack() function to Car.js
 
-        // set screen bounds
-        //this.carSprite.setCollideWorldBounds(true);
-
         // add input keys
         this.keys = this.input.keyboard.addKeys({
             w: Phaser.Input.Keyboard.KeyCodes.W,
