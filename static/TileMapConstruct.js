@@ -14,8 +14,9 @@ let tileMapConstruct = {
         }
 
         const map = scene.make.tilemap(mapConfig);
-        const tileset = map.addTilesetImage(mapData.tileKey);
-        this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+        //const tileset = map.addTilesetImage(mapData.tileKey);
+        //this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+        return map;
     }
 }
 
