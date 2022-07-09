@@ -1,0 +1,28 @@
+import mapData from "./MapData.js"
+
+let texture = {
+    mapTexture: function(scene, map) {
+        this.scene = scene
+        this.map = map
+       
+        const textureConfig = { 
+            width: scene.scale.width,  //The width of the RenderTexture
+            height: scene.scale.height  //The height of the RenderTexture
+        }
+        const tileset = map.addTilesetImage(mapData.tileKey);
+        this.roadLayer = map.createLayer(0, tileset, 0, 0); //.setPipeline('Light2D'); 
+
+        // make a RenderTexture that is the size of the screen
+        const rt = scene.make.renderTexture(textureConfig, true)  //true=add this Game Object to the Scene
+        rt.fill(0x000000, 1)   // fill it with Yellow
+
+         //draw the floorLayer into it
+        rt.draw(scene.roadLayer)
+
+        // set a dark RED tint
+        //rt.setTint(0xff0000)
+        rt.setTint(0x0a2948)
+
+        return rt;
+    }
+}
