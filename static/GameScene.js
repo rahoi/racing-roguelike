@@ -18,7 +18,8 @@ const gameScene = {
 
         this.car = new Car()
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.shape = texture.carMask(this, this.rt, this.car)
+        this.vision = texture.carMask(this, this.rt, this.car)
+        texture.createCamera(this, this.vision)
         
 
         // let car = new carCharacter()
@@ -72,7 +73,7 @@ const gameScene = {
         this.car.updateLoc(this.force)
         this.carSprite.setPosition(this.car.posX, this.car.posY);
         this.car.onTrack()
-        texture.updateCarMask(this.shape, this.car);
+        texture.updateCarMask(this.vision, this.car);
     }
 }
 

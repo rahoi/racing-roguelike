@@ -1,75 +1,55 @@
 import mapData from "./MapData.js"
 
 let texture = {
+    createCamera: function(scene, vision) {
+        this.scene = scene
+        this.vision = vision
+        scene.cameras.main.setBounds(0, 0, mapData.mapWidth * mapData.tileDimension, mapData.mapHeight * mapData.tileDimension);
+        scene.cameras.main.startFollow(vision, true, 0.07, 0.07);
+        scene.cameras.main.setZoom(1.2);
+    },
     mapTexture: function(scene, map) {
         this.scene = scene
         this.map = map
        
         const textureConfig = { 
-            width: scene.scale.width,  //The width of the RenderTexture
-            height: scene.scale.height  //The height of the RenderTexture
+            width: mapData.mapWidth * mapData.tileDimension,  //The width of the RenderTexture
+            height: mapData.mapHeight * mapData.tileDimension  //The height of the RenderTexture
         }
-        const tileset = map.addTilesetImage(mapData.tileKey);
-        this.roadLayer = map.createLayer(0, tileset, 0, 0); //.setPipeline('Light2D'); 
+        const tileset = map.addTilesetImage(mapData.tileKey)
+        this.roadLayer = map.createLayer(0, tileset, 0, 0)
 
-        // make a RenderTexture that is the size of the screen
         const rt = scene.make.renderTexture(textureConfig, true)  //true=add this Game Object to the Scene
-        rt.fill(0x000000, 1)   // fill it with Yellow
+        rt.fill(0x000000)
         rt.setAlpha(0.8)
-         //draw the floorLayer into it
+
+        //draw the roadLayer into the render texture
         rt.draw(scene.roadLayer)
-
-        // set a dark RED tint
-        //rt.setTint(0xff0000)
-        //rt.setTint(0x0a2948)
-
         return rt;
     },
     carMask(scene, rt, car){
         this.scene = scene
         this.rt = rt
         this.car = car
-
-        //image to be used as a mask
-        // const carSurrounding = scene.make.image({ 
-        //     x: car.posX,
-        //     y: car.posY,
-        //     key: 'carSurrounding',
-        //     add: false    //
-        // })
-        // carSurrounding.scale = 5
-    
-        // rt.mask = new Phaser.Display.Masks.BitmapMask(scene, carSurrounding)
-        // rt.mask.invertAlpha = true
         
-        
-        const shape = scene.make.graphics();
-        shape.fillStyle(0xffffff);
+        const carSurrounding = scene.make.graphics();
+        carSurrounding.fillStyle(0xffffff);
+        carSurrounding.beginPath();
+        carSurrounding.arc(0, 0, 100, 0, Math.PI *2);
+        carSurrounding.fillPath();
 
-        shape.beginPath();
-
-        shape.moveTo(3, 3);
-        shape.arc(0, 0, 100, 0, Math.PI * 2);
-
-        shape.fillPath();
-
-        // rt.mask = shape.createGeometryMask();
-        // rt.mask.invertAlpha = true
-        // rt.setMask(rt.mask);
-        
-        rt.mask = new Phaser.Display.Masks.BitmapMask(scene, shape)
+        rt.mask = new Phaser.Display.Masks.BitmapMask(scene, carSurrounding)
         rt.mask.invertAlpha = true
 
-        return shape;
+        return carSurrounding;
     },
-    updateCarMask(shape, car){
-        this.shape = shape
+    updateCarMask(carSurrounding, car){
+        this.carSurrounding = carSurrounding
         this.car = car
-        if (shape){
-            shape.x = car.posX
-            shape.y = car.posY
+        if (carSurrounding){
+            carSurrounding.x = car.posX
+            carSurrounding.y = car.posY
         }
-
     }
 
 }
