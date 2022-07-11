@@ -8,9 +8,10 @@ const config =
     scale: {
         parent: "game",
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
-        width: mapData.mapWidth * mapData.tileDimension,
-        height: mapData.mapHeight * mapData.tileDimension
+        autoCenter: Phaser.Scale.CENTER_HORIZONTALLY
+        //,
+        // width: mapData.mapWidth * mapData.tileDimension,
+        // height: mapData.mapHeight * mapData.tileDimension
     },
     backgroundColor: mapData.backgroundColor,
     scene: [gameScene],

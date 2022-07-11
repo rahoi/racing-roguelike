@@ -1,6 +1,7 @@
 import mapData from "./MapData.js"
 import tileMapConstruct from "./TileMapConstruct.js"
 import Car from "./Car.js"
+import texture from "./FowTexture.js"
 
 const gameScene = {
     key: "gameScene",
@@ -12,10 +13,15 @@ const gameScene = {
     },
 
     create: function() {
-        tileMapConstruct.initialize(this)
+        this.map = tileMapConstruct.initialize(this)
+        this.rt = texture.mapTexture(this, this.map)
 
         this.car = new Car()
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
+        this.vision = texture.carMask(this, this.rt, this.car)
+        texture.createCamera(this, this.vision)
+        
+
         // let car = new carCharacter()
         // add car to pixel x pixel location
         // add onTrack() function to Car.js
@@ -67,6 +73,7 @@ const gameScene = {
         this.car.updateLoc(this.force)
         this.carSprite.setPosition(this.car.posX, this.car.posY);
         this.car.onTrack()
+        texture.updateCarMask(this.vision, this.car);
     }
 }
 
