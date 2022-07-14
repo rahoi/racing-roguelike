@@ -1,24 +1,47 @@
-import mapData from "./MapData.js"
-import mapArray from "./MapArray.js"
-import terrainArray from "./TerrainArray.js"
+import type ConfigData from "./ConfigData"
+import type MapArray from "./MapArray"
+import terrainArray from "./TerrainArray"
+import type {force, dir} from "./forceDirTypes"
 
 export default class Car {
-    constructor() {
+    posX: number;
+    posY: number;
+    speed: number;
+    acc: number;
+    maxSpeed: number;
+    angle: number;
+    rotate: number;
+    brakePower: number;
+    stall: number;
+    map: MapArray;
+    tileDimension: number;
+    mapHeight: number;
+    mapWidth: number;
+
+    constructor(map: MapArray, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
-        this.posX = 220,
-        this.posY = 320,
-        this.speed = 0,
-        this.acc = 0.10,
-        this.maxSpeed = 10
-        this.angle = 0
-        this.rotate = 2.5
-        this.brakePower = 0.5
-        this.stall = 0
+        // this.posX = 220,
+        // this.posY = 320,
+        this.map = map;
+        this.tileDimension = mapConfigData.tileDimension;
+        this.mapHeight = mapConfigData.mapHeight;
+        this.mapWidth = mapConfigData.mapWidth;
+
+        this.posX = map.firstPt[1] * this.tileDimension + this.tileDimension / 2;
+        this.posY = map.firstPt[0] * this.tileDimension + this.tileDimension / 2;
+
+        this.speed = 0;
+        this.acc = 0.10;
+        this.maxSpeed = 10;
+        this.angle = 0;
+        this.rotate = 2.5;
+        this.brakePower = 0.5;
+        this.stall = 0;
     }
 
-    updateDir(dir) {
+    updateDir(dir: dir) {
         if (dir.d && this.speed != 0) {
             this.angle += this.rotate
         } else if (dir.a && this.speed != 0) {
@@ -26,7 +49,7 @@ export default class Car {
         }
     }
 
-    updateLoc(force) {
+    updateLoc(force: force) {
         if (force.s) { // braking
             if (this.speed > 0) {
                 this.speed -= this.brakePower
@@ -74,32 +97,32 @@ export default class Car {
         if (this.posX < 32) {
             this.speed = 0
             this.posX = 32
-        } else if (this.posX > mapData.tileDimension * mapData.mapWidth - 32) {
+        } else if (this.posX > this.tileDimension * this.mapWidth - 32) {
             this.speed = 0
-            this.posX = mapData.tileDimension * mapData.mapWidth - 32
+            this.posX = this.tileDimension * this.mapWidth - 32
         }
 
         if (this.posY < 32) {
             this.speed = 0
             this.posY = 32
-        } else if (this.posY > mapData.tileDimension * mapData.mapHeight - 48) {
+        } else if (this.posY > this.tileDimension * this.mapHeight - 48) {
             this.speed = 0
-            this.posY = mapData.tileDimension * mapData.mapHeight - 48
+            this.posY = this.tileDimension * this.mapHeight - 48
         }
     }
 
     onTrack() {
-        this.currTile = mapArray[Math.trunc(this.posY / 128)][Math.trunc(this.posX / 128)]
+        let currTile = this.map.mapArray[Math.trunc(this.posY / 128)][Math.trunc(this.posX / 128)]
         
         // logging car's position on the tilemap (not its pixel position)
-        console.log("x: ", Math.trunc(this.posX / 128), " y: ", Math.trunc(this.posY / 128))
+        // console.log("x: ", Math.trunc(this.posX / 128), " y: ", Math.trunc(this.posY / 128))
 
         // logs if the car is on the race track
-        if (terrainArray.roadTileArray.includes(this.currTile)) {
-            console.log("on track")
-        }
+        // if (terrainArray.roadTileArray.includes(this.currTile)) {
+        //     console.log("on track")
+        // }
         
         // returns true if the car is on the race track
-        return (terrainArray.roadTileArray.includes(this.currTile)) 
+        return (terrainArray.roadTileArray.includes(currTile)) 
     }
 }
