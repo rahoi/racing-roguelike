@@ -1,4 +1,9 @@
-let terrainArray = {
+type terrainArrayData = {
+    roadTileArray: number[],
+    terrainTileArray: number[]
+}
+
+let terrainArray: terrainArrayData = {
     roadTileArray: [
         1, 2, 3, 4, 5, 
         19, 20, 21, 22, 23, 
