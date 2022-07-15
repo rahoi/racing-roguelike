@@ -39,11 +39,13 @@ export default class GameScene extends Phaser.Scene {
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
         this.texture = new FowTexture(this.mapConfigData);
         this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
+        
+
 
         this.car = new Car(this.mapArray, this.mapConfigData)
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.vision = this.texture.carMask(this, this.rt, this.car)
-        this.texture.createCamera(this, this.vision)
+        //this.vision = this.texture.carMask(this, this.rt, this.car)
+        //this.texture.createCamera(this, this.vision)
         
 
         // let car = new carCharacter()
@@ -77,6 +79,7 @@ export default class GameScene extends Phaser.Scene {
     }
     
     update() {
+        /*
         // update which forces are at play
         if (this.keys.w.isDown) {
             this.force.w = true
@@ -98,6 +101,7 @@ export default class GameScene extends Phaser.Scene {
         } else if (this.keys.d.isUp) {
             this.dir.d = false
         }
+        */
 
         this.car.updateDir(this.dir)
         this.carSprite.angle = this.car.angle + 90

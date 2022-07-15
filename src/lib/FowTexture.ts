@@ -2,6 +2,12 @@ import type ConfigData from "./ConfigData"
 import type TileMapConstruct from "./TileMapConstruct"
 import type Car from "./Car"
 
+//import * as Phaser from "phaser";
+//import * as Phaser from "phaser";
+//import Phaser from 'phaser';
+//import Phaser from 'https://www.unpkg.com/browse/phaser@3.55.2/'
+//const Phaser = await import('https://www.unpkg.com/browse/phaser@3.55.2/');
+
 export default class FowTexture {
     scene:  Phaser.Scene;
     map:Phaser.Tilemaps.Tilemap;
@@ -22,15 +28,17 @@ export default class FowTexture {
         this.tileKey = mapConfigData.tileKey;
     }
 
-    createCamera(scene: Phaser.Scene, vision: Phaser.GameObjects.Graphics) {
-        this.scene = scene;
-        this.vision = vision;
-        this.scene.cameras.main.setBounds(0, 0, this.mapWidth * this.tileDimension, this.mapHeight * this.tileDimension);
-        this.scene.cameras.main.startFollow(vision, true, 0.07, 0.07);
-        // this.scene.cameras.main.setZoom(1.2);
-    }
+    // createCamera(scene: Phaser.Scene, vision: Phaser.GameObjects.Graphics) {
+    //     this.scene = scene;
+    //     this.vision = vision;
+    //     this.scene.cameras.main.setBounds(0, 0, this.mapWidth * this.tileDimension, this.mapHeight * this.tileDimension);
+    //     this.scene.cameras.main.startFollow(vision, true, 0.07, 0.07);
+    //     // this.scene.cameras.main.setZoom(1.2);
+    // }
 
-    mapTexture(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
+
+    ///FIXED
+    mapTexture(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
         this.scene = scene;
         this.map = map;
        
@@ -50,12 +58,41 @@ export default class FowTexture {
         return this.rt;
     }
 
+
+
+
+
+
+
+
+
+    // mapTexture(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
+    //     this.scene = scene;
+    //     this.map = map;
+       
+    //     const textureConfig = { 
+    //         width: this.mapHeight * this.tileDimension,  //The width of the RenderTexture
+    //         height: this.mapHeight * this.tileDimension  //The height of the RenderTexture
+    //     }
+    //     const tileset = this.map.addTilesetImage(this.tileKey)
+    //     this.roadLayer = this.map.createLayer(0, tileset, 0, 0)
+
+    //     this.rt = this.scene.make.renderTexture(textureConfig, true)  //true=add this Game Object to the Scene
+    //     this.rt.fill(0x000000)
+    //     this.rt.setAlpha(0.8)
+
+    //     //draw the roadLayer into the render texture
+    //     this.rt.draw(this.roadLayer)
+    //     return this.rt;
+    // }
+
+    /*
     carMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, car: Car){
         this.scene = scene
         this.rt = rt
         this.car = car
         
-        this.carSurrounding = this.scene.make.graphics();
+        //this.carSurrounding = this.scene.make.graphics();
         this.carSurrounding.fillStyle(0xffffff);
         this.carSurrounding.beginPath();
         this.carSurrounding.arc(0, 0, 100, 0, Math.PI *2);
@@ -75,4 +112,6 @@ export default class FowTexture {
             this.carSurrounding.y = car.posY
         }
     }
+
+    */
 }

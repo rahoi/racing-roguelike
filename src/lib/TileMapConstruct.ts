@@ -11,7 +11,6 @@ export default class TileMapConstruct {
     constructor(scene:Phaser.Scene, map: MapArray, mapConfigData: ConfigData) {
         this.mapArray = map.mapArray
 
-
         this.scene = scene
         // scene.mapArray = mapArray
 
@@ -25,6 +24,7 @@ export default class TileMapConstruct {
         this.tileMap = scene.make.tilemap(mapConfig);
         // const tileset = map.addTilesetImage(mapData.tiles);
         // this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+
     }
 
     // getTileMap() {
