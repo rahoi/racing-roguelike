@@ -3,12 +3,6 @@ import type TileMapConstruct from "./TileMapConstruct"
 import type Car from "./Car"
 import game from "./Game";
 
-//import * as Phaser from "phaser";
-//import * as Phaser from "phaser";
-//import Phaser from 'phaser';
-//import Phaser from 'https://www.unpkg.com/browse/phaser@3.55.2/'
-//const Phaser = await import('https://www.unpkg.com/browse/phaser@3.55.2/');
-
 export default class FowTexture {
     scene: Phaser.Scene;
     map:Phaser.Tilemaps.Tilemap;
@@ -115,7 +109,7 @@ export default class FowTexture {
 
         this.rt.mask = new Phaser.Display.Masks.BitmapMask(this.scene, this.carSurrounding)
         this.rt.mask.invertAlpha = true;
-
+   
         return this.carSurrounding;
     }
 /*

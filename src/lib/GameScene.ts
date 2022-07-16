@@ -6,6 +6,8 @@ import Car from "./Car"
 import texture from "./FowTexture"
 import Phaser from "phaser"
 import type {force, dir} from "./forceDirTypes"
+//import CarKeys from "./CarKeys"
+import FowLayer from "./FowLayer"
 
 export default class GameScene extends Phaser.Scene {
     mapConfigData: ConfigData;
@@ -13,12 +15,13 @@ export default class GameScene extends Phaser.Scene {
     mapArray: MapArray;
     tileMap: TileMapConstruct;
     carSprite: Phaser.GameObjects.Sprite;
-    keys: object;
+    keys: Phaser.Input.InputPlugin;
     force: force;
     dir: dir;
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
     texture: FowTexture
+    fow: object
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -37,7 +40,8 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-       
+        this.fow = new FowLayer();
+
         this.texture = new FowTexture(this.mapConfigData);
         this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
 
@@ -54,13 +58,8 @@ export default class GameScene extends Phaser.Scene {
         // add onTrack() function to Car.js
 
         // add input keys
-        this.keys = this.input.keyboard.addKeys({
-            w: Phaser.Input.Keyboard.KeyCodes.W,
-            a: Phaser.Input.Keyboard.KeyCodes.A,
-            s: Phaser.Input.Keyboard.KeyCodes.S,
-            d: Phaser.Input.Keyboard.KeyCodes.D,
-        })
-
+        //this.keys = this.input.keyboard.addKeys({ 
+        
         // let keys = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
 
         // type force = { w: boolean, s: boolean }
@@ -68,6 +67,7 @@ export default class GameScene extends Phaser.Scene {
         //     'w': false,
         //     's': false,
         // }
+
         this.force = {
             'w': false,
             's': false,
@@ -78,13 +78,41 @@ export default class GameScene extends Phaser.Scene {
             'd': false
         }
     }
+
     
     update() {
-        
-        // update which forces are at play
-        if (this.keys.w.isDown) {
+       var w = this.input.keyboard.addKey('w');
+       var s = this.input.keyboard.addKey('s');
+       var a = this.input.keyboard.addKey('a');
+       var d = this.input.keyboard.addKey('d');
+
+        if (w.isDown) {
             this.force.w = true
-        } else if (this.keys.w.isUp) {
+        } else if (w.isUp) {
+            this.force.w = false
+        }
+        if (s.isDown) {
+            this.force.s = true
+        } else if (s.isUp) {
+            this.force.s = false
+        }
+        if (a.isDown) {
+            this.dir.a = true
+        } else if (a.isUp) {
+            this.dir.a = false
+        }
+        if (d.isDown) {
+            this.dir.d = true
+        } else if (d.isUp) {
+            this.dir.d = false
+        }
+
+        
+
+        /*
+        if (this.input.keyboard.addKey('w').isDown) {
+            this.force.w = true
+        } else if (this.keys.keyboard.isUp) {
             this.force.w = false
         }
         if (this.keys.s.isDown) {
@@ -102,6 +130,7 @@ export default class GameScene extends Phaser.Scene {
         } else if (this.keys.d.isUp) {
             this.dir.d = false
         }
+        */
         
 
         this.car.updateDir(this.dir)
