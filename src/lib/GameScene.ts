@@ -1,7 +1,7 @@
 import type ConfigData from "./ConfigData"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
-import FowTexture from "./FowTexture"
+//import FowTexture from "./FowTexture"
 import Car from "./Car"
 import texture from "./FowTexture"
 import Phaser from "phaser"
@@ -20,8 +20,8 @@ export default class GameScene extends Phaser.Scene {
     dir: dir;
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture
-    fow: object
+    //texture: FowTexture
+    fow: FowLayer
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -40,16 +40,18 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-        this.fow = new FowLayer();
 
-        this.texture = new FowTexture(this.mapConfigData);
-        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
+        this.fow = new FowLayer(this.mapConfigData);
+
+        this.fow.mapLayer(this, this.tileMap.tileMap);
+        
+        //this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
 
 
         this.car = new Car(this.mapArray, this.mapConfigData)
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.vision = this.texture.carMask(this, this.rt, this.car)
-        
+
+        //this.vision = this.texture.carMask(this, this.rt, this.car)
         //this.texture.createCamera(this, this.vision)
         
 
@@ -139,6 +141,12 @@ export default class GameScene extends Phaser.Scene {
         this.carSprite.setPosition(this.car.posX, this.car.posY);
         // this.car.onTrack()
         //this.texture.updateCarMask(this.car);
+
+        //this.fow = new FowLayer(this.mapConfigData);
+        
+
+        
+        
     }
 }
 

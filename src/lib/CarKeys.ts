@@ -31,8 +31,9 @@
 // // import terrainArray from "./TerrainArray"
 // // import type {force, dir} from "./forceDirTypes"
 
-// // export default class CarKeys {
-    
+export default class CarKeys {
+
+}
 // //     key: Phaser.Input.Keyboard.KeyboardPlugin;
 // //     //w: Object;
 // //     // = this.input.keyboard.createCursorKeys();
