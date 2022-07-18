@@ -19,12 +19,9 @@ export default class FowLayer{
         this.mapWidth = mapConfigData.mapWidth;  //this.mapHeight * this.tileDimension,  //The width
         this.tileKey = mapConfigData.tileKey;
     
-		
-		// var sol = (x: number, y: number) => {const tile = this.roadLayer.getTileAt(x, y)}
-		// console.log(sol);
 	}
 
-	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){ //: Phaser.GameObjects.RenderTexture{
+	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
         this.scene = scene;
         this.map = map;
        
@@ -35,5 +32,42 @@ export default class FowLayer{
         const tileset = this.map.addTilesetImage(this.tileKey)
         this.roadLayer = this.map.createLayer(0, tileset, 0, 0)		
 	}
+
+    cameraFow(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap, camera: Phaser.Cameras.Scene2D.CameraManager) {
+		this.scene = scene;
+		this.map = map;
+		this.camera = camera
+		
+		const bounds = new Phaser.Geom.Rectangle(
+			this.map.worldToTileX(this.camera.main.worldView.x),
+			this.map.worldToTileY(this.camera.main.worldView.y),
+			this.map.worldToTileX(this.camera.main.worldView.width),
+			this.map.worldToTileX(this.camera.main.worldView.height)
+		)
+	
+		for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
+			for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
+				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
+					continue
+				}
+	
+				const tile = this.roadLayer.getTileAt(x, y)
+				if (!tile) {
+				 	continue
+				}
+				tile.setAlpha(0.2);
+				//tile.tint = 0x404040;
+			}
+		}
+	
+	}
+
+
+
+
+
+
+
+	
 
 }
