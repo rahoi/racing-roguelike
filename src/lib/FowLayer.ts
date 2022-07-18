@@ -1,3 +1,4 @@
+import { Mrpas } from "mrpas";
 import type Car from "./Car";
 import type ConfigData from "./ConfigData";
 
@@ -11,7 +12,7 @@ export default class FowLayer{
     mapWidth: number;
     tileKey: string;
 	scene: Phaser.Scene;
-
+    fow: Mrpas
 
 	constructor(mapConfigData: ConfigData) {
         this.tileDimension = mapConfigData.tileDimension;
@@ -55,19 +56,46 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue
 				}
-				tile.setAlpha(0.2);
-				//tile.tint = 0x404040;
+				tile.setAlpha(0);  //hide the tiles
 			}
-		}
-	
+		}	
 	}
 
+    isTransparent(x:number, y:number): boolean {
+        const tile = this.roadLayer!.getTileAt(x, y)
+        return tile && tile.collides;
+    }
 
+    calculateFow(scene: Phaser.Scene, car: Car) {
+        this.scene = scene;
+        this.car = car;
+    
+        this.fow = new Mrpas(this.mapHeight, this.mapWidth, (x:number, y:number) => {
+            const tile = this.roadLayer!.getTileAt(x, y)
+            return tile && tile.collides;
+        })
 
-
-
-
-
-	
-
+        const px = this.map.worldToTileX(this.car.posX)
+        const py = this.map.worldToTileY(this.car.posY)
+        
+        this.fow.compute(
+        px,
+        py,
+        Infinity,
+        (x: number, y: number) => {
+            const tile = this.roadLayer!.getTileAt(x, y)
+            if (!tile) {
+                return false
+            }
+            return tile.alpha > 0
+        },
+        (x: number, y:number) => {
+            const tile = this.roadLayer!.getTileAt(x, y)
+            if (!tile) {
+                return
+            }
+            tile.setAlpha(1)  
+        })
+    }
+        
 }
