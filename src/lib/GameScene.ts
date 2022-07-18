@@ -52,10 +52,10 @@ export default class GameScene extends Phaser.Scene {
 
         // add input keys
         this.keys = this.input.keyboard.addKeys({
-            w: Phaser.Input.Keyboard.KeyCodes.W,
-            a: Phaser.Input.Keyboard.KeyCodes.A,
-            s: Phaser.Input.Keyboard.KeyCodes.S,
-            d: Phaser.Input.Keyboard.KeyCodes.D,
+            gas: Phaser.Input.Keyboard.KeyCodes.SPACE,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            brake: Phaser.Input.Keyboard.KeyCodes.S,
+            right: Phaser.Input.Keyboard.KeyCodes.D,
         })
 
         // let keys = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -65,38 +65,39 @@ export default class GameScene extends Phaser.Scene {
         //     'w': false,
         //     's': false,
         // }
+
         this.force = {
-            'w': false,
-            's': false,
+            'gas': false,
+            'brake': false,
         }
 
         this.dir = {
-            'a': false,
-            'd': false
+            'left': false,
+            'right': false
         }
     }
     
     update() {
         // update which forces are at play
-        if (this.keys.w.isDown) {
-            this.force.w = true
-        } else if (this.keys.w.isUp) {
-            this.force.w = false
+        if (this.keys.gas.isDown) {
+            this.force.gas = true
+        } else if (this.keys.gas.isUp) {
+            this.force.gas = false
         }
-        if (this.keys.s.isDown) {
-            this.force.s = true
-        } else if (this.keys.s.isUp) {
-            this.force.s = false
+        if (this.keys.brake.isDown) {
+            this.force.brake = true
+        } else if (this.keys.brake.isUp) {
+            this.force.brake = false
         }
-        if (this.keys.a.isDown) {
-            this.dir.a = true
-        } else if (this.keys.a.isUp) {
-            this.dir.a = false
+        if (this.keys.left.isDown) {
+            this.dir.left = true
+        } else if (this.keys.left.isUp) {
+            this.dir.left = false
         }
-        if (this.keys.d.isDown) {
-            this.dir.d = true
-        } else if (this.keys.d.isUp) {
-            this.dir.d = false
+        if (this.keys.right.isDown) {
+            this.dir.right = true
+        } else if (this.keys.right.isUp) {
+            this.dir.right = false
         }
 
         this.car.updateDir(this.dir)
