@@ -13,6 +13,7 @@
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
     "@tsconfig/svelte": "^2.0.1",
     "@types/hull.js": "^1.0.2",
+    "@types/three": "^0.141.0",
     "svelte": "^3.44.0",
     "svelte-check": "^2.2.7",
     "svelte-preprocess": "^4.9.8",
@@ -23,6 +24,7 @@
   "dependencies": {
     "catmull-rom-interpolator": "^1.0.1",
     "hull.js": "^1.0.2",
-    "phaser": "^3.55.2"
+    "phaser": "^3.55.2",
+    "three": "^0.142.0"
   }
 }

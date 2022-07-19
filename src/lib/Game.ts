@@ -3,8 +3,8 @@ import GameScene from "./GameScene"
 import Phaser from "phaser"
 
 const tileDimension = 128;
-const tileMapHeight = 40;
-const tileMapWidth = 40;
+const tileMapHeight = 100;
+const tileMapWidth = 100;
 const backgroundColor = '#bc8044';
 const tilesetImageSheet = '/assets/spritesheet_tiles.png';
 const tileKey = 'tiles;'
