@@ -13,13 +13,14 @@ export default class FowLayer{
     tileKey: string;
 	scene: Phaser.Scene;
     fow: Mrpas
+    lastPosition: Phaser.Math.Vector2;
 
 	constructor(mapConfigData: ConfigData) {
         this.tileDimension = mapConfigData.tileDimension;
-        this.mapHeight = mapConfigData.mapHeight;  // height: this.mapHeight * this.tileDimension  //The height
-        this.mapWidth = mapConfigData.mapWidth;  //this.mapHeight * this.tileDimension,  //The width
+        this.mapHeight = mapConfigData.mapHeight;    // height: this.mapHeight * this.tileDimension  //The height
+        this.mapWidth = mapConfigData.mapWidth;      // this.mapHeight * this.tileDimension,  //The width
         this.tileKey = mapConfigData.tileKey;
-    
+        this.lastPosition = new Phaser.Math.Vector2({x: -1, y: -1});
 	}
 
 	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
@@ -38,7 +39,7 @@ export default class FowLayer{
 		this.scene = scene;
 		this.map = map;
 		this.camera = camera
-		
+        
 		const bounds = new Phaser.Geom.Rectangle(
 			this.map.worldToTileX(this.camera.main.worldView.x),
 			this.map.worldToTileY(this.camera.main.worldView.y),
@@ -51,37 +52,36 @@ export default class FowLayer{
 				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
 					continue
 				}
-	
-				const tile = this.roadLayer.getTileAt(x, y)
+
+				const tile = this.roadLayer.getTileAt(x, y);
 				if (!tile) {
 				 	continue
 				}
-				tile.setAlpha(0);  //hide the tiles
+                tile.setAlpha(0.2);
 			}
 		}	
 	}
 
-    isTransparent(x:number, y:number): boolean {
-        const tile = this.roadLayer!.getTileAt(x, y)
-        return tile && tile.collides;
-    }
-
-    calculateFow(scene: Phaser.Scene, car: Car) {
-        this.scene = scene;
-        this.car = car;
-    
+    createFow () {
         this.fow = new Mrpas(this.mapHeight, this.mapWidth, (x:number, y:number) => {
             const tile = this.roadLayer!.getTileAt(x, y)
             return tile && tile.collides;
         })
+    }
+    
+    calculateFow(scene: Phaser.Scene, car: Car) {
+        this.scene = scene;
+        this.car = car;
+        this.createFow();
 
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
+        const radius = 10;
         
         this.fow.compute(
         px,
-        py,
-        Infinity,
+        py, 
+        radius, //Infinity,  
         (x: number, y: number) => {
             const tile = this.roadLayer!.getTileAt(x, y)
             if (!tile) {
@@ -92,10 +92,11 @@ export default class FowLayer{
         (x: number, y:number) => {
             const tile = this.roadLayer!.getTileAt(x, y)
             if (!tile) {
-                return
+                return;
             }
-            tile.setAlpha(1)  
+            tile.setAlpha(1);
+
         })
     }
-        
+
 }

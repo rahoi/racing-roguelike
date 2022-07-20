@@ -37,14 +37,15 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-
+        
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-
+       
         this.car = new Car(this.mapArray, this.mapConfigData)
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
         
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+ 
 
         // let car = new carCharacter()
         // add car to pixel x pixel location
@@ -101,13 +102,13 @@ export default class GameScene extends Phaser.Scene {
         this.dir.d = false
     }
 
+    
     this.car.updateDir(this.dir)
     this.carSprite.angle = this.car.angle + 90
     this.car.updateLoc(this.force)
     this.carSprite.setPosition(this.car.posX, this.car.posY);
     // this.car.onTrack()
     
-
     this.fow.calculateFow(this, this.car);
         
     }
