@@ -62,12 +62,17 @@ export default class FowLayer{
 		}	
 	}
 
+
+
     createFow () {
-        this.fow = new Mrpas(this.mapHeight, this.mapWidth, (x:number, y:number) => {
+        let isTransparent = (x:number, y:number) => {
             const tile = this.roadLayer!.getTileAt(x, y)
             return tile && tile.collides;
-        })
+        }
+        this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
     }
+
+
     
     calculateFow(scene: Phaser.Scene, car: Car) {
         this.scene = scene;
