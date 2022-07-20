@@ -37,6 +37,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
+    
         
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);
@@ -45,7 +46,9 @@ export default class GameScene extends Phaser.Scene {
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
         
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
- 
+        //this.fow.carMask(this, this.car);
+
+        //this.fow.carMask(this, this.car, this.camera){
 
         // let car = new carCharacter()
         // add car to pixel x pixel location
@@ -79,6 +82,8 @@ export default class GameScene extends Phaser.Scene {
 
     
     update() {
+        
+    this.fow.calculateFow(this, this.car);
  
     // update which forces are at play
     if (this.keys.w.isDown) {
@@ -109,7 +114,7 @@ export default class GameScene extends Phaser.Scene {
     this.carSprite.setPosition(this.car.posX, this.car.posY);
     // this.car.onTrack()
     
-    this.fow.calculateFow(this, this.car);
+   
         
     }
 }

@@ -125,4 +125,13 @@ export default class Car {
         // returns true if the car is on the race track
         return (terrainArray.roadTileArray.includes(currTile)) 
     }
+
+    carMask(scene: Phaser.Scene){
+        const mask = scene.make.image({
+            x: this.posX,
+            y: this.posY,
+            key: 'mask',
+            add: true
+        });
+    }
 }

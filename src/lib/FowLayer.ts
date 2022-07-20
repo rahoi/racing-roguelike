@@ -7,6 +7,7 @@ export default class FowLayer{
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
 	car: Car;
 	camera: Phaser.Cameras.Scene2D.CameraManager;
+    carSurrounding: Phaser.GameObjects.Graphics;
 	tileDimension: number;
     mapHeight: number;
     mapWidth: number;
@@ -14,6 +15,8 @@ export default class FowLayer{
 	scene: Phaser.Scene;
     fow: Mrpas
     lastPosition: Phaser.Math.Vector2;
+    camera2: Phaser.Cameras.Scene2D.BaseCamera;
+    rt: Phaser.GameObjects.RenderTexture;
 
 	constructor(mapConfigData: ConfigData) {
         this.tileDimension = mapConfigData.tileDimension;
@@ -57,12 +60,11 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue
 				}
-                tile.setAlpha(0.2);
+                tile.setAlpha(0.1);
+                //tile.tint = 0x404040;
 			}
 		}	
 	}
-
-
 
     createFow () {
         let isTransparent = (x:number, y:number) => {
@@ -71,17 +73,16 @@ export default class FowLayer{
         }
         this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
     }
-
-
     
     calculateFow(scene: Phaser.Scene, car: Car) {
         this.scene = scene;
         this.car = car;
         this.createFow();
+        const lightDropoff = [0.7, 0.6, 0.3, 0.1];
 
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
-        const radius = 10;
+        const radius = 3;
         
         this.fow.compute(
         px,
@@ -93,15 +94,35 @@ export default class FowLayer{
                 return false
             }
             return tile.alpha > 0
+            //return tile.tint === 0xffffff;
         },
         (x: number, y:number) => {
             const tile = this.roadLayer!.getTileAt(x, y)
+            // const d = Phaser.Math.Distance.Between(py, px, y, x)
+
             if (!tile) {
                 return;
             }
-            tile.setAlpha(1);
 
+            // const rolloffIdx = d <= radius ? radius - d : 0;
+            // const alpha =
+            // rolloffIdx < lightDropoff.length ? lightDropoff[rolloffIdx] : 0;
+
+            tile.setAlpha(0.7);
+            const d = Phaser.Math.Distance.Between(py, px, y, x)
+			const alpha = Math.min((2 - d) / 2, 1)
+
+            
+            console.log("alpha: " + alpha);
+            console.log("px: " + px);
+            console.log("py: " + py);
+            console.log("tile_x: " + x);
+            console.log("tile_y: " + y);
+            console.log("distance: " + d);
+
+			// tile.tint = 0xff0000  //red
+			// tile.alpha =  alpha
         })
-    }
 
+    }
 }
