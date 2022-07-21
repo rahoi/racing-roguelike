@@ -53,23 +53,24 @@ export default class FowLayer{
 		for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
 			for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
 				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
-					continue
+					continue;
 				}
 
 				const tile = this.roadLayer.getTileAt(x, y);
 				if (!tile) {
-				 	continue
+				 	continue;
 				}
-                tile.setAlpha(0.1);
-                //tile.tint = 0x404040;
+                tile.setAlpha(1); //full camera is dark = opacity
+                //tile.tint = 0x00FF00;  //green
+                tile.tint = 0x404040; //white
 			}
 		}	
 	}
 
     createFow () {
         let isTransparent = (x:number, y:number) => {
-            const tile = this.roadLayer!.getTileAt(x, y)
-            return tile && tile.collides;
+            const tile = this.roadLayer.getTileAt(x, y)
+            return tile && !tile.collides;
         }
         this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
     }
@@ -78,51 +79,43 @@ export default class FowLayer{
         this.scene = scene;
         this.car = car;
         this.createFow();
-        const lightDropoff = [0.7, 0.6, 0.3, 0.1];
-
+        
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
-        const radius = 3;
-        
+        const radius = 7;
+
+    let isVisible = (x:number, y:number): boolean => {
+        const tile = this.roadLayer.getTileAt(x, y)
+        if (!tile) {
+            return false;  
+        }
+        return tile.tint === 0xffffff;
+    }
+
+    let setVisibility = (x:number, y:number) => {
+        const tile = this.roadLayer.getTileAt(x, y)
+        if (!tile) {
+            return;
+        }
+        const d = Phaser.Math.Distance.Between(py, px, y, x)
+        const alpha = Math.min(2 - d / 6, 1)
+
+        //console.log("alpha: " + alpha);
+        //console.log("px: " + px);
+        //console.log("py: " + py);
+        // console.log("tile_x: " + x);
+        // console.log("tile_y: " + y);
+        // console.log("distance: " + d);
+
+        tile.tint = 0xffffff;
+        tile.alpha =  alpha
+    }
+
         this.fow.compute(
         px,
-        py, 
-        radius, //Infinity,  
-        (x: number, y: number) => {
-            const tile = this.roadLayer!.getTileAt(x, y)
-            if (!tile) {
-                return false
-            }
-            return tile.alpha > 0
-            //return tile.tint === 0xffffff;
-        },
-        (x: number, y:number) => {
-            const tile = this.roadLayer!.getTileAt(x, y)
-            // const d = Phaser.Math.Distance.Between(py, px, y, x)
-
-            if (!tile) {
-                return;
-            }
-
-            // const rolloffIdx = d <= radius ? radius - d : 0;
-            // const alpha =
-            // rolloffIdx < lightDropoff.length ? lightDropoff[rolloffIdx] : 0;
-
-            tile.setAlpha(0.7);
-            const d = Phaser.Math.Distance.Between(py, px, y, x)
-			const alpha = Math.min((2 - d) / 2, 1)
-
-            
-            console.log("alpha: " + alpha);
-            console.log("px: " + px);
-            console.log("py: " + py);
-            console.log("tile_x: " + x);
-            console.log("tile_y: " + y);
-            console.log("distance: " + d);
-
-			// tile.tint = 0xff0000  //red
-			// tile.alpha =  alpha
-        })
-
+        py,
+        radius, 
+        isVisible,
+        setVisibility)
     }
 }
