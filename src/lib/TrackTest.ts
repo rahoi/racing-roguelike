@@ -18,6 +18,7 @@ let coordinates:number[][] = [
     [3,4],
     [5,6],
     [1,2],
+    [5,6],
     [7,8],
     [9,10],
     [11,12],
@@ -26,11 +27,16 @@ let coordinates:number[][] = [
     [1,2],
     [17,18],
     [19,20],
+    // [3,4],
     [1,2],
     [3,4],
+    [21, 22],
+    [23, 24],
+    [25, 26],
     [1,2]
 ]
 let len:number = coordinates.length;
+console.log(coordinates);
 
 let map = new Map<string, number[]>();
 
@@ -45,12 +51,14 @@ for (let i = 0; i < coordinates.length; i++) {
 }
 
 // track.createMapArray();
+console.log("coordinate length before: ", coordinates.length);
 
 coordinates = track.removeLoops(coordinates);
 
-console.log(coordinates);
-console.log(map);
+console.log("coordinate length after: ", coordinates.length);
+console.log("map length: ", map.size);
 
 if (len > coordinates.length) {
+    console.log(coordinates);
     console.log("remove working");
 }

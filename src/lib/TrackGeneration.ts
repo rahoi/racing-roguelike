@@ -35,7 +35,7 @@ export default class TrackGeneration {
 
         let numPtMoves:number = 3;
         let distVal:number = 10;
-        for(let i = 0; i < numPtMoves; ++i) {  
+        for(let i = 0; i < numPtMoves; i++) {  
             convexHull = this.movePtsApart(convexHull, distVal);  
         } 
 
@@ -51,7 +51,7 @@ export default class TrackGeneration {
 
         numPtMoves = 3;
         distVal = 5;
-        for(let i = 0; i < numPtMoves; ++i) {  
+        for(let i = 0; i < numPtMoves; i++) {  
             adjustedConvexPts = this.movePtsApart(adjustedConvexPts, distVal);  
         } 
 
@@ -61,7 +61,7 @@ export default class TrackGeneration {
         // } 
 
         let fixedAnglePts:number[][] = adjustedConvexPts;
-        for(let i = 0; i < 1; ++i) {
+        for(let i = 0; i < 1; i++) {
             fixedAnglePts = this.fixTrackAngles(fixedAnglePts); 
             
             // adjustedPts = this.movePtsApart(adjustedPts);  
@@ -135,7 +135,7 @@ export default class TrackGeneration {
         const maxDist:number = distVal ** 2;
         let distBtPts:number;
 
-        for (let i = 0; i < points.length; ++i) {
+        for (let i = 0; i < points.length; i++) {
             for (let j = i + 1; j < points.length; ++j) {
                 distBtPts = ((points[j][0] - points[i][0]) ** 2) + ((points[j][1] - points[i][1]) ** 2);
 
@@ -190,7 +190,7 @@ export default class TrackGeneration {
         const maxDisp:number = 10;
 
 
-        for(let i = 0; i < points.length; ++i) {  
+        for(let i = 0; i < points.length; i++) {  
             let dispLen:number = (Math.random() ** difficulty) * maxDisp;  
             displacement = [0, 1];  
 
@@ -237,7 +237,7 @@ export default class TrackGeneration {
         const angle:number = 95;
         // let prev = points[0];
 
-        for(let i = 0; i < points.length; ++i) {  
+        for(let i = 0; i < points.length; i++) {  
             let prev:number = (i - 1 < 0) ? points.length-1 : i-1;  
             let next:number = (i + 1) % points.length;  
 
@@ -370,76 +370,75 @@ export default class TrackGeneration {
         return track;
     }
 
-    fillBtPts(trackCoordinates:number[][], index:number) {
-        let tempPt:number[] = [];
-        let prevPt:number[] = trackCoordinates[index - 1];
-        let currPt:number[] = trackCoordinates[index];
-        let lastPt:number[] = trackCoordinates[index];
-        let count:number = 0;
+    // fillBtPts(trackCoordinates:number[][], index:number) {
+    //     let tempPt:number[] = [];
+    //     let prevPt:number[] = trackCoordinates[index - 1];
+    //     let currPt:number[] = trackCoordinates[index];
+    //     let lastPt:number[] = trackCoordinates[index];
+    //     let count:number = 0;
 
-        while (tempPt != lastPt) {
-            tempPt = prevPt;
-            if (count % 2 == 0) {
-                if (prevPt[0] == currPt[0]) {
-                    tempPt[0] = prevPt[0];
-                } else if (prevPt[0] < currPt[0]) {
-                    tempPt[0] = prevPt[0] + 1;
-                } else if (prevPt[0] > currPt[0]) {
-                    tempPt[0] = prevPt[0] - 1;
-                }
+    //     while (tempPt != lastPt) {
+    //         tempPt = prevPt;
+    //         if (count % 2 == 0) {
+    //             if (prevPt[0] == currPt[0]) {
+    //                 tempPt[0] = prevPt[0];
+    //             } else if (prevPt[0] < currPt[0]) {
+    //                 tempPt[0] = prevPt[0] + 1;
+    //             } else if (prevPt[0] > currPt[0]) {
+    //                 tempPt[0] = prevPt[0] - 1;
+    //             }
 
                 
 
-            } else {
-                if (prevPt[1] < currPt[1]) {
-                    tempPt[1] = prevPt[1] + 1;
-                } else if (prevPt[1] > currPt[0]) {
-                    tempPt[1] = prevPt[1] - 1;
-                } else {
-                    tempPt[1] = prevPt[1];
-                }
+    //         } else {
+    //             if (prevPt[1] < currPt[1]) {
+    //                 tempPt[1] = prevPt[1] + 1;
+    //             } else if (prevPt[1] > currPt[0]) {
+    //                 tempPt[1] = prevPt[1] - 1;
+    //             } else {
+    //                 tempPt[1] = prevPt[1];
+    //             }
 
 
-            }
+    //         }
 
-            if (tempPt != currPt) {
-                trackCoordinates.splice(index + count, 0, tempPt);
-            }
+    //         if (tempPt != currPt) {
+    //             trackCoordinates.splice(index + count, 0, tempPt);
+    //         }
 
-            count++;
-            prevPt = trackCoordinates[index - 1 + count];
-            currPt = trackCoordinates[index + count];
-        }
+    //         count++;
+    //         prevPt = trackCoordinates[index - 1 + count];
+    //         currPt = trackCoordinates[index + count];
+    //     }
 
-        return trackCoordinates;
-    }
+    //     return trackCoordinates;
+    // }
 
     removeLoops(trackCoordinates:number[][]) {
-        let coordinates = new Map<string, number[]>();
-        let originialLength = trackCoordinates.length;
+        let coordinateMap = new Map<string, number[]>();
+        let originialTrackLength = trackCoordinates.length;
 
         // fill map with key: coordinate, value: array of indicies from loop
         for (let i = 0; i < trackCoordinates.length - 1; i++) {
             let coordKey:string = JSON.stringify(trackCoordinates[i]);
 
-            if (coordinates.get(coordKey) == null) {
-                coordinates.set(coordKey, [i]);
+            if (coordinateMap.get(coordKey) == null) {
+                coordinateMap.set(coordKey, [i]);
             } else {
-                coordinates.set(coordKey, [...coordinates.get(coordKey), i]);
+                coordinateMap.set(coordKey, [...coordinateMap.get(coordKey), i]);
             }
         }
 
         // if there are duplicate coordinates
-        if (coordinates.size < trackCoordinates.length) {
-            for (let [coordKey, loopIndicesArray] of coordinates) {
+        if (coordinateMap.size < originialTrackLength) {
+            for (let [coordKey, loopIndicesArray] of coordinateMap) {
                 if (loopIndicesArray.length >= 2) {
-                    console.log("true: ", coordKey);
                     // find shortest loop 
                     let loopStart:number;
                     let shortestLoop:number;
 
                     // if already removed one loop, recheck for indices
-                    if (originialLength > trackCoordinates.length) {
+                    if (originialTrackLength > trackCoordinates.length) {
                         let tempArray:number[] = [];
 
                         for (let i = 0 ; i < trackCoordinates.length; i++) {
@@ -451,33 +450,43 @@ export default class TrackGeneration {
                     }
 
                     // find shortest loop 
-                    let lastIndex:boolean = false;
+                    let lastLoopIndex:boolean = false;
+                    let endOfTrackIndex:boolean = false;
                     for (let i = 0 ; i < loopIndicesArray.length; i++) {
-                        if (i == 0) {
+                        if (i == 0) {   // if index is first in loop array
                             loopStart = 0;
                             shortestLoop = Math.abs(loopIndicesArray[1] - loopIndicesArray[0]);
                         } else {
-                            // let nextIndex:number = (i == loopIndicesArray.length - 1) ? loopIndicesArray[0] : loopIndicesArray[i + 1];
-                            let nextIndex:number = (i == loopIndicesArray.length - 2) ? loopIndicesArray[0] : loopIndicesArray[i + 1];
-                            let tempLength:number = (i == loopIndicesArray.length - 2) ? loopIndicesArray[0] : Math.abs(nextIndex - loopIndicesArray[i]);
+                            let nextIndex:number = (loopIndicesArray[i] == trackCoordinates.length - 2) ? loopIndicesArray[0] : loopIndicesArray[i + 1];
+                            let tempLength:number = (loopIndicesArray[i] == trackCoordinates.length - 2) ? loopIndicesArray[0] : Math.abs(nextIndex - loopIndicesArray[i]);
+
+                            // if loop starts at last index in loop array (not last in entire track array)
+                            if (i == loopIndicesArray.length - 1 && loopIndicesArray[i] != trackCoordinates.length - 2) {
+                                nextIndex = loopIndicesArray[0];
+                                tempLength = trackCoordinates.length - 1 - loopIndicesArray[i] + loopIndicesArray[0];
+                            }
 
                             shortestLoop = Math.min(shortestLoop, tempLength);
                             if (tempLength == shortestLoop) {
-                                lastIndex = (i == loopIndicesArray.length - 2) ? true : false;
+                                endOfTrackIndex = (loopIndicesArray[i] == trackCoordinates.length - 2) ? true : false;
+                                lastLoopIndex = (!endOfTrackIndex && i == loopIndicesArray.length - 1) ? true :false;
+
                                 loopStart = i;
                             }
                         }
                     }
 
-                    // need to splice accounting for last index (not including extra end ind that == first ind)
-                    // but last index should always == first??
-                    // also need to account for last two ind (including the extra last ind) == first ind
-                    if (lastIndex) {
-                        // remove first ind, last ind, and 
+                    if (endOfTrackIndex) {    // if loop starts at last track point
                         trackCoordinates.splice(trackCoordinates.length - 1, 1);
                         trackCoordinates.splice(0, shortestLoop);
-                    } else {
-                        trackCoordinates.splice(loopStart, shortestLoop);
+
+                    } else if (lastLoopIndex) {   // if loop starts at last index in loop array
+                        let currTrackLen:number = trackCoordinates.length;
+                        trackCoordinates.splice(loopIndicesArray[loopStart] + 1, currTrackLen - 1 - loopIndicesArray[loopStart]);
+                        trackCoordinates.splice(0, shortestLoop - (currTrackLen - 1 - loopIndicesArray[loopStart]));
+
+                    } else {    // if loop doesnt start at end of track array
+                        trackCoordinates.splice(loopIndicesArray[loopStart], shortestLoop);
                     }
                     
                 }
