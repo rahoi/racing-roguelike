@@ -496,6 +496,112 @@ export default class TrackGeneration {
         return trackCoordinates;
     }
 
+    removeSnaking (trackCoordinates:number[][]) {
+        type coordinates = {
+            index:number;
+            numNeighbors:number;
+            downVert?:number[];  // neighrbor has bigger x (first coord)
+            upVert?:number[];  // neighrbor has smaller x
+            leftHorz?:number[];  // neighrbor has smaller y (second coord)
+            rightHorz?:number[];  // neighrbor has bigger y
+        }
+
+        let snakingMap = new Map<string, coordinates>();
+
+        for (let i = 0; i < trackCoordinates.length - 1; i++) {
+            let stringKey:string = JSON.stringify(trackCoordinates[i]);
+
+            let tempCoord:coordinates = {
+                index : i,
+                numNeighbors : 0,
+                // prevVert : [],
+                // nextVert : [],
+                // prevHorz : [],
+                // nextHorz : []
+            }
+
+            snakingMap.set(stringKey, tempCoord)
+        }
+        // console.log(snakingMap);
+
+
+        for (let i = 0; i < trackCoordinates.length; i++) {
+            // console.log("coord: ", trackCoordinates[k]);
+            let stringKey:string = JSON.stringify(trackCoordinates[i]);
+
+            let neighbors:number[][] = this.getNeighbors(trackCoordinates[i]);
+            // console.log(neighbors);
+
+            for (let j = 0; j < neighbors.length; j++) {
+                let neighborKey = JSON.stringify(neighbors[j]);
+                let tempCoord:coordinates | undefined = snakingMap.get(neighborKey);
+                
+                // console.log("temp: ", neighborKey, tempCoord);
+                
+                if (tempCoord != null) { 
+                    if (neighbors[j][0] < trackCoordinates[i][0]) {
+                        tempCoord.downVert = trackCoordinates[i];
+                        tempCoord.numNeighbors++;
+                    } else if (neighbors[j][0] > trackCoordinates[i][0]) {
+                        tempCoord.upVert = trackCoordinates[i];
+                        tempCoord.numNeighbors++;
+                    } else if (neighbors[j][1] < trackCoordinates[i][1]) {
+                        tempCoord.rightHorz = trackCoordinates[i];
+                        tempCoord.numNeighbors++;
+                    } else if (neighbors[j][1] > trackCoordinates[i][1]) {
+                        tempCoord.leftHorz = trackCoordinates[i];
+                        tempCoord.numNeighbors++;
+                    }
+                    
+                    console.log(neighborKey, tempCoord);
+                    snakingMap.set(neighborKey, tempCoord);
+                }
+            }
+        }
+
+        let shortestSnake = Infinity;
+        let startIndex = -1;
+        let endIndex = -1;
+
+        for (let i = 0; i < trackCoordinates.length; i++) {
+            let stringKey:string = JSON.stringify(trackCoordinates[i]);
+            let tempCoord:coordinates | undefined = snakingMap.get(stringKey);
+
+            if (tempCoord != null && tempCoord.numNeighbors > 2) {
+                if (startIndex == -1) {
+                    startIndex = i;
+                } else if (startIndex != -1 && endIndex == -1) {
+                    endIndex = i;
+                    shortestSnake = Math.min(endIndex - startIndex - 1, trackCoordinates.length - endIndex + startIndex);
+                }
+
+                // if (startIndex != -1 && endIndex!= -1) {
+
+                //     shortestSnake = Math.min(shortestSnake, );
+                // }
+            }
+
+        }
+
+        trackCoordinates.splice(startIndex, shortestSnake);
+        console.log(trackCoordinates);
+        console.log(trackCoordinates.length);
+    }
+
+
+    getNeighbors(coordinate:number[]) {
+        let neighbors:number[][] = [];
+
+        let up:number[] = [coordinate[0] - 1, coordinate[1]];
+        let down:number[] = [coordinate[0] + 1, coordinate[1]];
+        let left:number[] = [coordinate[0], coordinate[1] - 1];
+        let right:number[] = [coordinate[0] + 1, coordinate[1] + 1];
+
+        neighbors.push(up, down, left, right);
+
+        return neighbors;
+    }
+
     determineTileToPlace(prev:number[], curr:number[], next:number[]) {
         if (prev[0] == curr[0]) {
             if (next[0] == curr[0]) {
