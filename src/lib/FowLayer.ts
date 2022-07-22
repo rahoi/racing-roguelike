@@ -14,16 +14,16 @@ export default class FowLayer{
     tileKey: string;
 	scene: Phaser.Scene;
     fow: Mrpas
-    lastPosition: Phaser.Math.Vector2;
-    camera2: Phaser.Cameras.Scene2D.BaseCamera;
-    rt: Phaser.GameObjects.RenderTexture;
+    private isMapseen: boolean[][]
+    
 
 	constructor(mapConfigData: ConfigData) {
         this.tileDimension = mapConfigData.tileDimension;
         this.mapHeight = mapConfigData.mapHeight;    // height: this.mapHeight * this.tileDimension  //The height
         this.mapWidth = mapConfigData.mapWidth;      // this.mapHeight * this.tileDimension,  //The width
         this.tileKey = mapConfigData.tileKey;
-        this.lastPosition = new Phaser.Math.Vector2({x: -1, y: -1});
+
+       // this.lastPosition = new Phaser.Math.Vector2({x: -1, y: -1});
 	}
 
 	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
@@ -35,7 +35,8 @@ export default class FowLayer{
             height: this.mapHeight * this.tileDimension 
         }
         const tileset = this.map.addTilesetImage(this.tileKey)
-        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)		
+        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)	
+        
 	}
 
     cameraFow(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap, camera: Phaser.Cameras.Scene2D.CameraManager) {
@@ -60,9 +61,9 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.setAlpha(1); //full camera is dark = opacity
+                tile.setAlpha(0.1);
                 //tile.tint = 0x00FF00;  //green
-                tile.tint = 0x404040; //white
+                //tile.tint = 0x000000; //black
 			}
 		}	
 	}
@@ -76,20 +77,24 @@ export default class FowLayer{
     }
     
     calculateFow(scene: Phaser.Scene, car: Car) {
+        const lightDropoff = [0.1, 0.1, 0.6, 0.6];
+        //const lightDropoff = [0.1, 0.3, 0.6, 0.7];
+
         this.scene = scene;
         this.car = car;
         this.createFow();
         
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
-        const radius = 7;
+        const radius = 2;  //6
 
     let isVisible = (x:number, y:number): boolean => {
         const tile = this.roadLayer.getTileAt(x, y)
         if (!tile) {
             return false;  
         }
-        return tile.tint === 0xffffff;
+        return tile.alpha > 0.1
+        //return tile.tint === 0xffffff;
     }
 
     let setVisibility = (x:number, y:number) => {
@@ -97,20 +102,32 @@ export default class FowLayer{
         if (!tile) {
             return;
         }
-        const d = Phaser.Math.Distance.Between(py, px, y, x)
-        const alpha = Math.min(2 - d / 6, 1)
+        const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
+              new Phaser.Math.Vector2(px, py)));
+              
+        console.log("distance: " + d);
 
-        //console.log("alpha: " + alpha);
-        //console.log("px: " + px);
-        //console.log("py: " + py);
-        // console.log("tile_x: " + x);
-        // console.log("tile_y: " + y);
-        // console.log("distance: " + d);
+        let alpha = 0;
+        let idx = 0;
+        if (d <= radius) {  //
+            idx = radius - d;
+        }
+        // else {
+        //     idx = 0;
+        // }
 
-        tile.tint = 0xffffff;
+        if (idx < 4) {
+            alpha = 0.5;  //frame
+        } else {
+            alpha = 1;  //inside square
+        } 
+
+        tile.tint = 0xffffff;  //white              //0x00ff00  //green
         tile.alpha =  alpha
-    }
+        
+        tile.alpha = 1
 
+    }
         this.fow.compute(
         px,
         py,
