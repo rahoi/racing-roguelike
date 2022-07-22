@@ -15,7 +15,7 @@ export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
     image: string;
     mapConfigData: ConfigData;
-    player: Bike;
+    player: Bike | Car;
     mapArray: MapArray;
     tileMap: TileMapConstruct;
     playerSprite: Phaser.GameObjects.Sprite;
