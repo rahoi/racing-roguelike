@@ -8,7 +8,6 @@ import Bike from "./Bike"
 
 // import types
 import type ConfigData from "./ConfigData"
-import type Player from "./Player"
 import type {force, dir} from "./forceDirTypes"
 
 export default class GameScene extends Phaser.Scene {
@@ -66,7 +65,7 @@ export default class GameScene extends Phaser.Scene {
         }
         
         this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
-        this.vision = this.texture.carMask(this, this.rt, this.player)
+        this.vision = this.texture.playerMask(this, this.rt, this.player)
         this.texture.createCamera(this, this.vision)
 
         // add input keys
