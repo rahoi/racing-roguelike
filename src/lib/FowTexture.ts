@@ -1,12 +1,12 @@
 import type ConfigData from "./ConfigData"
 import type TileMapConstruct from "./TileMapConstruct"
-import type Car from "./Car"
+import type Player from "./Player"
 
 export default class FowTexture {
     scene:  Phaser.Scene;
     map:Phaser.Tilemaps.Tilemap;
     rt: Phaser.GameObjects.RenderTexture;
-    car: Car;
+    car: Player;
     carSurrounding: Phaser.GameObjects.Graphics;
     vision: Phaser.GameObjects.Graphics;
     roadLayer: Phaser.Tilemaps.TilemapLayer;
@@ -50,7 +50,7 @@ export default class FowTexture {
         return this.rt;
     }
 
-    carMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, car: Car){
+    carMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, car: Player){
         this.scene = scene
         this.rt = rt
         this.car = car
@@ -67,7 +67,7 @@ export default class FowTexture {
         return this.carSurrounding;
     }
 
-    updateCarMask(carSurrounding:Phaser.GameObjects.Graphics, car: Car){
+    updateCarMask(carSurrounding:Phaser.GameObjects.Graphics, car: Player){
         this.carSurrounding = carSurrounding
         this.car = car
         if (this.carSurrounding){
