@@ -1,13 +1,14 @@
 import type ConfigData from "./ConfigData"
 import type TileMapConstruct from "./TileMapConstruct"
+import type Bike from "./Bike"
 import type Car from "./Car"
 
 export default class FowTexture {
     scene:  Phaser.Scene;
     map:Phaser.Tilemaps.Tilemap;
     rt: Phaser.GameObjects.RenderTexture;
-    car: Car;
-    carSurrounding: Phaser.GameObjects.Graphics;
+    player: Bike | Car;
+    playerSurrounding: Phaser.GameObjects.Graphics;
     vision: Phaser.GameObjects.Graphics;
     roadLayer: Phaser.Tilemaps.TilemapLayer;
     tileDimension: number;
@@ -50,29 +51,29 @@ export default class FowTexture {
         return this.rt;
     }
 
-    carMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, car: Car){
+    playerMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, player: Bike | Car){
         this.scene = scene
         this.rt = rt
-        this.car = car
+        this.player = player
         
-        this.carSurrounding = this.scene.make.graphics();
-        this.carSurrounding.fillStyle(0xffffff);
-        this.carSurrounding.beginPath();
-        this.carSurrounding.arc(0, 0, 100, 0, Math.PI *2);
-        this.carSurrounding.fillPath();
+        this.playerSurrounding = this.scene.make.graphics();
+        this.playerSurrounding.fillStyle(0xffffff);
+        this.playerSurrounding.beginPath();
+        this.playerSurrounding.arc(0, 0, 100, 0, Math.PI *2);
+        this.playerSurrounding.fillPath();
 
-        this.rt.mask = new Phaser.Display.Masks.BitmapMask(this.scene, this.carSurrounding)
+        this.rt.mask = new Phaser.Display.Masks.BitmapMask(this.scene, this.playerSurrounding)
         this.rt.mask.invertAlpha = true
 
-        return this.carSurrounding;
+        return this.playerSurrounding;
     }
 
-    updateCarMask(carSurrounding:Phaser.GameObjects.Graphics, car: Car){
-        this.carSurrounding = carSurrounding
-        this.car = car
-        if (this.carSurrounding){
-            this.carSurrounding.x = car.posX
-            this.carSurrounding.y = car.posY
+    updatePlayerMask(playerSurrounding: Phaser.GameObjects.Graphics, player: Bike | Car){
+        this.playerSurrounding = playerSurrounding
+        this.player = player
+        if (this.playerSurrounding){
+            this.playerSurrounding.x = player.posX
+            this.playerSurrounding.y = player.posY
         }
     }
 }

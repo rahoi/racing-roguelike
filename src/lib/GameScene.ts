@@ -1,18 +1,23 @@
-import type ConfigData from "./ConfigData"
+// import classes
+import Phaser from "phaser"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
 import Car from "./Car"
-import texture from "./FowTexture"
-import Phaser from "phaser"
+import Bike from "./Bike"
+
+// import types
+import type ConfigData from "./ConfigData"
 import type {force, dir} from "./forceDirTypes"
 
 export default class GameScene extends Phaser.Scene {
+    playerVehicle: string;
+    image: string;
     mapConfigData: ConfigData;
-    car: Car;
+    player: Bike | Car;
     mapArray: MapArray;
     tileMap: TileMapConstruct;
-    carSprite: Phaser.GameObjects.Sprite;
+    playerSprite: Phaser.GameObjects.Sprite;
     keys: object;
     force: force;
     dir: dir;
@@ -25,8 +30,15 @@ export default class GameScene extends Phaser.Scene {
         this.mapConfigData = mapConfigData;
     }
 
+    init(data: any) {
+        this.playerVehicle = data.id;
+        console.log('player selected: ' + this.playerVehicle);
+        this.image = data.image
+        console.log('vehicle: ' + this.image);
+    }
+
     preload() {
-        this.load.image('car', 'assets/Cars/car_blue_small_3.png')
+        this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
     }
@@ -40,15 +52,21 @@ export default class GameScene extends Phaser.Scene {
         this.texture = new FowTexture(this.mapConfigData);
         this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
 
-        this.car = new Car(this.mapArray, this.mapConfigData)
-        this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.vision = this.texture.carMask(this, this.rt, this.car)
-        this.texture.createCamera(this, this.vision)
+        // create player vehicle class
+        switch (this.playerVehicle) {
+            case 'car': {
+                this.player = new Car(this.mapArray, this.mapConfigData)
+                break;
+            }
+            case 'bike': {
+                this.player = new Bike(this.mapArray, this.mapConfigData)
+                break;
+            }
+        }
         
-
-        // let car = new carCharacter()
-        // add car to pixel x pixel location
-        // add onTrack() function to Car.js
+        this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
+        this.vision = this.texture.playerMask(this, this.rt, this.player)
+        this.texture.createCamera(this, this.vision)
 
         // add input keys
         this.keys = this.input.keyboard.addKeys({
@@ -65,6 +83,7 @@ export default class GameScene extends Phaser.Scene {
         //     'w': false,
         //     's': false,
         // }
+
         this.force = {
             'w': false,
             's': false,
@@ -99,10 +118,10 @@ export default class GameScene extends Phaser.Scene {
             this.dir.d = false
         }
 
-        this.car.updateDir(this.dir)
-        this.carSprite.angle = this.car.angle + 90
-        this.car.updateLoc(this.force)
-        this.carSprite.setPosition(this.car.posX, this.car.posY);
+        this.player.updateDir(this.dir)
+        this.playerSprite.angle = this.player.angle + 90
+        this.player.updateLoc(this.force)
+        this.playerSprite.setPosition(this.player.posX, this.player.posY);
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
     }
