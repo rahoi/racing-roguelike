@@ -46,6 +46,7 @@ export default class GameScene extends Phaser.Scene {
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
         
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+        this.fow.createFow();
         //this.fow.carMask(this, this.car);
 
         //this.fow.carMask(this, this.car, this.camera){
