@@ -3,6 +3,7 @@ import Phaser from "phaser"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
+import oilSpill from "./enemies/oilSpill"
 import Car from "./Car"
 import Bike from "./Bike"
 
@@ -24,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
     texture: FowTexture
+    oil: oilSpill;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -41,6 +43,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
+        
+        // add sprite oil spill
     }
 
     create() {
@@ -65,8 +69,8 @@ export default class GameScene extends Phaser.Scene {
         }
         
         this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
-        this.vision = this.texture.playerMask(this, this.rt, this.player)
-        this.texture.createCamera(this, this.vision)
+        //this.vision = this.texture.playerMask(this, this.rt, this.player)
+        //this.texture.createCamera(this, this.vision)
 
         // add input keys
         this.keys = this.input.keyboard.addKeys({
@@ -124,6 +128,8 @@ export default class GameScene extends Phaser.Scene {
         this.playerSprite.setPosition(this.player.posX, this.player.posY);
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
+
+        this.oil.oilSpillLoc();
     }
 }
 

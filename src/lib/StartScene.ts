@@ -66,6 +66,17 @@ export default class GameScene extends Phaser.Scene {
             })
         })
 
+
+
+        // audio // not sure
+        this.load.audio('jungle', [
+            'assets/audio/jungle.ogg',
+            'assets/audio/jungle.mp3'
+        ]);
+
+
+        
+
         // this.vehicles = this.add.group();
         // this.vehicles.add(this.carSprite)
         // Phaser.Actions.Call(this.vehicles.getChildren(), function(item) {
@@ -77,4 +88,5 @@ export default class GameScene extends Phaser.Scene {
         //     })
         // }, this);
     }
+
 }
