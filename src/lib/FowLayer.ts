@@ -124,7 +124,6 @@ export default class FowLayer{
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
 	car: Car;
 	camera: Phaser.Cameras.Scene2D.CameraManager;
-   // carSurrounding: Phaser.GameObjects.Graphics;
 	tileDimension: number;
     mapHeight: number;
     mapWidth: number;
@@ -143,7 +142,7 @@ export default class FowLayer{
         this.isTileSeen = new Array(n).fill(false).map(() => new Array(n).fill(false)); 
 
 	}
-	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
+	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
         this.scene = scene;
         this.map = map;
        
@@ -152,7 +151,7 @@ export default class FowLayer{
             height: this.mapHeight * this.tileDimension 
         }
         const tileset = this.map.addTilesetImage(this.tileKey)
-        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)	
+        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)
 	}
 
     cameraFow(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap, camera: Phaser.Cameras.Scene2D.CameraManager) {
@@ -176,15 +175,16 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.setAlpha(0.2);  //dark = hide all the tiles
-                
+                tile.setAlpha(0);  //dark = hide all the tiles
+               // tile.tint = 0x404040;
 			}
 		}	
 	}
 
     createFow () {
-        //determine if a tile can be seen through
-        //floor can't block the vision
+        // determining map cell transparency
+        // determine if a tile can be seen through
+        // floor can't block the vision
         let isTransparent = (x:number, y:number) => {
             const tile = this.roadLayer.getTileAt(x, y)
             return tile && !tile.collides;  //anything that cannot collide with the car can be seen through
@@ -198,38 +198,49 @@ export default class FowLayer{
     
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
-        const radius = 4;
+        const radius = 6;
 
     let isVisible = (x:number, y:number): boolean => {
         const tile = this.roadLayer.getTileAt(x, y)
-        if (!tile || tile.alpha === 0) {
+        if (!tile) {
             return false;  
-        } else {
-            this.isTileSeen[x][y] = true;
-            return true;  //tile.alpha > 0
         }
+        return tile.alpha > 0;
     }
 
     let setVisibility = (x:number, y:number) => {
+        this.isTileSeen[x][y] = true;
+        console.log("isSeen x:" + x + " y: " + y); 
         const tile = this.roadLayer.getTileAt(x, y)
         if (!tile) {
             return;
         }
-        //tile.setAlpha(1);
-
         const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
               new Phaser.Math.Vector2(px, py)));
        
-        // tile.tint = 0xffffff
-        // tile.alpha =  alpha      
+       // tile.tint = 0x00ff00 //green
+        
+       //tile.alpha =  1;      
 
-        if (d >= radius && this.isTileSeen[x][y] === true) {
-            tile.setAlpha(0.5);
-        } else {
+        // if (d > radius - 2 && tile.alpha === 1) {  //this.isTileSeen[x][y] == true
+        //     tile.setAlpha(0.3);
+        // } else {
+        //     tile.setAlpha(1);
+        // }
+
+        //const alpha = Math.min(d / 4, 1);
+        // tile.alpha = alpha;
+
+        if (this.isTileSeen[x][y] === true && (d) > (radius/2) ) {
+            const tile = this.roadLayer.getTileAt(x, y);
+            tile.setAlpha(0.4);
+            //tile.tint = 0x404040;
+        }  else {
             tile.setAlpha(1);
         }
+
     }
-    
+
         this.fow.compute(
         px,
         py,
@@ -238,28 +249,6 @@ export default class FowLayer{
         setVisibility)
     }
 }
-
-
-/*
-const n = 10; // or some dynamic value
-const arr2: boolean[][] = new Array(n)
-                                   .fill(false)
-                                   .map(() => 
-                                     new Array(n).fill(false)
-                                   );
-
-arr2[2][4]=true;
-arr2[2][5]=true;
-
-for (var i=0; i< arr2.length; i++) {
-  for (var j=0; j<arr2[i].length; j++) {
-    console.log(i + " " + j + " " + arr2[i][j]);
-  }
-}
-*/
-
-
-
 
 
 
