@@ -56,7 +56,7 @@ export default class FowTexture {
         this.rt = rt
         this.player = player
         
-        this.playerSurrounding = this.scene.make.graphics();
+        //this.playerSurrounding = this.scene.make.graphics();
         this.playerSurrounding.fillStyle(0xffffff);
         this.playerSurrounding.beginPath();
         this.playerSurrounding.arc(0, 0, 100, 0, Math.PI *2);

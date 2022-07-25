@@ -3,7 +3,7 @@ import Phaser from "phaser"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
-import oilSpill from "./enemies/oilSpill"
+import oilSpill from "./hazards/oilSpill"
 import Car from "./Car"
 import Bike from "./Bike"
 
@@ -24,7 +24,7 @@ export default class GameScene extends Phaser.Scene {
     dir: dir;
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture
+    texture: FowTexture;
     oil: oilSpill;
 
     constructor(mapConfigData:ConfigData) {
@@ -45,6 +45,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
         
         // add sprite oil spill
+        this.load.image('oil', 'assets/oilSpill.png');
     }
 
     create() {
@@ -54,7 +55,14 @@ export default class GameScene extends Phaser.Scene {
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
         this.texture = new FowTexture(this.mapConfigData);
-        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
+        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap);
+        this.oil = new oilSpill();
+        this.oil.addOil(this);
+
+        //this.add.image(600, 800, 'oil');
+        
+        //this.add.image(400, 600, 'oil').setOrigin(0.5, 1);
+        this.oil.hazardLoc(this);
 
         // create player vehicle class
         switch (this.playerVehicle) {
@@ -129,7 +137,7 @@ export default class GameScene extends Phaser.Scene {
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
 
-        this.oil.oilSpillLoc();
+       
     }
 }
 
