@@ -1,5 +1,6 @@
 
-///// OPTION 1 - TWO FACES ///////
+///// OPTION 1 ///////
+////// 2 shades ///////
 
 /*
 import { Mrpas } from "mrpas";
@@ -113,6 +114,7 @@ export default class FowLayer{
 
 
 //////////////////// OPTION 2 ////////////
+/////// 3 shades ////////////////////////
 
 
 import { Mrpas } from "mrpas";
@@ -131,6 +133,7 @@ export default class FowLayer{
 	scene: Phaser.Scene;
     fow: Mrpas;
     isTileSeen: boolean[][];
+  //  light: Phaser.GameObjects.Light;
     
 	constructor(mapConfigData: ConfigData) {
         this.tileDimension = mapConfigData.tileDimension;
@@ -151,14 +154,15 @@ export default class FowLayer{
             height: this.mapHeight * this.tileDimension 
         }
         const tileset = this.map.addTilesetImage(this.tileKey)
-        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)
+        this.roadLayer = this.map.createLayer(0, tileset, 0, 0);
 	}
 
     cameraFow(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap, camera: Phaser.Cameras.Scene2D.CameraManager) {
 		this.scene = scene;
 		this.map = map;
-		this.camera = camera
-        
+		this.camera = camera;
+
+    
 		const bounds = new Phaser.Geom.Rectangle(
 			this.map.worldToTileX(this.camera.main.worldView.x),
 			this.map.worldToTileY(this.camera.main.worldView.y),
@@ -175,7 +179,7 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.setAlpha(0);  //dark = hide all the tiles
+                tile.setAlpha(0.1);  //dark = hide all the tiles
                // tile.tint = 0x404040;
 			}
 		}	
@@ -190,6 +194,7 @@ export default class FowLayer{
             return tile && !tile.collides;  //anything that cannot collide with the car can be seen through
         }
         this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
+
     }
     
     calculateFow(scene: Phaser.Scene, car: Car) {
@@ -198,55 +203,41 @@ export default class FowLayer{
     
         const px = this.map.worldToTileX(this.car.posX)
         const py = this.map.worldToTileY(this.car.posY)
-        const radius = 6;
+        const radius = 4;
 
     let isVisible = (x:number, y:number): boolean => {
         const tile = this.roadLayer.getTileAt(x, y)
         if (!tile) {
             return false;  
         }
-        return tile.alpha > 0;
+        return true;
     }
 
     let setVisibility = (x:number, y:number) => {
         this.isTileSeen[x][y] = true;
         console.log("isSeen x:" + x + " y: " + y); 
-        const tile = this.roadLayer.getTileAt(x, y)
+        const tile = this.roadLayer.getTileAt(x, y);
         if (!tile) {
             return;
         }
         const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
               new Phaser.Math.Vector2(px, py)));
-       
-       // tile.tint = 0x00ff00 //green
-        
-       //tile.alpha =  1;      
 
-        // if (d > radius - 2 && tile.alpha === 1) {  //this.isTileSeen[x][y] == true
-        //     tile.setAlpha(0.3);
-        // } else {
-        //     tile.setAlpha(1);
-        // }
-
-        //const alpha = Math.min(d / 4, 1);
-        // tile.alpha = alpha;
-
-        if (this.isTileSeen[x][y] === true && (d) > (radius/2) ) {
+        if (this.isTileSeen[x][y] === true  && d > radius/2) {
             const tile = this.roadLayer.getTileAt(x, y);
-            tile.setAlpha(0.4);
+            tile.setAlpha(0.5);
             //tile.tint = 0x404040;
         }  else {
             tile.setAlpha(1);
         }
-
     }
 
-        this.fow.compute(
-        px,
-        py,
-        radius, 
-        isVisible,
-        setVisibility)
+    this.fow.compute(
+    px,
+    py,
+    radius, 
+    isVisible,
+    setVisibility);
     }
 }
 
