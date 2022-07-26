@@ -1,3 +1,3 @@
-export type force = { w: boolean, s: boolean };
+export type force = { gas: boolean, brake: boolean };
 
-export type dir = { a: boolean, d: boolean };
+export type dir = { left: boolean, right: boolean };

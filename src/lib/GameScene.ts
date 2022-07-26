@@ -3,9 +3,7 @@ import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
 import Car from "./Car"
-import texture from "./FowTexture"
 import Phaser from "phaser"
-import type {force, dir} from "./forceDirTypes"
 
 export default class GameScene extends Phaser.Scene {
     mapConfigData: ConfigData;
@@ -14,11 +12,23 @@ export default class GameScene extends Phaser.Scene {
     tileMap: TileMapConstruct;
     carSprite: Phaser.GameObjects.Sprite;
     keys: object;
-    force: force;
-    dir: dir;
+
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture
+    texture: FowTexture;
+
+    gasKey: Phaser.Input.Keyboard.Key;
+    brakeKey: Phaser.Input.Keyboard.Key;
+    rightKey: Phaser.Input.Keyboard.Key;
+    leftKey: Phaser.Input.Keyboard.Key;
+
+    gas: number
+    brake: number
+    right: number
+    left: number
+
+    angleDiff: number
+    carAngle: number
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -42,23 +52,19 @@ export default class GameScene extends Phaser.Scene {
 
         this.car = new Car(this.mapArray, this.mapConfigData)
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
+        this.carSprite.angle = 90
         this.vision = this.texture.carMask(this, this.rt, this.car)
         this.texture.createCamera(this, this.vision)
         
-
         // let car = new carCharacter()
         // add car to pixel x pixel location
         // add onTrack() function to Car.js
 
         // add input keys
-        this.keys = this.input.keyboard.addKeys({
-            gas: Phaser.Input.Keyboard.KeyCodes.SPACE,
-            left: Phaser.Input.Keyboard.KeyCodes.A,
-            brake: Phaser.Input.Keyboard.KeyCodes.S,
-            right: Phaser.Input.Keyboard.KeyCodes.D,
-        })
-
-        // let keys = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.gasKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.brakeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
 
         // type force = { w: boolean, s: boolean }
         // this.force = <force>{
@@ -66,44 +72,59 @@ export default class GameScene extends Phaser.Scene {
         //     's': false,
         // }
 
-        this.force = {
-            'gas': false,
-            'brake': false,
-        }
+        // this.force = {
+        //     'gas': false,
+        //     'brake': false
+        // }
 
-        this.dir = {
-            'left': false,
-            'right': false
-        }
+        // this.dir = {
+        //     'left': false,
+        //     'right': false
+        // }
     }
     
     update() {
         // update which forces are at play
-        if (this.keys.gas.isDown) {
-            this.force.gas = true
-        } else if (this.keys.gas.isUp) {
-            this.force.gas = false
+        if (this.gasKey.isDown) {
+            this.gas = 1
+        } else if (this.gasKey.isUp) {
+            this.gas = 0
         }
-        if (this.keys.brake.isDown) {
-            this.force.brake = true
-        } else if (this.keys.brake.isUp) {
-            this.force.brake = false
+        if (this.brakeKey.isDown) {
+            this.brake = 1
+        } else if (this.brakeKey.isUp) {
+            this.brake = 0
         }
-        if (this.keys.left.isDown) {
-            this.dir.left = true
-        } else if (this.keys.left.isUp) {
-            this.dir.left = false
+        if (this.leftKey.isDown) {
+            this.left = 1
+        } else if (this.leftKey.isUp) {
+            this.left = 0
         }
-        if (this.keys.right.isDown) {
-            this.dir.right = true
-        } else if (this.keys.right.isUp) {
-            this.dir.right = false
+        if (this.rightKey.isDown) {
+            this.right = 1
+        } else if (this.rightKey.isUp) {
+            this.right = 0
         }
 
-        this.car.updateDir(this.dir)
-        this.carSprite.angle = this.car.angle + 90
-        this.car.updateLoc(this.force)
-        this.carSprite.setPosition(this.car.posX, this.car.posY);
+
+        this.carAngle = this.car.getAngle()
+        this.car.updateLoc(this.gas, this.brake, this.left, this.right)
+        this.angleDiff = this.carAngle - this.car.getAngle()
+
+        this.carSprite.setAngle(this.carSprite.angle + this.angleDiff)
+        this.carSprite.setPosition(this.car.getLocX(), (-1) * this.car.getLocY());
+        
+        
+
+
+
+        // this.car.updateDir(this.dir)
+        // this.carSprite.angle -= this.car.angleDiff
+        // console.log("phaser angle: " + this.carSprite.angle)
+        // this.car.updateLoc(this.force)        
+        // this.carSprite.setPosition(this.car.posX, this.car.posY);
+
+
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
     }
