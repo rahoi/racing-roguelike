@@ -22,12 +22,11 @@ const config: Phaser.Types.Core.GameConfig =
     scale: {
         parent: "game",
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_HORIZONTALLY
-        ,
+        autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
         width: tileMapWidth * tileDimension,
         height: tileMapHeight * tileDimension
     },
-    //backgroundColor: backgroundColor, 
+    backgroundColor: backgroundColor, 
     // parent: 'gameContainer',
     // transparent: true,
     scene: [startScene, gameScene],

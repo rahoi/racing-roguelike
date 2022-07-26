@@ -3,7 +3,6 @@ import Phaser from "phaser"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
-import oilSpill from "./hazards/oilSpill"
 import Car from "./Car"
 import Bike from "./Bike"
 
@@ -25,7 +24,7 @@ export default class GameScene extends Phaser.Scene {
     dir: dir;
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    fow: FowLayer
+    fow: FowLayer;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
