@@ -8,6 +8,7 @@ export default class TileMapConstruct {
     mapArray: number[][];
     tileMap: Phaser.Tilemaps.Tilemap;
 
+
     constructor(scene:Phaser.Scene, map: MapArray, mapConfigData: ConfigData) {
         this.mapArray = map.mapArray
 
@@ -25,9 +26,10 @@ export default class TileMapConstruct {
         this.tileMap = scene.make.tilemap(mapConfig);
         // const tileset = map.addTilesetImage(mapData.tiles);
         // this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+
     }
 
-    // getTileMap() {
+    // get TileMap() {
     //     return this.tileMap;
     // }
 }

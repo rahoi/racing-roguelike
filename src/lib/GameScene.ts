@@ -10,6 +10,7 @@ import Bike from "./Bike"
 // import types
 import type ConfigData from "./ConfigData"
 import type {force, dir} from "./forceDirTypes"
+import FowLayer from "./FowLayer"
 
 export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
@@ -24,8 +25,7 @@ export default class GameScene extends Phaser.Scene {
     dir: dir;
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture;
-    oil: oilSpill;
+    fow: FowLayer
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -54,15 +54,12 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-        this.texture = new FowTexture(this.mapConfigData);
-        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap);
-        this.oil = new oilSpill();
-        this.oil.addOil(this);
-
-        //this.add.image(600, 800, 'oil');
+    
+        this.fow = new FowLayer(this.mapConfigData);
+        this.fow.mapLayer(this, this.tileMap.tileMap);   
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+        this.fow.createFow();
         
-        //this.add.image(400, 600, 'oil').setOrigin(0.5, 1);
-        this.oil.hazardLoc(this);
 
         // create player vehicle class
         switch (this.playerVehicle) {
@@ -77,9 +74,7 @@ export default class GameScene extends Phaser.Scene {
         }
         
         this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
-        //this.vision = this.texture.playerMask(this, this.rt, this.player)
-        //this.texture.createCamera(this, this.vision)
-
+       
         // add input keys
         this.keys = this.input.keyboard.addKeys({
             w: Phaser.Input.Keyboard.KeyCodes.W,
@@ -106,6 +101,7 @@ export default class GameScene extends Phaser.Scene {
             'd': false
         }
     }
+
     
     update() {
         // update which forces are at play
@@ -136,9 +132,7 @@ export default class GameScene extends Phaser.Scene {
         this.playerSprite.setPosition(this.player.posX, this.player.posY);
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
-
-       
+        this.fow.calculateFow(this, this.player);
+  
     }
 }
-
-// export default gameScene
