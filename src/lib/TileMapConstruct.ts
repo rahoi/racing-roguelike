@@ -1,6 +1,5 @@
 import type ConfigData from "./ConfigData"
 import type MapArray from "./MapArray"
-// import TrackGeneration from "./TrackGeneration"
 
 export default class TileMapConstruct {
     scene: Phaser.Scene;
@@ -23,12 +22,8 @@ export default class TileMapConstruct {
         }
 
         this.tileMap = scene.make.tilemap(mapConfig);
-        // const tileset = map.addTilesetImage(mapData.tiles);
-        // this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+        const tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
+        const roadLayer = this.tileMap.createLayer(0, tileset, 0, 0); 
     }
 
-    // getTileMap() {
-    //     return this.tileMap;
-    // }
 }
-// export default tileMapConstruct

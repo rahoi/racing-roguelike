@@ -37,13 +37,13 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-        this.texture = new FowTexture(this.mapConfigData);
-        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
+        // this.texture = new FowTexture(this.mapConfigData);
+        // this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
 
         this.car = new Car(this.mapArray, this.mapConfigData)
         this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.vision = this.texture.carMask(this, this.rt, this.car)
-        this.texture.createCamera(this, this.vision)
+        // this.vision = this.texture.carMask(this, this.rt, this.car)
+        // this.texture.createCamera(this, this.vision)
         
 
         // let car = new carCharacter()

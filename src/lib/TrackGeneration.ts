@@ -8,6 +8,7 @@ import catmulRomInterpolation from "catmull-rom-interpolator"
 export default class TrackGeneration {
     mapArray:number[][];
     firstPt:number[];
+    trackArray:number[][];
     margin:number;
     borderWidth:number; // y
     borderHeight:number; // x
@@ -42,23 +43,11 @@ export default class TrackGeneration {
         //push apart again, so we can stabilize the points distances. 
         let adjustedConvexPts:number[][] = this.adjustConvexity(convexHull);
 
-        // console.log("after convexity");
-        // for (let i = 0; i < adjustedConvexPts.length; i++) {
-        //     console.log("(", adjustedConvexPts[i][0], ", ", adjustedConvexPts[i][1], ")");
-        // }
-
-        // issues with looping after adjusting convexity if movePtsApart
-
         numPtMoves = 3;
         distVal = 5;
         for(let i = 0; i < numPtMoves; i++) {  
             adjustedConvexPts = this.movePtsApart(adjustedConvexPts, distVal);  
         } 
-
-        // console.log("after move");
-        // for (let i = 0; i < adjustedConvexPts.length; i++) {
-        //     console.log("(", adjustedConvexPts[i][0], ", ", adjustedConvexPts[i][1], ")");
-        // } 
 
         let fixedAnglePts:number[][] = adjustedConvexPts;
         for(let i = 0; i < 1; i++) {
@@ -72,36 +61,61 @@ export default class TrackGeneration {
         let trackCoordinates:number[][] = this.fillInTrack(splinePts);
         // let loop:number[][] = this.fillInLoop(fixedAnglePts);
 
-        // fill in mapArray with dirt tile
-        for (let i = 0; i < this.mapHeight; i++) {
-            let temp:number[] = [];
-            for (let j = 0; j < this.mapWidth; j++) {
-                temp.push(162);
-            }
-            this.mapArray.push(temp)
-        }
+        // fill in mapArray with grass tiles
+        this.fillGrassTiles(trackCoordinates);
 
+        this.firstPt = trackCoordinates[0];
+        this.trackArray = trackCoordinates;
+
+        let finish_placed:boolean = false;
         let prev:number[] = trackCoordinates[0];
         let curr:number[];
         let next:number[];
+        let prevprev:number[] = trackCoordinates[trackCoordinates.length - 2];
+        let nextnext:number[];
         for (let i = 1; i < trackCoordinates.length; i++) {
             curr = trackCoordinates[i];
             next = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 1] : trackCoordinates[1];
+            nextnext = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 2] : trackCoordinates[2];
 
-            this.determineTileToPlace(prev, curr, next);
-
+            // if (i < trackCoordinates.length - 1) {
+            //     nextnext = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 2] : trackCoordinates[2];
+            // }
+            if (finish_placed == false) {
+                if (prev[0] < curr[0] &&  curr[0] < next[0]) {
+                    this.mapArray[curr[0]][curr[1]] = terrainArray.finish_right;
+                    finish_placed = true;
+                    console.log("right");
+                    console.log(i);
+                } else if (prev[0] > curr[0] && curr[0] > next[0]) {
+                    this.mapArray[curr[0]][curr[1]] = terrainArray.finish_left;
+                    finish_placed = true;
+                    console.log("left");
+                    console.log(i);
+                } else if (prev[1] < curr[1] && curr[1] < next[1]) {
+                    this.mapArray[curr[0]][curr[1]] = terrainArray.finish_up;
+                    finish_placed = true;
+                    console.log("down");
+                    console.log(i);
+                } else if (prev[1] > curr[1] && curr[1] > next[1]) {
+                    this.mapArray[curr[0]][curr[1]] = terrainArray.finish_down;
+                    finish_placed = true;
+                    console.log("up");
+                    console.log(i);
+                } else {
+                    this.determineTileToPlace(prevprev, prev, curr, next, nextnext);
+                }
+            } else {
+                this.determineTileToPlace(prevprev, prev, curr, next, nextnext);
+            }
+            
+            prevprev = prev;
             prev = curr;
-            // this.mapArray[loop[i][0]][loop[i][1]] = 252;
-            // this.mapArray[splinePts[i][0]][splinePts[i][1]] = 221
         }
-
-        this.firstPt = trackCoordinates[0];
 
         for (let i = 0; i < trackCoordinates.length; i++) {
                 console.log("(", trackCoordinates[i][0], ", ", trackCoordinates[i][1], ")");
         } 
-        // console.log(JSON.stringify(trackCoordinates));
-        // console.log(JSON.stringify(this.mapArray))
     }
 
     generateRandomPoints() {
@@ -562,6 +576,7 @@ export default class TrackGeneration {
         let shortestSnake = Infinity;
         let startIndex = -1;
         let endIndex = -1;
+        let reverse:boolean = false;
 
         for (let i = 0; i < trackCoordinates.length; i++) {
             let stringKey:string = JSON.stringify(trackCoordinates[i]);
@@ -572,20 +587,51 @@ export default class TrackGeneration {
                     startIndex = i;
                 } else if (startIndex != -1 && endIndex == -1) {
                     endIndex = i;
-                    shortestSnake = Math.min(endIndex - startIndex - 1, trackCoordinates.length - endIndex + startIndex);
+                    shortestSnake = Math.min(endIndex - startIndex - 1, trackCoordinates.length - endIndex + startIndex - 1);
+                    if (shortestSnake == trackCoordinates.length - endIndex + startIndex) {
+                        endIndex = startIndex;
+                        startIndex = i;
+                        reverse = true;
+                    }
+                } else {
+                    console.log(i)
+                    let tempStart = Math.min(i - startIndex - 1, trackCoordinates.length - i + startIndex - 1);
+                    let tempEnd = Math.min(endIndex - i - 1, trackCoordinates.length - endIndex + i - 1);
+                    let temp = Math.min(tempStart, tempEnd);
+
+                    shortestSnake = Math.min(temp, shortestSnake);
+
+                    if (shortestSnake == temp) {
+                        if (temp == tempStart) {
+                            endIndex = i;
+                            if (temp == trackCoordinates.length - i + startIndex - 1) {
+                                endIndex = startIndex;
+                                startIndex = i;
+                                reverse = true;
+                            }
+                        } else {
+                            startIndex = i;
+                            if (temp == trackCoordinates.length - endIndex + i - 1) {
+                                endIndex = startIndex;
+                                startIndex = i;
+                                reverse = true;
+                            }
+                        }
+                    }
                 }
-
-                // if (startIndex != -1 && endIndex!= -1) {
-
-                //     shortestSnake = Math.min(shortestSnake, );
-                // }
             }
 
         }
 
-        trackCoordinates.splice(startIndex, shortestSnake);
-        console.log(trackCoordinates);
-        console.log(trackCoordinates.length);
+        // console.log(snakingMap)
+        // console.log(trackCoordinates[startIndex]);
+        // console.log(trackCoordinates[endIndex]);
+        // console.log(shortestSnake);
+        
+        trackCoordinates.splice(startIndex+ 1, shortestSnake);
+        
+        // console.log(trackCoordinates);
+        // console.log(trackCoordinates.length);
     }
 
 
@@ -595,81 +641,210 @@ export default class TrackGeneration {
         let up:number[] = [coordinate[0] - 1, coordinate[1]];
         let down:number[] = [coordinate[0] + 1, coordinate[1]];
         let left:number[] = [coordinate[0], coordinate[1] - 1];
-        let right:number[] = [coordinate[0] + 1, coordinate[1] + 1];
+        let right:number[] = [coordinate[0], coordinate[1] + 1];
 
         neighbors.push(up, down, left, right);
 
         return neighbors;
     }
 
-    determineTileToPlace(prev:number[], curr:number[], next:number[]) {
-        if (prev[0] == curr[0]) {
-            if (next[0] == curr[0]) {
-                this.fillHorizontal(curr);
-            }
-            else if (prev[1] < curr[1]) {
-                if (next[0] < curr[0]) {
-                    this.fillSE(curr);
+    fillGrassTiles(trackCoordinates:number[][]) {
+        for (let i = 0; i < this.mapHeight; i++) {
+            let temp:number[] = [];
+            for (let j = 0; j < this.mapWidth; j++) {
+                if (i == 0 && (j != 0 && j != this.mapWidth - 1)) {
+                    temp.push(terrainArray.grass_up);
                 }
-                else if (next[0] > curr[0]) {
-                    this.fillNE(curr);
-                }
+                
+                 else if (i == this.mapHeight - 1 && (j != 0 && j != this.mapWidth - 1)) {
+                    temp.push(terrainArray.grass_down);
+                } else {
+
+                    if (j == 0) {
+                        if (i == 0) {
+                            temp.push(terrainArray.grass_NW);
+                        } else if (i == this.mapHeight - 1) {
+                            temp.push(terrainArray.grass_SW);
+                        } else {
+                            temp.push(terrainArray.grass_left);
+                        }
+                    } else if (j == this.mapWidth - 1) {
+                        if (i == 0) {
+                            temp.push(terrainArray.grass_NE);
+                        } else if (i == this.mapHeight - 1) {
+                            temp.push(terrainArray.grass_SE);
+                        } else {
+                            temp.push(terrainArray.grass_right);
+                        }
+                    } else {
+                    temp.push(terrainArray.grass); 
+                    }  
+                }              
             }
-            else if (prev[1] > curr[1]) {
-                if (next[0] < curr[0]) {
-                    this.fillSW(curr);
-                }
-                else if (next[0] > curr[0]) {
-                    this.fillNW(curr);
-                } 
-            }
+            this.mapArray.push(temp)
+        }
+    }
+
+    determineTileToPlace(prevprev: number[], prev:number[], curr:number[], next:number[], nextnext:number[]) {
+        // if (curr == this.trackArray[1]) {
+        //     this.mapArray[this.trackArray[1][0]][this.trackArray[1][1]] = terrainArray.finish_down;
+        // }
+
+        // filling straight tiles
+        if (prev[1] < curr[1] && next[1] > curr[1]) {
+            this.mapArray[curr[0]][curr[1]] = terrainArray.straight_up;
+        } 
+        else if (prev[1] > curr[1] && next[1] < curr[1]) {
+            this.mapArray[curr[0]][curr[1]] = terrainArray.straight_down;
+        } 
+        else if (prev[0] > curr[0] && next[0] < curr[0]) {
+            this.mapArray[curr[0]][curr[1]] = terrainArray.straight_left;
+        } 
+        else if (prev[0] < curr[0] && next[0] > curr[0]) {
+            this.mapArray[curr[0]][curr[1]] = terrainArray.straight_right;
         }
 
-        else if (prev[1] == curr[1]) {
-            if (next[1] == curr[1]) {
-                this.fillVertical(curr);
-            }
-            else if (prev[0] < curr[0]) {
-                if (next[1] < curr[1]) {
-                    this.fillSE(curr);
-                }
-                else if (next[1] > curr[1]) {
-                    this.fillSW(curr);
-                }
-            }
-            else if (prev[0] > curr[0]) {
-                if (next[1] < curr[1]) {
-                    this.fillNE(curr);
-                }
-                else if (next[1] > curr[1]) {
-                    this.fillNW(curr);
-                } 
+        // filling diagonal/corner tiles
+        else if ((prev[1] < curr[1] && next[0] < curr[0]) || (next[1] < curr[1] && prev[0] < curr[0])) {
+            let diag_SE_array:number[] = [terrainArray.straight_left, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.finish_left, terrainArray.diag_NW, terrainArray.finish_up];
+
+            if (diag_SE_array.includes(this.mapArray[prev[0]][prev[1]])) {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NW;
+            } else {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SE;
             }
         }
+        else if ((prev[0] < curr[0] && next[1] > curr[1]) || (next[0] < curr[0] && prev[1] > curr[1])) {
+            let diag_SW_array:number[] = [terrainArray.straight_right, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.corner_SE, terrainArray.diag_NE];
+
+            if (diag_SW_array.includes(this.mapArray[prev[0]][prev[1]])) {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NE;
+            } else {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SW;
+            }        
+        }
+        else if ((prev[1] > curr[1] && next[0] > curr[0]) || (next[1] > curr[1] && prev[0] > curr[0])) {
+            let diag_NW_array:number[] = [terrainArray.straight_down, terrainArray.straight_up, terrainArray.diag_SE];
+
+            if (diag_NW_array.includes(this.mapArray[prev[0]][prev[1]])) {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SE;
+            } else {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NW;
+            }        
+        }
+        else if ((prev[0] > curr[0] && next[1] < curr[1]) || (next[0] > curr[0] && prev[1] < curr[1])) {
+            let diag_NE_array:number[] = [terrainArray.straight_down, terrainArray.straight_left, terrainArray.corner_NW, terrainArray.diag_SW, terrainArray.finish_up];
+
+            if (diag_NE_array.includes(this.mapArray[prev[0]][prev[1]])) {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SW;
+            } else {
+                this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
+            }        
+        }
+
     }
 
     fillHorizontal(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.horizontal;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.straight_down;
     }
 
     fillVertical(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.vertical;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.straight_left;
     }
 
     fillNW(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.NW;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_NW;
     }
 
     fillNE(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.NE;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_NE;
     }
 
     fillSE(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.SE;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_SE;
     }
 
     fillSW(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.SW;
+        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_SW;
     }
 
 }
+
+
+        // if (prev[0] == curr[0]) {
+        //     // if (next[0] == curr[0]) {
+        //     //     this.fillHorizontal(curr);
+        //     // }
+        //     // else 
+        //     if (prev[1] < curr[1]) {
+        //         if (next[0] < curr[0]) {
+        //             this.fillSE(curr);
+        //         }
+        //         else if (next[0] > curr[0]) {
+        //             this.fillNE(curr);
+        //         }
+        //     }
+        //     else if (prev[1] > curr[1]) {
+        //         if (next[0] < curr[0]) {
+        //             this.fillSW(curr);
+        //         }
+        //         else if (next[0] > curr[0]) {
+        //             this.fillNW(curr);
+        //         } 
+        //     }
+        // }
+
+        // else if (prev[1] == curr[1]) {
+        //     // if (next[1] == curr[1]) {
+        //     //     this.fillVertical(curr);
+        //     // }
+        //     // else 
+        //     if (prev[0] < curr[0]) {
+        //         if (next[1] < curr[1]) {
+        //             this.fillSE(curr);
+        //         }
+        //         else if (next[1] > curr[1]) {
+        //             this.fillSW(curr);
+        //         }
+        //     }
+        //     else if (prev[0] > curr[0]) {
+        //         if (next[1] < curr[1]) {
+        //             this.fillNE(curr);
+        //         }
+        //         else if (next[1] > curr[1]) {
+        //             this.fillNW(curr);
+        //         } 
+        //     }
+        // }
+
+
+// determineTileToPlace(){}
+        // else if (prev[1] < curr[1] && next[0] < curr[0] || next[1] < curr[1] && prev[0] < curr[0]) {
+        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_left) {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NW;
+        //     } else {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NW;
+        //     }
+        // }
+        // else if (prev[0] < curr[0] && next[1] > curr[1] || next[0] < curr[0] && prev[1] > curr[1]) {
+
+        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_right) {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
+        //     } else {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NE;
+        //     }        
+        // }
+        // else if (prev[1] > curr[1] && next[0] > curr[0] || next[1] > curr[1] && prev[0] > curr[0]) {
+        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_down) {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SE;
+        //     } else {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SE;
+        //     }        
+        // }
+        // else if (prev[0] > curr[0] && next[1] < curr[1] || prev[0] > curr[0] && next[1] < curr[1]) {
+        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_up) {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SW;
+        //     } else {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SW;
+        //     }        
+        // } 

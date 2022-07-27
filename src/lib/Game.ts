@@ -3,10 +3,10 @@ import GameScene from "./GameScene"
 import Phaser from "phaser"
 
 const tileDimension = 128;
-const tileMapHeight = 100;
-const tileMapWidth = 100;
-const backgroundColor = '#bc8044';
-const tilesetImageSheet = '/assets/spritesheet_tiles.png';
+const tileMapHeight = 40;
+const tileMapWidth = 40;
+const backgroundColor = '#27ae60';  // '#bc8044': dirt brown
+const tilesetImageSheet = '/assets/road_spritesheet.png';
 const tileKey = 'tiles;'
 
 let mapConfigData = new ConfigData(backgroundColor, tileDimension, tileMapHeight, tileMapWidth, tilesetImageSheet, tileKey);
