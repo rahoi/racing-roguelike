@@ -8,6 +8,7 @@ import catmulRomInterpolation from "catmull-rom-interpolator"
 export default class TrackGeneration {
     mapArray:number[][];
     firstPt:number[];
+    startPt:number[];
     trackArray:number[][];
     margin:number;
     borderWidth:number; // y
@@ -50,7 +51,9 @@ export default class TrackGeneration {
         } 
 
         let fixedAnglePts:number[][] = adjustedConvexPts;
-        for(let i = 0; i < 1; i++) {
+
+        numPtMoves = 1;
+        for(let i = 0; i < numPtMoves; i++) {
             fixedAnglePts = this.fixTrackAngles(fixedAnglePts); 
             
             // adjustedPts = this.movePtsApart(adjustedPts);  
@@ -68,40 +71,55 @@ export default class TrackGeneration {
         this.trackArray = trackCoordinates;
 
         let finish_placed:boolean = false;
-        let prev:number[] = trackCoordinates[0];
+        let prev:number[];
         let curr:number[];
         let next:number[];
-        let prevprev:number[] = trackCoordinates[trackCoordinates.length - 2];
+        let prevprev:number[];
         let nextnext:number[];
+        console.log(prev, prevprev)
         for (let i = 1; i < trackCoordinates.length; i++) {
+            prevprev = (i == 1) ? trackCoordinates[trackCoordinates.length - 2] : trackCoordinates[i - 2];
+            prev = trackCoordinates[i - 1];
             curr = trackCoordinates[i];
             next = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 1] : trackCoordinates[1];
-            nextnext = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 2] : trackCoordinates[2];
+
+            if (i < trackCoordinates.length - 2) {
+                nextnext = trackCoordinates[i + 2];
+            } else if (i == trackCoordinates.length - 2) {
+                nextnext = trackCoordinates[1];
+            } else {
+                nextnext = trackCoordinates[2];
+            }
+            // nextnext = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 2] : trackCoordinates[2];
 
             // if (i < trackCoordinates.length - 1) {
             //     nextnext = (i < trackCoordinates.length - 1) ? trackCoordinates[i + 2] : trackCoordinates[2];
             // }
             if (finish_placed == false) {
-                if (prev[0] < curr[0] &&  curr[0] < next[0]) {
+                if (prevprev[0] < prev[0] && prev[0] < curr[0] &&  curr[0] < next[0]) {
                     this.mapArray[curr[0]][curr[1]] = terrainArray.finish_right;
+                    this.startPt = trackCoordinates[i - 1];
                     finish_placed = true;
-                    console.log("right");
                     console.log(i);
-                } else if (prev[0] > curr[0] && curr[0] > next[0]) {
+
+                } else if (prevprev[0] > prev[0] && prev[0] > curr[0] && curr[0] > next[0]) {
                     this.mapArray[curr[0]][curr[1]] = terrainArray.finish_left;
+                    this.startPt = trackCoordinates[i - 1];
                     finish_placed = true;
-                    console.log("left");
                     console.log(i);
-                } else if (prev[1] < curr[1] && curr[1] < next[1]) {
+
+                } else if (prevprev[1] < prev[1] && prev[1] < curr[1] && curr[1] < next[1]) {
                     this.mapArray[curr[0]][curr[1]] = terrainArray.finish_up;
+                    this.startPt = trackCoordinates[i - 1];
                     finish_placed = true;
-                    console.log("down");
                     console.log(i);
-                } else if (prev[1] > curr[1] && curr[1] > next[1]) {
+
+                } else if (prevprev[1] > prev[1] && prev[1] > curr[1] && curr[1] > next[1]) {
                     this.mapArray[curr[0]][curr[1]] = terrainArray.finish_down;
+                    this.startPt = trackCoordinates[i - 1];
                     finish_placed = true;
-                    console.log("up");
                     console.log(i);
+
                 } else {
                     this.determineTileToPlace(prevprev, prev, curr, next, nextnext);
                 }
@@ -114,7 +132,7 @@ export default class TrackGeneration {
         }
 
         for (let i = 0; i < trackCoordinates.length; i++) {
-                console.log("(", trackCoordinates[i][0], ", ", trackCoordinates[i][1], ")");
+                console.log("(", trackCoordinates[i][0], ", ", trackCoordinates[i][1], ")  --> ", i);
         } 
     }
 
@@ -200,7 +218,7 @@ export default class TrackGeneration {
     adjustConvexity(points:number[][]) {
         let adjustedPoints:number[][] = [];  
         let displacement:number[] = [];  
-        const difficulty:number = 1; //the closer the value is to 0, the harder the track should be 
+        const difficulty:number = 0.5; //the closer the value is to 0, the harder the track should be 
         const maxDisp:number = 10;
 
 
@@ -689,6 +707,7 @@ export default class TrackGeneration {
         // if (curr == this.trackArray[1]) {
         //     this.mapArray[this.trackArray[1][0]][this.trackArray[1][1]] = terrainArray.finish_down;
         // }
+        let prev_array:number[] = [];
 
         // filling straight tiles
         if (prev[1] < curr[1] && next[1] > curr[1]) {
@@ -706,70 +725,65 @@ export default class TrackGeneration {
 
         // filling diagonal/corner tiles
         else if ((prev[1] < curr[1] && next[0] < curr[0]) || (next[1] < curr[1] && prev[0] < curr[0])) {
-            let diag_SE_array:number[] = [terrainArray.straight_left, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.finish_left, terrainArray.diag_NW, terrainArray.finish_up];
+            prev_array = [terrainArray.straight_left, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.corner_NW, terrainArray.diag_NW, terrainArray.finish_up, terrainArray.finish_left];
 
-            if (diag_SE_array.includes(this.mapArray[prev[0]][prev[1]])) {
+            if (prev_array.includes(this.mapArray[prev[0]][prev[1]])) {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NW;
             } else {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SE;
             }
         }
         else if ((prev[0] < curr[0] && next[1] > curr[1]) || (next[0] < curr[0] && prev[1] > curr[1])) {
-            let diag_SW_array:number[] = [terrainArray.straight_right, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.corner_SE, terrainArray.diag_NE];
+            prev_array = [terrainArray.straight_right, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.corner_SE, terrainArray.diag_NE, terrainArray.finish_right];
 
-            if (diag_SW_array.includes(this.mapArray[prev[0]][prev[1]])) {
+            if (prev_array.includes(this.mapArray[prev[0]][prev[1]])) {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NE;
             } else {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SW;
             }        
         }
         else if ((prev[1] > curr[1] && next[0] > curr[0]) || (next[1] > curr[1] && prev[0] > curr[0])) {
-            let diag_NW_array:number[] = [terrainArray.straight_down, terrainArray.straight_up, terrainArray.diag_SE];
+            prev_array = [terrainArray.straight_down, terrainArray.straight_up, terrainArray.corner_SW, terrainArray.corner_SE, terrainArray.diag_SE];
 
-            if (diag_NW_array.includes(this.mapArray[prev[0]][prev[1]])) {
+            if (prev_array.includes(this.mapArray[prev[0]][prev[1]])) {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SE;
             } else {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NW;
             }        
         }
         else if ((prev[0] > curr[0] && next[1] < curr[1]) || (next[0] > curr[0] && prev[1] < curr[1])) {
-            let diag_NE_array:number[] = [terrainArray.straight_down, terrainArray.straight_left, terrainArray.corner_NW, terrainArray.diag_SW, terrainArray.finish_up];
+            prev_array = [terrainArray.straight_down, terrainArray.straight_left, terrainArray.corner_NW, terrainArray.corner_SE, terrainArray.diag_SW, terrainArray.finish_right];
 
-            if (diag_NE_array.includes(this.mapArray[prev[0]][prev[1]])) {
+            if (prev_array.includes(this.mapArray[prev[0]][prev[1]])) {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SW;
             } else {
                 this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
             }        
         }
 
-    }
+        // fill with dirt
+        // else {
+        //     this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
+        // }
 
-    fillHorizontal(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.straight_down;
-    }
+        // if (prev[1] < curr[1] && next[0] > curr[0]) {
+        //     if (prevprev[0] < prev[0]) {
+        //         this.mapArray[prev[0]][prev[1]] = terrainArray.y_NE[0];
+        //     } else {
+        //         this.mapArray[prev[0]][prev[1]] = terrainArray.straight_up;
+        //     }
 
-    fillVertical(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.straight_left;
-    }
-
-    fillNW(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_NW;
-    }
-
-    fillNE(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_NE;
-    }
-
-    fillSE(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_SE;
-    }
-
-    fillSW(mapCoord:number[]) {
-        this.mapArray[mapCoord[0]][mapCoord[1]] = terrainArray.diag_SW;
+        //     if (nextnext[0] > next[0]) {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.y_NE[2];
+        //         this.mapArray[next[0]][next[1]] = terrainArray.y_NE[3];
+        //     } else {
+        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
+        //         this.mapArray[next[0]][next[1]] = terrainArray.corner_NE;
+        //     }
+        // }
     }
 
 }
-
 
         // if (prev[0] == curr[0]) {
         //     // if (next[0] == curr[0]) {
@@ -816,35 +830,3 @@ export default class TrackGeneration {
         //         } 
         //     }
         // }
-
-
-// determineTileToPlace(){}
-        // else if (prev[1] < curr[1] && next[0] < curr[0] || next[1] < curr[1] && prev[0] < curr[0]) {
-        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_left) {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NW;
-        //     } else {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NW;
-        //     }
-        // }
-        // else if (prev[0] < curr[0] && next[1] > curr[1] || next[0] < curr[0] && prev[1] > curr[1]) {
-
-        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_right) {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_NE;
-        //     } else {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_NE;
-        //     }        
-        // }
-        // else if (prev[1] > curr[1] && next[0] > curr[0] || next[1] > curr[1] && prev[0] > curr[0]) {
-        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_down) {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SE;
-        //     } else {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SE;
-        //     }        
-        // }
-        // else if (prev[0] > curr[0] && next[1] < curr[1] || prev[0] > curr[0] && next[1] < curr[1]) {
-        //     if (this.mapArray[prev[0]][prev[1]] == terrainArray.straight_up) {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.diag_SW;
-        //     } else {
-        //         this.mapArray[curr[0]][curr[1]] = terrainArray.corner_SW;
-        //     }        
-        // } 

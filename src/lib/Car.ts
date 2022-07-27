@@ -29,8 +29,8 @@ export default class Car {
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.posX = map.firstPt[1] * this.tileDimension + this.tileDimension / 2;
-        this.posY = map.firstPt[0] * this.tileDimension + this.tileDimension / 2;
+        this.posX = map.startPt[1] * this.tileDimension + this.tileDimension / 2;
+        this.posY = map.startPt[0] * this.tileDimension + this.tileDimension / 2;
 
         this.speed = 0;
         this.acc = 0.10;

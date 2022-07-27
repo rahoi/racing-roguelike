@@ -2,10 +2,11 @@ import TrackGeneration from "./TrackGeneration"
 import type ConfigData from "./ConfigData"
 
 export default class MapArray {
-    mapArray: number[][];
-    firstPt: number[];
+    mapArray:number[][];
+    firstPt:number[];
+    startPt:number[];
     trackArray:number[][];
-    track: TrackGeneration;
+    track:TrackGeneration;
     
     constructor(mapConfigData: ConfigData) {
         this.track = new TrackGeneration(mapConfigData);
@@ -14,6 +15,7 @@ export default class MapArray {
         this.mapArray = this.track.mapArray;
         this.trackArray = this.track.trackArray;
         this.firstPt = this.track.firstPt;
+        this.startPt = this.track.startPt;
 
         // console.log(this.firstPt);
         // console.log(this.mapArray[20]);
