@@ -26,7 +26,7 @@ const config: Phaser.Types.Core.GameConfig =
         width: tileMapWidth * tileDimension,
         height: tileMapHeight * tileDimension
     },
-    backgroundColor: backgroundColor, 
+    //backgroundColor: backgroundColor, 
     // parent: 'gameContainer',
     // transparent: true,
     scene: [startScene, gameScene],
