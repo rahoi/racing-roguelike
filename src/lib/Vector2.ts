@@ -84,4 +84,28 @@ export default class Vector2 {
 
         return this
     }
+
+    rotated(angle: number) {
+        this.x = Math.cos(angle * Math.PI / 180) * this.x - Math.sin(angle * Math.PI / 180) * this.y
+        this.y = Math.sin(angle * Math.PI / 180) * this.x + Math.cos(angle * Math.PI / 180) * this.y
+
+        return this
+    }
+
+    magnitude() {
+        return Math.sqrt(this.x * this.x + this.y * this.y)
+    }
+
+    normalized() {
+        let m = this.magnitude()
+        if (m > 0) {
+            this.divideScalar(m)
+        }
+
+        return this
+    }
+
+    angle() {
+        return Math.atan2(this.y, this.x) * 180 / Math.PI
+    }
 }

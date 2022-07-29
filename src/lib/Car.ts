@@ -12,7 +12,7 @@ export default class Car {
     
     // player variables
     pos: Vector
-    velocity: number
+    velocity: Vector
     heading: number
     steerAngle: number
     steerFactor: number
@@ -28,6 +28,7 @@ export default class Car {
 
     enginePower: number
     acceleration: Vector
+    headingVector: Vector
 
     constructor(map: MapArray, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
@@ -44,11 +45,10 @@ export default class Car {
         this.pos = new Vector(2000, -3000)
 
         // set initial velocity, heading, and steering
-        this.velocity = 0
         this.heading = 0
         this.steerAngle = 0
 
-        this.steerFactor = 10   // amount that front wheel turns
+        this.steerFactor = 15   // amount that front wheel turns
         this.wheelBase = 70     // distance between front and rear wheels
         
         this.enginePower = 25
@@ -57,70 +57,65 @@ export default class Car {
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
 
         // -------- GET INPUT --------
-        // set user input to 0
-        this.accInput = 0
+        // steering setup
         this.turnInput = 0
-        
-        // check for user input
-        if (gas) this.accInput += 1
         if (left) this.turnInput += 1
         if (right) this.turnInput -= 1
-
-        // set steering based on input
         this.steerAngle = this.turnInput * this.steerFactor
-        this.velocity = this.accInput * this.enginePower
+
+        // velocity setup
+        this.velocity = new Vector(0,0)
+        if (gas) {
+            this.velocity.setX(Math.cos(this.heading * Math.PI / 180) * this.enginePower)
+            this.velocity.setY(Math.sin(this.heading * Math.PI / 180) * this.enginePower)
+            //console.log("INITIAL heading: " + this.heading)
+            //console.log("INITIAL velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        }
         // ----------------------------
-        
-
-
+    
         // calculate steering
         this.calculateSteering()
 
-   
-
+        // set new pos
+        this.pos = this.pos.add(this.velocity) // maybe clean these up?
     }
 
     calculateSteering() {
-        // log X and Y positions
-        //console.log("START x pos: " + this.pos.getX() + "\ny pos: " + this.pos.getY())
-
-
-        /* set up front wheel
+        /* set up front wheel:
          * frontWheel = pos + wheelBase/2 * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
-         this.frontWheel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
-         this.frontWheel = this.frontWheel.multiplyScalar(this.wheelBase / 2)
-         this.frontWheel = this.frontWheel.add(this.pos)
+        this.frontWheel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
+        this.frontWheel.multiplyScalar(this.wheelBase / 2)
+        this.frontWheel.add(this.pos)
 
          
-        /* set up back wheel
+        /* set up back wheel:
          * backWheel = pos - wheelBase/2 * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
         this.backWheel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
-        this.backWheel = this.backWheel.multiplyScalar(this.wheelBase / 2)
-        this.backWheel = this.backWheel.subtract(this.pos).multiplyScalar(-1)
+        this.backWheel.multiplyScalar(this.wheelBase / 2)
+        this.backWheel.subtract(this.pos).multiplyScalar(-1)
    
 
-        /* move back wheel:
-         * backWheel += velocity * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
-        let tmpVel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
-        this.backWheel = this.backWheel.add(tmpVel.multiplyScalar(this.velocity))
-        //console.log("backWheel x: " + this.backWheel.getX() + "\nbackWheel y: " + this.backWheel.getY())
+        /* move back wheel: backWheel += velocity */
+        this.backWheel.add(this.velocity)
+        //console.log("MOVE backWheel: (" + this.backWheel.getX() + ", " + this.backWheel.getY() + ")")
 
 
-        /* move front wheel:
-         * frontWheel += velocity * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
-        tmpVel.set(Math.cos((this.heading + this.steerAngle) * Math.PI / 180), Math.sin((this.heading + this.steerAngle) * Math.PI / 180))
-        this.frontWheel = this.frontWheel.add(tmpVel.multiplyScalar(this.velocity))
-        //console.log("frontWheel x: " + this.frontWheel.getX() + "\nfrontWheel y: " + this.frontWheel.getY())    
+        /* move front wheel: frontWheel += velocity.rotate(steeringAngle) */
+        this.frontWheel.add(this.velocity.rotated(this.steerAngle))
+        //console.log("ROTATED velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        //console.log("MOVE frontWheel: (" + this.frontWheel.getX() + ", " + this.frontWheel.getY() + ")")    
         
 
-
-        /* calculate position:
-         * pos = (frontWheel + backWheel) / 2 */
-         this.pos = this.frontWheel.add(this.backWheel).divideScalar(2)
-         this.heading = Math.atan2(this.frontWheel.getY() - this.backWheel.getY(),
-                                         this.frontWheel.getX() - this.backWheel.getX()) * 180 / Math.PI
-         //console.log("heading: " + this.heading)
-         //console.log("END x pos: " + this.pos.getX() + "\ny pos: " + this.pos.getY())
+        /* calculate new direction vector: NORMALIZE(frontWheel - backWheel) */
+        this.headingVector = this.frontWheel.subtract(this.backWheel).normalized()
+        //console.log("heading vector: (" + this.headingVector.getX() + ", " + this.headingVector.getY() + ")")
+    
+        
+        /* set the velocity and new heading angle */
+        this.velocity = this.headingVector.multiplyScalar(this.velocity.magnitude())
+        this.heading = this.headingVector.angle()
+        //console.log("heading angle: " + this.heading)
+        //console.log("FINAL velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
     }
 
 
