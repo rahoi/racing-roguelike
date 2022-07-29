@@ -85,34 +85,33 @@ export default class FowLayer{
         const radius = 5;
 
         let isVisible = (x:number, y:number): boolean => {
-        const tile = this.roadLayer.getTileAt(x, y)
-        if (!tile) {
-            return false;  
+            const tile = this.roadLayer.getTileAt(x, y)
+            if (!tile) {
+                return false;  
+            }
+            return true;
         }
-        return true;
-    }
 
-    let setVisibility = (x:number, y:number) => {
-        const tile = this.roadLayer.getTileAt(x, y)
-        if (!tile) {
-            return;
+        let setVisibility = (x:number, y:number) => {
+            const tile = this.roadLayer.getTileAt(x, y)
+            if (!tile) {
+                return;
+            }
+            const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
+                new Phaser.Math.Vector2(px, py)));
+            if (d < radius - 2) {
+                this.isTileSeen[x][y] = true;
+                tile.tint = 0xffffff;
+            } else if (this.isTileSeen[x][y] === true && d > radius/2) {
+                tile.tint = 0x6d6d6d;
+            }
         }
-        const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
-            new Phaser.Math.Vector2(px, py)));
-
-        if (d < radius - 2) {
-            this.isTileSeen[x][y] = true;
-            tile.tint = 0xffffff;
-        } else if (this.isTileSeen[x][y] === true && d > radius/2) {
-            tile.tint = 0x6d6d6d;
-        }
-    }
 
         this.fow.compute(
         px,
         py,
         Infinity, 
         isVisible,
-        setVisibility)
+        setVisibility);
     }
 }
