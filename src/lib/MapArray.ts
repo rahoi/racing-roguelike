@@ -4,8 +4,11 @@ import type ConfigData from "./ConfigData"
 export default class MapArray {
     mapArray:number[][];
     firstPt:number[];
-    startPt:number[];
-    trackArray:number[][];
+    startLine:number[];
+    playerStartPt:number[];
+    innerTrack:number[][];
+    outerTrack:number[][];
+    isClockwise:boolean;
     track:TrackGeneration;
     
     constructor(mapConfigData: ConfigData) {
@@ -13,9 +16,12 @@ export default class MapArray {
 
         this.track.createMapArray();
         this.mapArray = this.track.mapArray;
-        this.trackArray = this.track.trackArray;
+        this.innerTrack = this.track.innerTrack;
+        this.outerTrack = this.track.outerTrack;
         this.firstPt = this.track.firstPt;
-        this.startPt = this.track.startPt;
+        this.startLine = this.track.startLine;
+        this.playerStartPt = this.track.playerStartPt;
+        this.isClockwise = this.track.isClockwise;
 
         // console.log(this.firstPt);
         // console.log(this.mapArray[20]);

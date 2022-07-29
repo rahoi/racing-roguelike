@@ -22,8 +22,8 @@ export default class TileMapConstruct {
         }
 
         this.tileMap = scene.make.tilemap(mapConfig);
-        const tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
-        const roadLayer = this.tileMap.createLayer(0, tileset, 0, 0); 
+        const tileset:Phaser.Tilemaps.Tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
+        this.tileMap.createLayer(0, tileset, 0, 0); 
     }
 
 }
