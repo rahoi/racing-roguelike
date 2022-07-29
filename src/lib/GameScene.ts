@@ -57,8 +57,6 @@ export default class GameScene extends Phaser.Scene {
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-        //this.fow.createFow();
-        
 
         // create player vehicle class
         switch (this.playerVehicle) {

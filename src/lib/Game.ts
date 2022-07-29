@@ -6,7 +6,7 @@ import Phaser from "phaser"
 const tileDimension = 128;
 const tileMapHeight = 40;
 const tileMapWidth = 40;
-const backgroundColor = '#bc8044'; 
+const backgroundColor = '#193e04';  //'#bc8044'; 
 const tilesetImageSheet = '/assets/spritesheet_tiles.png';
 const tileKey = 'tiles';
 
@@ -26,7 +26,7 @@ const config: Phaser.Types.Core.GameConfig =
         width: tileMapWidth * tileDimension,
         height: tileMapHeight * tileDimension
     },
-    //backgroundColor: backgroundColor, 
+    backgroundColor: backgroundColor, 
     // parent: 'gameContainer',
     // transparent: true,
     scene: [startScene, gameScene],

@@ -8,7 +8,6 @@ export default class TileMapConstruct {
     mapArray: number[][];
     tileMap: Phaser.Tilemaps.Tilemap;
 
-
     constructor(scene:Phaser.Scene, map: MapArray, mapConfigData: ConfigData) {
         this.mapArray = map.mapArray
 
