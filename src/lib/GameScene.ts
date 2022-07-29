@@ -69,8 +69,6 @@ export default class GameScene extends Phaser.Scene {
     
     update() {
         // update which forces are at play
-
-
         // if (this.gasKey.isDown) {
         //     this.gas = 1
         // } else if (this.gasKey.isUp) {
@@ -92,7 +90,7 @@ export default class GameScene extends Phaser.Scene {
         //     this.right = 0
         // }
 
-        // move the care object
+        // move the car object
         this.carAngle = this.car.getHeading()
         this.car.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown)
         this.angleDiff = this.carAngle - this.car.getHeading()

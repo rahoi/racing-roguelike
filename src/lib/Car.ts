@@ -76,8 +76,8 @@ export default class Car {
         // calculate steering
         this.calculateSteering()
 
-        // set new pos
-        this.pos = this.pos.add(this.velocity) // maybe clean these up?
+        // set new position
+        this.pos = this.pos.add(this.velocity)
     }
 
     calculateSteering() {
@@ -108,12 +108,12 @@ export default class Car {
 
         /* calculate new direction vector: NORMALIZE(frontWheel - backWheel) */
         this.headingVector = this.frontWheel.subtract(this.backWheel).normalized()
-        //console.log("heading vector: (" + this.headingVector.getX() + ", " + this.headingVector.getY() + ")")
+        console.log("heading vector: (" + this.headingVector.getX() + ", " + this.headingVector.getY() + ")")
     
         
-        /* set the velocity and new heading angle */
-        this.velocity = this.headingVector.multiplyScalar(this.velocity.magnitude())
+        /* set new heading angle and velocity */
         this.heading = this.headingVector.angle()
+        this.velocity = this.headingVector.multiplyScalar(this.velocity.magnitude())
         //console.log("heading angle: " + this.heading)
         //console.log("FINAL velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
     }
