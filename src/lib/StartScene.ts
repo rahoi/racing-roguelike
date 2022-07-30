@@ -66,6 +66,7 @@ export default class GameScene extends Phaser.Scene {
             })
         })
 
+
         // this.vehicles = this.add.group();
         // this.vehicles.add(this.carSprite)
         // Phaser.Actions.Call(this.vehicles.getChildren(), function(item) {
@@ -77,4 +78,5 @@ export default class GameScene extends Phaser.Scene {
         //     })
         // }, this);
     }
+
 }
