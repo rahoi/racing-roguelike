@@ -365,7 +365,7 @@ export default class PlaceTiles {
 
             if (diff > 2) {
                 console.log("Looooooong")
-                // console.log("i", i)
+                console.log("i", i)
                 console.log('curr', currPt)
                 console.log('next', nextPt)
                 // console.log('diff', diff)
@@ -412,7 +412,7 @@ export default class PlaceTiles {
             }
 
             if (diff == 2) {    // ie if points are not next to each other
-                // console.log("i", i)
+                console.log("i", i)
                 console.log('curr', currPt, currTile)
                 console.log('next', nextPt, nextTile)
                 // console.log('diff', diff)
@@ -420,7 +420,7 @@ export default class PlaceTiles {
                 if (terrainArray.diagonals.includes(currTile)) {
                     console.log('diag')
                     if (currTile == terrainArray.diag_NW) {
-                        // console.log('nw')
+                        console.log('nw')
                         if (currPt[0] == nextPt[0]) {
                             btwnTile = (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_SW || nextTile == terrainArray.corner_SE) ? terrainArray.diag_NE : terrainArray.straight_up;
                         } 
@@ -431,7 +431,7 @@ export default class PlaceTiles {
                         btwnPt = (currPt[1] == nextPt[1]) ? [currPt[0] + 1, currPt[1]] : [currPt[0], currPt[1] + 1];
                     }
                     else if (currTile == terrainArray.diag_NE) {
-                        // console.log('ne')
+                        console.log('ne')
                         if (currPt[0] == nextPt[0]) {
                             btwnTile = (nextTile == terrainArray.diag_NE || nextTile == terrainArray.corner_NW || nextTile == terrainArray.corner_SE) ? terrainArray.diag_NW : terrainArray.straight_up;
                         } 
@@ -442,7 +442,7 @@ export default class PlaceTiles {
                         btwnPt = (currPt[1] == nextPt[1]) ? [currPt[0] + 1, currPt[1]] : [currPt[0], currPt[1] - 1];
                     }
                     else if (currTile == terrainArray.diag_SE) {
-                        // console.log('se')
+                        console.log('se')
                         if (currPt[0] == nextPt[0]) {
                             btwnTile = (nextTile == terrainArray.diag_SE || nextTile == terrainArray.corner_SW || nextTile == terrainArray.corner_NE) ? terrainArray.diag_SW : terrainArray.straight_down;
                         } 
@@ -453,7 +453,7 @@ export default class PlaceTiles {
                         btwnPt = (currPt[1] == nextPt[1]) ? [currPt[0] - 1, currPt[1]] : [currPt[0], currPt[1] - 1];
                     }
                     else if (currTile == terrainArray.diag_SW) {
-                        // console.log('sw')
+                        console.log('sw')
                         if (currPt[0] == nextPt[0]) {
                             btwnTile = (nextTile == terrainArray.diag_SW || nextTile == terrainArray.corner_NW || nextTile == terrainArray.corner_SE) ? terrainArray.diag_SE : terrainArray.straight_down;
                         } 
@@ -469,7 +469,7 @@ export default class PlaceTiles {
                 else if (terrainArray.corners.includes(currTile)) {
                     console.log('corner')
                     if (currTile == terrainArray.corner_NW) {
-                        // console.log('nw')
+                        console.log('nw')
                         if (nextTile == terrainArray.diag_NE || nextTile == terrainArray.corner_SE || nextTile == terrainArray.diag_SW) {
                             btwnTile = terrainArray.diag_NW;
                         } 
@@ -480,9 +480,12 @@ export default class PlaceTiles {
                         btwnPt = (currPt[0] == nextPt[0]) ? [currPt[0], currPt[1] - 1] : [currPt[0] - 1, currPt[1]];
                     }
                     else if (currTile == terrainArray.corner_NE) {
-                        // console.log('ne')
-                        if (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_SW || nextTile == terrainArray.diag_SW) {
-                            btwnTile = terrainArray.diag_NW;
+                        console.log('ne')
+                        // if (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_SW || nextTile == terrainArray.diag_SW) {
+                        //     btwnTile = terrainArray.diag_NW;
+                        // } 
+                        if (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_SE || nextTile == terrainArray.diag_SW) {
+                            btwnTile = terrainArray.diag_NE;
                         } 
                         else {
                             btwnTile = (currPt[0] == nextPt[0]) ? terrainArray.straight_up : terrainArray.straight_right;
@@ -491,7 +494,7 @@ export default class PlaceTiles {
                         btwnPt = (currPt[0] == nextPt[0]) ? [currPt[0], currPt[1] + 1] : [currPt[0] - 1, currPt[1]];
                     }
                     else if (currTile == terrainArray.corner_SE) {
-                        // console.log('se')
+                        console.log('se')
                         if (currPt[0] == nextPt[0]) {
                             btwnTile = (nextTile == terrainArray.diag_NE || nextTile == terrainArray.corner_NW) ? terrainArray.diag_NW : terrainArray.straight_down;
                         } 
@@ -502,9 +505,9 @@ export default class PlaceTiles {
                         btwnPt = (currPt[0] == nextPt[0]) ? [currPt[0], currPt[1] + 1] : [currPt[0] + 1, currPt[1]];
                     }
                     else if (currTile == terrainArray.corner_SW) {
-                        // console.log('sw')
+                        console.log('sw')
                         if (currPt[0] == nextPt[0]) {
-                            btwnTile = (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_NE) ? terrainArray.diag_NW : terrainArray.straight_down;
+                            btwnTile = (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_NE) ? terrainArray.diag_NE : terrainArray.straight_down;
                         } 
                         else {
                             btwnTile = (nextTile == terrainArray.diag_NW || nextTile == terrainArray.corner_NE) ? terrainArray.diag_SW : terrainArray.straight_left;
@@ -521,10 +524,10 @@ export default class PlaceTiles {
                         console.log('up')
                         if (currPt[0] == nextPt[0]) {
                             if (currPt[1] < nextPt[1]) {
-                                btwnTile = (nextTile == terrainArray.diag_NW ||  terrainArray.corner_SW) ? terrainArray.diag_NE : terrainArray.straight_up;
+                                btwnTile = (nextTile == terrainArray.diag_NW) ? terrainArray.diag_NE : terrainArray.straight_up;
                             }
                             else {
-                                btwnTile = (nextTile == terrainArray.diag_NE ||  terrainArray.corner_SE) ? terrainArray.diag_NW : terrainArray.straight_up;
+                                btwnTile = (nextTile == terrainArray.diag_NE) ? terrainArray.diag_NW : terrainArray.straight_up;
                             }
                             btwnPt = (currPt[1] < nextPt[1]) ? [currPt[0], currPt[1] + 1] : [currPt[0], currPt[1] - 1];
                         }
@@ -563,10 +566,10 @@ export default class PlaceTiles {
                         console.log('down')
                         if (currPt[0] == nextPt[0]) {
                             if (currPt[1] < nextPt[1]) {
-                                btwnTile = (nextTile == terrainArray.diag_SW ||  terrainArray.corner_NW) ? terrainArray.diag_SE : terrainArray.straight_down;
+                                btwnTile = (nextTile == terrainArray.diag_SW) ? terrainArray.diag_SE : terrainArray.straight_down;
                             }
                             else {
-                                btwnTile = (nextTile == terrainArray.diag_SE ||  terrainArray.corner_NE) ? terrainArray.diag_SW : terrainArray.straight_down;
+                                btwnTile = (nextTile == terrainArray.diag_SE) ? terrainArray.diag_SW : terrainArray.straight_down;
                             }
                             btwnPt = (currPt[1] < nextPt[1]) ? [currPt[0], currPt[1] + 1] : [currPt[0], currPt[1] - 1];
                         }
@@ -605,10 +608,10 @@ export default class PlaceTiles {
                         console.log('left')
                         if (currPt[1] == nextPt[1]) {
                             if (currPt[0] < nextPt[0]) {
-                                btwnTile = (nextTile == terrainArray.diag_NW ||  terrainArray.corner_NE) ? terrainArray.diag_SW : terrainArray.straight_left;
+                                btwnTile = (nextTile == terrainArray.diag_NW) ? terrainArray.diag_SW : terrainArray.straight_left;
                             }
                             else {
-                                btwnTile = (nextTile == terrainArray.diag_SW ||  terrainArray.corner_SE) ? terrainArray.diag_NW : terrainArray.straight_left;
+                                btwnTile = (nextTile == terrainArray.diag_SW) ? terrainArray.diag_NW : terrainArray.straight_left;
                             }
                             btwnPt = (currPt[0] < nextPt[0]) ? [currPt[0] + 1, currPt[1]] : [currPt[0] - 1, currPt[1]];
                         }
@@ -647,28 +650,24 @@ export default class PlaceTiles {
                         console.log('right')
                         if (currPt[1] == nextPt[1]) {
                             if (currPt[0] < nextPt[0]) {
-                                btwnTile = (nextTile == terrainArray.diag_SE ||  terrainArray.corner_SW) ? terrainArray.diag_NE : terrainArray.straight_right;
+                                btwnTile = (nextTile == terrainArray.diag_NE) ? terrainArray.diag_SE : terrainArray.straight_right;
                             }
-                            else {
-                                btwnTile = (nextTile == terrainArray.diag_NE ||  terrainArray.corner_NW) ? terrainArray.diag_SE : terrainArray.straight_right;
+                            else { // this else!!!!!!!!!
+                                // btwnTile = (nextTile == terrainArray.diag_NE ||  terrainArray.corner_NW) ? terrainArray.diag_SE : terrainArray.straight_right;
+                                btwnTile = (nextTile == terrainArray.diag_SE) ? terrainArray.diag_NE : terrainArray.straight_right;
                             }
                             btwnPt = (currPt[0] < nextPt[0]) ? [currPt[0] + 1, currPt[1]] : [currPt[0] - 1, currPt[1]];
                         }
                         else if (currPt[0] == nextPt[0]) {
                             if (currPt[1] < nextPt[1]) {
-                                if (nextTile == terrainArray.diag_SE ||  terrainArray.corner_SW || nextTile == terrainArray.straight_down) {
+                                if (nextTile == terrainArray.diag_SE || nextTile == terrainArray.corner_SW || nextTile == terrainArray.straight_down) {
                                     btwnTile = terrainArray.diag_SW;
                                 }
-                                else if (nextTile == terrainArray.diag_NE ||  terrainArray.corner_NW || nextTile == terrainArray.straight_up) {
+                                else if (nextTile == terrainArray.diag_NE || nextTile == terrainArray.corner_NW || nextTile == terrainArray.straight_up) {
                                     btwnTile = terrainArray.diag_NW;
                                     btwnPt = [currPt[0], currPt[1] + 1];
                                 }
                             } 
-                            // else {
-
-                            // }
-                            // btwnTile = terrainArray.diag_SW;
-                            // btwnPt = [currPt[0], currPt[1] + 1];
                         } 
                         else {
                             if (currPt[0] > nextPt[0] && currPt[1] > nextPt[1]) { // nextTile == terrainArray.corner_NW

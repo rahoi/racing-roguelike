@@ -127,6 +127,7 @@ export default class TrackGeneration {
             this.playerStartPt = this.generatePoints.findPlayerStart(trackCoordinates);
 
             console.log("1st pt: ", this.firstPt);
+            console.log("player start: ", this.playerStartPt);
 
             // fill in mapArray with grass tiles, then inner track with road tiles
             this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, trackCoordinates, this.mapHeight, this.mapWidth, this.isClockwise, this.startIndex, this.startTile);
