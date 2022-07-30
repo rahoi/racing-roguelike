@@ -62,7 +62,7 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.tint = 0x1c1c1c;
+                tile.tint = 0x000000;  //black color
 			}
 		}	
 	}
@@ -82,7 +82,7 @@ export default class FowLayer{
     
         const px = this.map.worldToTileX(this.player.posX);
         const py = this.map.worldToTileY(this.player.posY);
-        const radius = 5;
+        const radius = 4;
 
         let isVisible = (x:number, y:number): boolean => {
             const tile = this.roadLayer.getTileAt(x, y)
@@ -99,11 +99,11 @@ export default class FowLayer{
             }
             const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
                 new Phaser.Math.Vector2(px, py)));
-            if (d < radius - 2) {
+            if (d < radius - 1) {
                 this.isTileSeen[x][y] = true;
-                tile.tint = 0xffffff;
+                tile.tint = 0xffffff;  //white color
             } else if (this.isTileSeen[x][y] === true && d > radius/2) {
-                tile.tint = 0x6d6d6d;
+                tile.tint = 0x3e3e3e;  //gray color
             }
         }
 
