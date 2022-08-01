@@ -43,32 +43,39 @@ export default class PlaceTiles {
         for (let i = 0; i < this.mapHeight; i++) {
             let temp:number[] = [];
             for (let j = 0; j < this.mapWidth; j++) {
-                if (i == 0 && (j != 0 && j != this.mapWidth - 1)) {
+                if (i == 0 || i == this.mapHeight - 1 || j == 0 || j == this.mapWidth - 1) {
+                    temp.push(terrainArray.dirt);
+                } else if (i == 1 && (j != 0 && j != 1  && j != this.mapWidth - 2 && j != this.mapWidth - 1)) {
                     temp.push(terrainArray.grass_up);
                 }
-                
-                 else if (i == this.mapHeight - 1 && (j != 0 && j != this.mapWidth - 1)) {
+                 else if (i == this.mapHeight - 2 && (j != 0 && j != 1  && j != this.mapWidth - 2 && j != this.mapWidth - 1)) {
                     temp.push(terrainArray.grass_down);
                 } else {
-
-                    if (j == 0) {
-                        if (i == 0) {
+                    if (j == 1) {
+                        if (i == 0 || i == this.mapHeight - 1) {
+                            continue;
+                        } else if (i == 1) {
                             temp.push(terrainArray.grass_NW);
-                        } else if (i == this.mapHeight - 1) {
+                        } else if (i == this.mapHeight - 2) {
                             temp.push(terrainArray.grass_SW);
                         } else {
                             temp.push(terrainArray.grass_left);
                         }
-                    } else if (j == this.mapWidth - 1) {
-                        if (i == 0) {
+                    } else if (j == this.mapWidth - 2) {
+                        if (i == 0 || i == this.mapHeight - 1) {
+                            continue;
+                        } else if (i == 1) {
                             temp.push(terrainArray.grass_NE);
-                        } else if (i == this.mapHeight - 1) {
+                        } else if (i == this.mapHeight - 2) {
                             temp.push(terrainArray.grass_SE);
                         } else {
                             temp.push(terrainArray.grass_right);
                         }
                     } else {
-                    temp.push(terrainArray.grass); 
+                        if (i == 0 || i == this.mapHeight - 1 || j == 0 || j == this.mapWidth - 1) {
+                            continue;
+                        }
+                        temp.push(terrainArray.grass); 
                     }  
                 }              
             }
