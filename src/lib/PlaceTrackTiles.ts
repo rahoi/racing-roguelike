@@ -122,7 +122,7 @@ export default class PlaceTiles {
         let prev_array:number[] = [];
 
         // filling straight tiles
-        if (prev[1] < curr[1] && curr[1] < next[1]) {
+        if (prev[1] < curr[1] && curr[1] < next[1]) { // 3 tiles in a horizontal row (increasing)
             this.mapArray[curr[0]][curr[1]] = terrainArray.straight_up;
         } 
         else if (prev[1] > curr[1] && curr[1] > next[1]) {
@@ -178,37 +178,44 @@ export default class PlaceTiles {
         this.outerTrack = [];
         let outerPt:number[] = [];
 
-        let currPt:number[];
-        let currInnerTile:number;
+        let prevPrevPt:number[];
+        let prevPrevTile:number;
         let prevPt:number[];
         let prevInnerTile:number;
+        let currPt:number[];
+        let currInnerTile:number;
         let nextPt:number[];
         let nextInnerTile:number;
         
         // setting prevPt and firstInnerTile for first pt in trackCoordinates
-        currPt = this.trackCoordinates[0];
-        currInnerTile = this.mapArray[currPt[0]][currPt[1]];
+        prevPrevPt = this.trackCoordinates[this.trackCoordinates.length - 2];
+        prevPrevTile = this.mapArray[prevPrevPt[0]][prevPrevPt[1]];
         prevPt = this.trackCoordinates[this.trackCoordinates.length - 2];
         prevInnerTile = this.mapArray[prevPt[0]][prevPt[1]];
+        currPt = this.trackCoordinates[0];
+        currInnerTile = this.mapArray[currPt[0]][currPt[1]];
         nextPt = this.trackCoordinates[1];
         nextInnerTile = this.mapArray[nextPt[0]][nextPt[1]];
 
         // setting first pt in outerTrack and the tile for the first outer pt in mapArray
-        this.outerTrack.push(this.findOuterPt(currPt, currInnerTile, prevInnerTile, nextInnerTile));
+        this.outerTrack.push(this.findOuterPtFromInner(currPt, prevPrevTile, prevInnerTile, currInnerTile, nextInnerTile));
         // outerTrack[0] = outerPt;
         console.log("1st outer pt: ", this.outerTrack[0]);
 
         for (let i = 1; i < this.trackCoordinates.length - 1; i++) {
-            currPt = this.trackCoordinates[i];
-            currInnerTile = this.mapArray[currPt[0]][currPt[1]];
+            prevPrevPt = (i == 1) ? this.trackCoordinates[this.trackCoordinates.length - 2] : this.trackCoordinates[i - 2];
+            prevPrevTile = this.mapArray[prevPrevPt[0]][prevPrevPt[1]];
 
             prevPt = this.trackCoordinates[i - 1];
             prevInnerTile = this.mapArray[prevPt[0]][prevPt[1]];
 
+            currPt = this.trackCoordinates[i];
+            currInnerTile = this.mapArray[currPt[0]][currPt[1]];
+
             nextPt = this.trackCoordinates[i + 1];
             nextInnerTile = this.mapArray[nextPt[0]][nextPt[1]];
 
-            this.outerTrack.push(this.findOuterPt(currPt, currInnerTile, prevInnerTile, nextInnerTile));
+            this.outerTrack.push(this.findOuterPtFromInner(currPt, prevPrevTile, prevInnerTile, currInnerTile, nextInnerTile));
         }
 
         // adding first pt to the end of outerTrack array to complete the loop
@@ -226,118 +233,111 @@ export default class PlaceTiles {
         return this.outerTrack;
     }
 
-    findOuterPt(innerPt:number[], innerTile:number, prevInnerTile:number, nextInnerTile:number) {
-        let tempPt:number[] = [];
+    findOuterPtFromInner(innerPt:number[], prevPrevTile:number, prevInnerTile:number, innerTile:number, nextInnerTile:number) {
+        let tempPt:number[];
+        let tileToPlace:number;
 
+        // if inner tile is a diagonal tile
         if (terrainArray.diagonals.includes(innerTile)) {
             if (innerTile == terrainArray.diag_NW) {
                 tempPt = [innerPt[0] + 1, innerPt[1] + 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_SE;
-                // console.log("corner_SE");
-
+                tileToPlace = terrainArray.corner_SE;
             }
             else if (innerTile == terrainArray.diag_NE) {
                 tempPt = [innerPt[0] + 1, innerPt[1] - 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_SW;
-                // console.log("corner_SW");
-
+                tileToPlace = terrainArray.corner_SW;
             }
             else if (innerTile == terrainArray.diag_SE) {
+                // if (this.isClockwise && prevPrevTile == terrainArray.diag_SW) {
+                //     tileToPlace = terrainArray.straight_up;
+                // }
                 tempPt = [innerPt[0] - 1, innerPt[1] - 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_NW;
-                // console.log("corner_NW");
-
+                tileToPlace = terrainArray.corner_NW;
             }
             else if (innerTile == terrainArray.diag_SW) {
+                // if (!this.isClockwise && prevPrevTile == terrainArray.diag_SE) {
+                //     tileToPlace = terrainArray.straight_up;
+                // }
                 tempPt = [innerPt[0] - 1, innerPt[1] + 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_NE;
-                // console.log("corner_NE");
-
+                tileToPlace = terrainArray.corner_NE;
             }
         }
+
+        // if inner tile is a corner tile
         else if (terrainArray.corners.includes(innerTile)) {
             if (innerTile == terrainArray.corner_NW) {
                 tempPt = [innerPt[0] + 1, innerPt[1] + 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.diag_SE;
-                // console.log("diag_SE");
-
+                tileToPlace = terrainArray.diag_SE;
             }
             else if (innerTile == terrainArray.corner_NE) {
                 tempPt = [innerPt[0] + 1, innerPt[1] - 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.diag_SW;
-                // console.log("diag_SW");
-
+                tileToPlace = terrainArray.diag_SW;
             }
             else if (innerTile == terrainArray.corner_SE) {
                 tempPt = [innerPt[0] - 1, innerPt[1] - 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.diag_NW;
-                // console.log("diag_NW");
-
+                tileToPlace = terrainArray.diag_NW;
             }
             else if (innerTile == terrainArray.corner_SW) {
                 tempPt = [innerPt[0] - 1, innerPt[1] + 1];
-                this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.diag_NE;
-                // console.log("diag_NE");
-
+                tileToPlace = terrainArray.diag_NE;
             }
         }
+
+        // if inner tiles is a straight or start/finish tile
         else if (terrainArray.straights.includes(innerTile) || terrainArray.finishes.includes(innerTile)) {
             if (innerTile == terrainArray.straight_up || innerTile == terrainArray.finish_up) {
                 tempPt = [innerPt[0] + 1, innerPt[1]];
 
                 if (prevInnerTile == terrainArray.diag_NW) {
-                    this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_SE;
-                    // console.log("corner_SE");
+                    tileToPlace = terrainArray.corner_SE;
                 } 
                 else {
-                    this.mapArray[tempPt[0]][tempPt[1]] = (innerTile == terrainArray.straight_up) ? terrainArray.straight_down : terrainArray.finish_down;
-                    // console.log("down");
+                    tileToPlace = (innerTile == terrainArray.straight_up) ? terrainArray.straight_down : terrainArray.finish_down;
                 }
-
             }
             else if (innerTile == terrainArray.straight_down || innerTile == terrainArray.finish_down) {
                 tempPt = [innerPt[0] - 1, innerPt[1]];
 
                 if (prevInnerTile == terrainArray.diag_SE) {
-                    this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_NW;
-                    // console.log("corner_NW");
+                    tileToPlace = terrainArray.corner_NW;
                 } 
                 else {
-                    this.mapArray[tempPt[0]][tempPt[1]] =  (innerTile == terrainArray.straight_down) ? terrainArray.straight_up : terrainArray.finish_up;
-                    // console.log("up");
+                    tileToPlace =  (innerTile == terrainArray.straight_down) ? terrainArray.straight_up : terrainArray.finish_up;
                 }
-
             }
             else if (innerTile == terrainArray.straight_left || innerTile == terrainArray.finish_left) {
                 tempPt = [innerPt[0], innerPt[1] + 1];
 
                 if (prevInnerTile == terrainArray.diag_SW) {
-                    this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_NE;
-                    // console.log("corner_NE");
-
+                    tileToPlace = terrainArray.corner_NE;
                 } 
                 else {
-                    this.mapArray[tempPt[0]][tempPt[1]] = (innerTile == terrainArray.straight_left) ? terrainArray.straight_right : terrainArray.finish_right;
-                    // console.log("right");
+                    tileToPlace = (innerTile == terrainArray.straight_left) ? terrainArray.straight_right : terrainArray.finish_right;
                 }
-
             }
             else if (innerTile == terrainArray.straight_right || innerTile == terrainArray.finish_right) {
                 tempPt = [innerPt[0], innerPt[1] - 1];
-
-                // if (!terrainArray.diagonals.includes(prevTile)) {
                 if (prevInnerTile == terrainArray.diag_NE) {
-                    this.mapArray[tempPt[0]][tempPt[1]] = terrainArray.corner_SW;
-                    // console.log("corner_SW");
+                    tileToPlace = terrainArray.corner_SW;
                 } 
                 else {
-                    this.mapArray[tempPt[0]][tempPt[1]] =  (innerTile == terrainArray.straight_right) ? terrainArray.straight_left : terrainArray.finish_left;
-                    // console.log("left");   
+                    tileToPlace =  (innerTile == terrainArray.straight_right) ? terrainArray.straight_left : terrainArray.finish_left;
                 }
             }
         }
 
-        // outerTrack.push(tempPt);
+
+        // change this.mapArray[][] = terrainArray.tile to tileToPlace = terrainArray.tile
+        // then add code below to end of if statements
+        if (tempPt != null) {
+            if (terrainArray.all_roads.includes(this.mapArray[tempPt[0]][tempPt[1]])) {
+                tileToPlace = terrainArray.blank_road;
+                console.log("dup: ", tempPt)
+            }
+            this.mapArray[tempPt[0]][tempPt[1]] = tileToPlace;
+        }
+
+        
         return tempPt;
     }
 
@@ -351,12 +351,13 @@ export default class PlaceTiles {
         let diff:number;
 
         for (let i = 0; i < this.outerTrack.length - 1; i++) {
+            console.log(this.outerTrack.length)
             currPt = this.outerTrack[i];
             currTile = this.mapArray[currPt[0]][currPt[1]];
             nextPt = this.outerTrack[i + 1];
             nextTile = this.mapArray[nextPt[0]][nextPt[1]];
 
-            if (i > this.outerTrack.length - 1) {
+            if (i > 250) {
                 continue;
             }
 
@@ -388,7 +389,7 @@ export default class PlaceTiles {
                         btwnPt = [currPt[0] + 1, currPt[1]];
                     }
 
-                } else { // if couunter clockwise
+                } else { // if counter clockwise
                     if (currTile == terrainArray.diag_NE || currTile == terrainArray.corner_NW || currTile == terrainArray.straight_up) {
                         btwnTile = terrainArray.straight_up;
                         btwnPt = [currPt[0], currPt[1] - 1];
@@ -406,8 +407,12 @@ export default class PlaceTiles {
                         btwnPt = [currPt[0] - 1, currPt[1]];
                     }
                 }
-                this.outerTrack.splice(i + 1, 0, btwnPt);
-                this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
+
+                if (btwnPt  != null) {
+                    this.outerTrack.splice(i + 1, 0, btwnPt);
+                    this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
+                }
+                
                 console.log("len", this.outerTrack.length)
             }
 
@@ -689,11 +694,20 @@ export default class PlaceTiles {
                         }
                     }
                 }
-                this.outerTrack.splice(i + 1, 0, btwnPt);
-                this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
-                console.log("len", this.outerTrack.length)
-                // i--; //??? i++??
+                if (btwnPt  != null) {
+                    this.outerTrack.splice(i + 1, 0, btwnPt);
+                    this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
+                }
+                
+                // this.outerTrack.splice(i + 1, 0, btwnPt);
+                // this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
+                // console.log("len", this.outerTrack.length)
             }
+
+            // if (btwnPt  != null) {
+            //     this.outerTrack.splice(i + 1, 0, btwnPt);
+            //     this.mapArray[btwnPt[0]][btwnPt[1]] = btwnTile;
+            // }
         }
         // console.log('outer')
     }
