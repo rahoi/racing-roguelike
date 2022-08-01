@@ -36,6 +36,8 @@ export default class GameScene extends Phaser.Scene {
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
         this.mapConfigData = mapConfigData;
+
+        // resets checkpoints
         this.collectedCheckpoints = 0;
         this.totalCheckpoints = 1;
 
@@ -149,16 +151,19 @@ export default class GameScene extends Phaser.Scene {
         // texture.updateCarMask(this.vision, this.car);
         this.fow.calculateFow(this, this.player);
 
+        // if timer goes to 0, switch to end scene
         if (this.countdown < 0) {
             this.scene.stop('GameScene');
             this.scene.start('EndScene', {numLevels: this.numLevels});
         }
+        // if all checkpoints are collected before timer runs out, load up next level
         else if(this.collectedAllCheckpoints() == true) {
-            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1})
+            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1});
         }
   
     }
 
+    // checks if all checkpoints has been collected
     collectedAllCheckpoints() {
         if (this.collectedCheckpoints == this.totalCheckpoints) {
             return true;
@@ -166,6 +171,7 @@ export default class GameScene extends Phaser.Scene {
         return false;
     }
 
+    // counts down timer using Phaser logic
     onEventTimer() {
         this.countdown -= 1; // one second
         this.timerText.setText('Timer: ' + this.countdown);
