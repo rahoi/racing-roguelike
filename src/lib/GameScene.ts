@@ -25,17 +25,32 @@ export default class GameScene extends Phaser.Scene {
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
     fow: FowLayer;
+    initTimer:number;
+    countdown:number;
+    timerText:Phaser.GameObjects.Text;
+    timerEvent:Phaser.Time.TimerEvent;
+    numLevels:number;
+    collectedCheckpoints:number;
+    totalCheckpoints:number;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
         this.mapConfigData = mapConfigData;
+
+        // resets checkpoints
+        this.collectedCheckpoints = 0;
+        this.totalCheckpoints = 1;
+
     }
 
     init(data: any) {
         this.playerVehicle = data.id;
         console.log('player selected: ' + this.playerVehicle);
-        this.image = data.image
+        this.image = data.image;
         console.log('vehicle: ' + this.image);
+        this.initTimer = data.timer;
+        this.countdown = data.timer;
+        this.numLevels = data.numLevels;
     }
 
     preload() {
@@ -50,6 +65,11 @@ export default class GameScene extends Phaser.Scene {
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
+
+        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
@@ -130,6 +150,30 @@ export default class GameScene extends Phaser.Scene {
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
         this.fow.calculateFow(this, this.player);
+
+        // if timer goes to 0, switch to end scene
+        if (this.countdown < 0) {
+            this.scene.stop('GameScene');
+            this.scene.start('EndScene', {numLevels: this.numLevels});
+        }
+        // if all checkpoints are collected before timer runs out, load up next level
+        else if(this.collectedAllCheckpoints() == true) {
+            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1});
+        }
   
+    }
+
+    // checks if all checkpoints has been collected
+    collectedAllCheckpoints() {
+        if (this.collectedCheckpoints == this.totalCheckpoints) {
+            return true;
+        }
+        return false;
+    }
+
+    // counts down timer using Phaser logic
+    onEventTimer() {
+        this.countdown -= 1; // one second
+        this.timerText.setText('Timer: ' + this.countdown);
     }
 }
