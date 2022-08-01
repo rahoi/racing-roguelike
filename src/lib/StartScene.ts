@@ -1,7 +1,7 @@
 import Phaser from "phaser"
 import type ConfigData from "./ConfigData"
 
-export default class GameScene extends Phaser.Scene {
+export default class StartScene extends Phaser.Scene {
 
     carSprite: Phaser.GameObjects.Sprite;
     bikeSprite: Phaser.GameObjects.Sprite;
@@ -9,11 +9,15 @@ export default class GameScene extends Phaser.Scene {
     mapConfigData: ConfigData;
     vehicles: Phaser.GameObjects.Sprite[]; 
     selectedVehicle: string;
+    timer: number;
+    numLevels:number;
     //vehicles: Phaser.GameObjects.Group;
 
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
+        this.timer = 15; // timer for first level
+        this.numLevels = 1;
     }
 
     preload() {
@@ -62,7 +66,7 @@ export default class GameScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image});
+                this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
             })
         })
 
