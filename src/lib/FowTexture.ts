@@ -1,6 +1,8 @@
 import type ConfigData from "./ConfigData"
+import type TileMapConstruct from "./TileMapConstruct"
 import type Bike from "./Bike"
 import type Car from "./Car"
+import game from "./Game";
 
 export default class FowTexture {
     scene: Phaser.Scene;
@@ -46,7 +48,7 @@ export default class FowTexture {
         this.rt = rt
         this.player = player
         
-        this.playerSurrounding = this.scene.make.graphics(this.scene);
+        this.playerSurrounding =  this.scene.make.graphics(this.scene);
         this.playerSurrounding.fillStyle(0xffffff);  //.setAlpha(0.4); //0xFFFFFF
         this.playerSurrounding.beginPath();
         this.playerSurrounding.arc(this.player.getLocX(), this.player.getLocY(), 100, 0, Math.PI *2);
@@ -74,4 +76,5 @@ export default class FowTexture {
     //     this.scene.cameras.main.startFollow(vision, true, 0.07, 0.07);
     //     // this.scene.cameras.main.setZoom(1.2);
     // }
+
 }

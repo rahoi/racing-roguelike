@@ -1,6 +1,7 @@
 import ConfigData from "./ConfigData"
 import StartScene from "./StartScene"
 import GameScene from "./GameScene"
+import EndScene from "./EndScene"
 import Phaser from "phaser"
 
 const tileDimension = 128;
@@ -14,6 +15,7 @@ let mapConfigData = new ConfigData(backgroundColor, tileDimension, tileMapHeight
 
 let startScene = new StartScene(mapConfigData);
 let gameScene = new GameScene(mapConfigData);
+let endScene = new EndScene(mapConfigData);
 
 const config: Phaser.Types.Core.GameConfig = 
 {
@@ -29,7 +31,7 @@ const config: Phaser.Types.Core.GameConfig =
     backgroundColor: backgroundColor, 
     // parent: 'gameContainer',
     // transparent: true,
-    scene: [startScene, gameScene],
+    scene: [startScene, gameScene, endScene],
     physics: {
         default: "arcade",
         arcade: {

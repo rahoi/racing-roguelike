@@ -45,6 +45,8 @@ export default class Player {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
+        // this.posX = 220,
+        // this.posY = 320,
         this.map = map;
         this.tileDimension = mapConfigData.tileDimension;
         this.mapHeight = mapConfigData.mapHeight;
