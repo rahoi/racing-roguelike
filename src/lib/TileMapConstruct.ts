@@ -25,9 +25,10 @@ export default class TileMapConstruct {
         this.tileMap = scene.make.tilemap(mapConfig);
         // const tileset = map.addTilesetImage(mapData.tiles);
         // this.roadLayer = map.createLayer(0, tileset, 0, 0); 
+
     }
 
-    // getTileMap() {
+    // get TileMap() {
     //     return this.tileMap;
     // }
 }

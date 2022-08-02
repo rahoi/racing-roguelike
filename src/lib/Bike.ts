@@ -5,7 +5,7 @@ import type MapArray from "./MapArray"
 // import classes
 import Player from "./Player"
 
-export default class Car extends Player {
+export default class Bike extends Player {
 
     constructor(map: MapArray, mapConfigData: ConfigData) {
         super(map, mapConfigData);        
