@@ -62,7 +62,7 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.tint = 0x1c1c1c;
+                tile.tint = 0xffffff;
 			}
 		}	
 	}

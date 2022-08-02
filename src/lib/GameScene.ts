@@ -5,6 +5,7 @@ import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
 import Car from "./Car"
 import Bike from "./Bike"
+import timer from "./timer"
 
 // import types
 import type ConfigData from "./ConfigData"
@@ -25,6 +26,8 @@ export default class GameScene extends Phaser.Scene {
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
     fow: FowLayer;
+    //timeMask: Phaser.GameObjects.Sprite;
+    timer: timer;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -42,9 +45,6 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        
-        // add sprite oil spill
-        this.load.image('oil', 'assets/oilSpill.png');
     }
 
     create() {
@@ -57,6 +57,7 @@ export default class GameScene extends Phaser.Scene {
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+        this.timer = new timer(this, this.mapConfigData);
 
         // create player vehicle class
         switch (this.playerVehicle) {
