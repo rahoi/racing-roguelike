@@ -116,6 +116,7 @@ export default class GameScene extends Phaser.Scene {
 
         // this.car.onTrack()
         // texture.updateCarMask(this.vision, this.car);
+       
         this.fow.calculateFow(this, this.player);
 
         // if timer goes to 0, switch to end scene

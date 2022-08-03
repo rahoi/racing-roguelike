@@ -2,13 +2,14 @@ import { Mrpas } from "mrpas";
 import type Bike from "./Bike";
 import type Car from "./Car";
 import type ConfigData from "./ConfigData";
+import type Player from "./Player";
 
 const n = 100; // size of the array
 
 export default class FowLayer{
 	map: Phaser.Tilemaps.Tilemap;
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
-	player: Car | Bike;
+	player: Player;
 	camera: Phaser.Cameras.Scene2D.CameraManager;
     tileDimension: number;
     mapHeight: number;
@@ -76,13 +77,17 @@ export default class FowLayer{
         this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
     }
 
-    calculateFow(scene: Phaser.Scene, player: Car | Bike) {       
+    calculateFow(scene: Phaser.Scene, player: Player) {       
         this.scene = scene;
         this.player = player;
     
         const px = this.map.worldToTileX(this.player.getLocX());
         const py = this.map.worldToTileY(this.player.getLocY());
         const radius = 4;
+
+        console.log('px: ' + px);
+        console.log('getLoc: ' + this.player.getLocX());
+
 
         let isVisible = (x:number, y:number): boolean => {
             const tile = this.roadLayer.getTileAt(x, y)
