@@ -1,7 +1,7 @@
-import type ConfigData from "./ConfigData.js"
-import terrainArray from "./TerrainArray.js"
-import PlaceTrackTiles from "./PlaceTrackTiles.js"
-import GeneratePoints from "./GeneratePoints.js"
+import type ConfigData from "./ConfigData"
+import terrainArray from "./TerrainArray"
+import PlaceTrackTiles from "./PlaceTrackTiles"
+import GeneratePoints from "./GeneratePoints"
 // works in node, not on browser
 import hull from "hull.js"
 import catmulRomInterpolation from "catmull-rom-interpolator"
@@ -63,7 +63,7 @@ export default class TrackGeneration {
         this.splineAlpha = 0.75; // alpha: 0 to 1, centripedal:  0.5, chordal (more rounded): 1
         this.splinePtsBtHull = 2;
 
-        this.minTrackLength = 10;
+        this.minTrackLength = 150;
         this.maxTrackLength = 250;
 
         this.generatePoints = new GeneratePoints(this.numPts, this.margin, this.concavityVal, this.convexityDifficulty, this.convexityDisp, this.trackAngle, this.splineAlpha, this.splinePtsBtHull, this.minTrackLength, this.maxTrackLength, mapConfigData);
@@ -73,34 +73,56 @@ export default class TrackGeneration {
         // creating mapArray matrix
         let points:number[][] = this.generatePoints.generateRandomPoints();
         let convexHull:number[][] = this.generatePoints.findConvexHull(points);
+        console.log("after convexhull")
+        for (let i = 0; i < convexHull.length; i++) {
+            console.log(i, convexHull[i])
+        }
 
         // this.findIfClockwiseTrack(convexHull);
 
-        let numPtMoves:number = 3;
-        let distVal:number = 10;
-        for(let i = 0; i < numPtMoves; i++) {  
-            convexHull = this.generatePoints.movePtsApart(convexHull, distVal);  
-        } 
+        // let numPtMoves:number = 3;
+        // let distVal:number = 10;
+        // for(let i = 0; i < numPtMoves; i++) {  
+        //     // convexHull = this.generatePoints.movePtsApart(convexHull, distVal);  
+        // } 
+        // console.log("after move")
+        // for (let i = 0; i < convexHull.length; i++) {
+        //     console.log(i, convexHull[i])
+        // }
 
         //push apart again, so we can stabilize the points distances. 
         let adjustedConvexPts:number[][] = this.generatePoints.adjustConvexity(convexHull);
 
-        numPtMoves = 3;
-        distVal = 5;
-        for(let i = 0; i < numPtMoves; i++) {  
-            adjustedConvexPts = this.generatePoints.movePtsApart(adjustedConvexPts, distVal);  
-        } 
+
+        // numPtMoves = 3;
+        // distVal = 5;
+        // for(let i = 0; i < numPtMoves; i++) {  
+        //     // adjustedConvexPts = this.generatePoints.movePtsApart(adjustedConvexPts, distVal);  
+        // } 
+        // console.log("move")
+        // for (let i = 0; i < adjustedConvexPts.length; i++) {
+        //     console.log(i, adjustedConvexPts[i])
+        // }
 
         let fixedAnglePts:number[][] = adjustedConvexPts;
-
-        numPtMoves = 1;
+        let numPtMoves = 1;
         for(let i = 0; i < numPtMoves; i++) {
             fixedAnglePts = this.generatePoints.fixTrackAngles(fixedAnglePts); 
             
             // adjustedPts = this.movePtsApart(adjustedPts);  
         }  
+        for (let i = 0; i < fixedAnglePts.length; i++) {
+            console.log(i, fixedAnglePts[i])
+            
+        }
 
         let splinePts:number[][] = this.generatePoints.findSpline(fixedAnglePts);
+
+        console.log(splinePts.length)
+        for (let i = 0; i < splinePts.length; i++) {
+            console.log(i, splinePts[i])
+            
+        }
 
         let trackCoordinates:number[][] = this.generatePoints.fillInTrack(splinePts);
         console.log("track length: ", trackCoordinates.length);
@@ -112,12 +134,12 @@ export default class TrackGeneration {
 
         if (trackCoordinates.length < this.minTrackLength || trackCoordinates.length > this.maxTrackLength) {
             this.mapArray = [];
-            // this.firstPt = [];
-            // this.startPt = [];
+
             this.innerTrack = [];
             // clockwiseTrack;
             this.createMapArray();
         } else {
+            console.log("done track")
             this.firstPt = trackCoordinates[0];
             this.innerTrack = trackCoordinates;
             this.isClockwise = this.generatePoints.findIfClockwiseTrack(trackCoordinates);
@@ -131,12 +153,6 @@ export default class TrackGeneration {
 
             // fill in mapArray with grass tiles, then inner track with road tiles
             this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, trackCoordinates, this.mapHeight, this.mapWidth, this.isClockwise, this.startIndex, this.startTile);
-            // this.placeTrackTiles.fillGrassTiles();
-            // this.placeTrackTiles.placeTiles(this.startIndex, this.startTile);
-            
-            // // finding outer track, then filling mapArray with road tiles
-            // this.outerTrack = this.placeTrackTiles.findOuterTrack();
-            // this.placeTrackTiles.fillOuterMissingPoints();
 
             this.mapArray = this.placeTrackTiles.fillTrackTiles();
         }

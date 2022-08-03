@@ -1,3 +1,4 @@
+import type {coordinate} from "./coordinateType"
 import type ConfigData from "./ConfigData.js"
 import terrainArray from "./TerrainArray.js"
 
@@ -12,6 +13,9 @@ export default class GeneratePoints {
     startTile:number;
     playerStartPt:number[];
     isClockwise:boolean;
+    trackNeighborMap:Map<string, coordinate>;
+    coordinateMap:Map<string, number[]>;
+    outerTrack:number[][];
 
     mapHeight:number;
     mapWidth:number;
@@ -44,10 +48,11 @@ export default class GeneratePoints {
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
 
+        // constants passed in from instantiation
         this.concavityVal = concavityVal;   // from 1 to inf, closer to 1: hugs shape more
 
         this.convexityDifficulty = convexityDifficulty;
-        this.convexityDisp = 10; //the closer the value is to 0, the harder the track should be 
+        this.convexityDisp = convexityDisp; //the closer the value is to 0, the harder the track should be 
 
         this.trackAngle = trackAngle; // in degrees
 
@@ -83,39 +88,41 @@ export default class GeneratePoints {
         return convexHull as number[][];
     }
 
-    movePtsApart(points:number[][], distVal:number) {  
-        // let distVal:number = 10; 
-        let maxDist:number = distVal ** 2;
-        let distBtPts:number;
+    // movePtsApart(points:number[][], distVal:number) {  
+    //     // let distVal:number = 10; 
+    //     let maxDist:number = distVal ** 2;
+    //     let distBtPts:number;
 
-        for (let i = 0; i < points.length; i++) {
-            for (let j = i + 1; j < points.length; ++j) {
-                distBtPts = ((points[j][0] - points[i][0]) ** 2) + ((points[j][1] - points[i][1]) ** 2);
+    //     for (let i = 0; i < points.length; i++) {
+    //         for (let j = i + 1; j < points.length; ++j) {
+    //             distBtPts = ((points[j][0] - points[i][0]) ** 2) + ((points[j][1] - points[i][1]) ** 2);
 
-                // console.log("dist",distSq)
-                if (distBtPts < maxDist) {
-                    let dx = points[j][0] - points[i][0];
-                    let dy = points[j][1] - points[i][1];
-                    let dl = Math.sqrt(dx ** 2 + dy ** 2);
-                    dx /= dl;
-                    dy /= dl;
-                    let diff = distVal - dl;
-                    dx *= diff;
-                    dy *= diff;
-                    points[j][0] += dx;
-                    points[j][1] += dy; 
-                    points[i][0] -= dx;
-                    points[i][1] -= dy; 
+    //             // console.log("dist",distSq)
+    //             if (distBtPts < maxDist) {
+    //                 let dx = points[j][0] - points[i][0];
+    //                 let dy = points[j][1] - points[i][1];
+    //                 let dl = Math.sqrt(dx ** 2 + dy ** 2);
+    //                 dx /= dl;
+    //                 dy /= dl;
+    //                 let diff = distVal - dl;
+    //                 dx *= diff;
+    //                 dy *= diff;
+    //                 points[j][0] += dx;
+    //                 points[j][1] += dy; 
+    //                 points[i][0] -= dx;
+    //                 points[i][1] -= dy; 
 
-                    points[i] = this.checkPtWithinBorder(points[i]);
+    //                 console.log(i)
+    //                 console.log("in move")
+    //                 console.log(points[i], points[j])
+    //                 points[i] = this.checkPtWithinBorder(points[i]);
+    //                 points[j] = this.checkPtWithinBorder(points[j]);
+    //             }
+    //         }
+    //     }
 
-                    points[j] = this.checkPtWithinBorder(points[j]);
-                }
-            }
-        }
-
-        return points;
-    }
+    //     return points;
+    // }
 
     checkPtWithinBorder(coordinate:number[]) {
         // if less than border
@@ -226,14 +233,19 @@ export default class GeneratePoints {
     findSpline(convexHull:number[][]) {
         // calculating catmull rom spline points
         let splinePts:number[][] = [];
+        let ptCount = 0;
 
         splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
-        splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
-        splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
+        // splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
+        // splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
 
         for (let i = 0; i < splinePts.length; i++) {
-            splinePts[i][0] = Math.trunc(splinePts[i][0]);
-            splinePts[i][1] = Math.trunc(splinePts[i][1]);
+            // if (spline) {
+                splinePts[ptCount][0] = Math.trunc(splinePts[ptCount][0]);
+                splinePts[ptCount][1] = Math.trunc(splinePts[ptCount][1]);
+                ptCount++;
+            // }
+            
         }
         splinePts.push([splinePts[0][0], splinePts[0][1]]);
 
@@ -245,7 +257,7 @@ export default class GeneratePoints {
         let trackCoordinates:number[][] = splinePts;
         let prevPrevInd:number = -1;
         let prevPt:number[] = trackCoordinates[0];
-
+        
         for (let i = 1; i < trackCoordinates.length; i++) {
             if (prevPt[0] == trackCoordinates[i][0] && prevPt[1] == trackCoordinates[i][1]) {
                 trackCoordinates.splice(i, 1);
@@ -262,8 +274,11 @@ export default class GeneratePoints {
             let yDiff:number = Math.abs(prevPt[1] - trackCoordinates[i][1]);
             let tempPt:number[] = prevPt;
 
-            if (xDiff != 0) {
-                tempPt = (prevPt[0] - trackCoordinates[i][0] > 0) ? [prevPt[0] - 1, prevPt[1]] : [prevPt[0] + 1, prevPt[1]]; // if curr height smaller
+            if (xDiff != 0) { 
+                // if curr height smaller
+                // console.log("xdiff")
+                // console.log(prevPt, trackCoordinates[i])
+                tempPt = (prevPt[0] > trackCoordinates[i][0]) ? [prevPt[0] - 1, prevPt[1]] : [prevPt[0] + 1, prevPt[1]];
 
                 if (tempPt == trackCoordinates[prevPrevInd]) {
                     tempPt[0] = trackCoordinates[i][0];
@@ -275,7 +290,8 @@ export default class GeneratePoints {
                 yDiff = Math.abs(prevPt[1] - trackCoordinates[i][1]);
             }
             else if (yDiff != 0) {
-                tempPt = (prevPt[1] - trackCoordinates[i][1] > 0) ? [prevPt[0], prevPt[1] - 1] : tempPt = [prevPt[0], prevPt[1] + 1]; // if curr width smaller
+                // console.log("ydiff")
+                tempPt = (prevPt[1] > trackCoordinates[i][1]) ? [prevPt[0], prevPt[1] - 1] : tempPt = [prevPt[0], prevPt[1] + 1]; // if curr width smaller
                 trackCoordinates.splice(i, 0, tempPt);
 
             }
@@ -372,148 +388,6 @@ export default class GeneratePoints {
         return trackCoordinates;
     }
 
-    // removeSnaking (trackCoordinates:number[][]) {
-    //     type coordinates = {
-    //         index:number;
-    //         numNeighbors:number;
-    //         downVert?:number[];  // neighrbor has bigger x (first coord)
-    //         upVert?:number[];  // neighrbor has smaller x
-    //         leftHorz?:number[];  // neighrbor has smaller y (second coord)
-    //         rightHorz?:number[];  // neighrbor has bigger y
-    //     }
-    //     let numNeighbors:number = 0;
-
-    //     let snakingMap = new Map<string, coordinates>();
-
-    //     for (let i = 0; i < trackCoordinates.length - 1; i++) {
-    //         let stringKey:string = JSON.stringify(trackCoordinates[i]);
-
-    //         let tempCoord:coordinates = {
-    //             index : i,
-    //             numNeighbors : 0,
-    //             // prevVert : [],
-    //             // nextVert : [],
-    //             // prevHorz : [],
-    //             // nextHorz : []
-    //         }
-
-    //         snakingMap.set(stringKey, tempCoord)
-    //     }
-    //     // console.log(snakingMap);
-
-
-    //     for (let i = 0; i < trackCoordinates.length; i++) {
-    //         // console.log("coord: ", trackCoordinates[k]);
-    //         let stringKey:string = JSON.stringify(trackCoordinates[i]);
-
-    //         let neighbors:number[][] = this.getNeighbors(trackCoordinates[i]);
-
-    //         // console.log(neighbors);
-
-    //         for (let j = 0; j < neighbors.length; j++) {
-    //             let neighborKey = JSON.stringify(neighbors[j]);
-    //             let tempCoord:coordinates | undefined = snakingMap.get(neighborKey);
-                
-    //             // console.log("temp: ", neighborKey, tempCoord);
-                
-    //             if (tempCoord != null) { 
-    //                 if (neighbors[j][0] < trackCoordinates[i][0]) {
-    //                     tempCoord.downVert = trackCoordinates[i];
-    //                     tempCoord.numNeighbors++;
-    //                     numNeighbors = Math.max(numNeighbors, tempCoord.numNeighbors);
-    //                 } else if (neighbors[j][0] > trackCoordinates[i][0]) {
-    //                     tempCoord.upVert = trackCoordinates[i];
-    //                     tempCoord.numNeighbors++;
-    //                     numNeighbors = Math.max(numNeighbors, tempCoord.numNeighbors);
-    //                 } else if (neighbors[j][1] < trackCoordinates[i][1]) {
-    //                     tempCoord.rightHorz = trackCoordinates[i];
-    //                     tempCoord.numNeighbors++;
-    //                     numNeighbors = Math.max(numNeighbors, tempCoord.numNeighbors);
-    //                 } else if (neighbors[j][1] > trackCoordinates[i][1]) {
-    //                     tempCoord.leftHorz = trackCoordinates[i];
-    //                     tempCoord.numNeighbors++;
-    //                     numNeighbors = Math.max(numNeighbors, tempCoord.numNeighbors);
-    //                 }
-                    
-    //                 // console.log(neighborKey, tempCoord);
-    //                 snakingMap.set(neighborKey, tempCoord);
-    //             }
-    //         }
-    //     }
-
-    //     let shortestSnake = Infinity;
-    //     let startIndex = -1;
-    //     let endIndex = -1;
-    //     let reverse:boolean = false;
-
-    //     for (let i = 0; i < trackCoordinates.length; i++) {
-    //         let stringKey:string = JSON.stringify(trackCoordinates[i]);
-    //         let tempCoord:coordinates | undefined = snakingMap.get(stringKey);
-
-    //         // if (tempCoord != null && tempCoord.numNeighbors > 2) {
-    //         //     if (startIndex == -1) {
-    //         //         startIndex = i;
-    //         //     } else if (startIndex != -1 && endIndex == -1) {
-    //         //         endIndex = i;
-    //         //         shortestSnake = Math.min(endIndex - startIndex - 1, trackCoordinates.length - endIndex + startIndex - 1);
-    //         //         if (shortestSnake == trackCoordinates.length - endIndex + startIndex) {
-    //         //             endIndex = startIndex;
-    //         //             startIndex = i;
-    //         //             reverse = true;
-    //         //         }
-    //         //     } else {
-    //         //         console.log(i)
-    //         //         let tempStart = Math.min(i - startIndex - 1, trackCoordinates.length - i + startIndex - 1);
-    //         //         let tempEnd = Math.min(endIndex - i - 1, trackCoordinates.length - endIndex + i - 1);
-    //         //         let temp = Math.min(tempStart, tempEnd);
-
-    //         //         shortestSnake = Math.min(temp, shortestSnake);
-
-    //         //         if (shortestSnake == temp) {
-    //         //             if (temp == tempStart) {
-    //         //                 endIndex = i;
-    //         //                 if (temp == trackCoordinates.length - i + startIndex - 1) {
-    //         //                     endIndex = startIndex;
-    //         //                     startIndex = i;
-    //         //                     reverse = true;
-    //         //                 }
-    //         //             } else {
-    //         //                 startIndex = i;
-    //         //                 if (temp == trackCoordinates.length - endIndex + i - 1) {
-    //         //                     endIndex = startIndex;
-    //         //                     startIndex = i;
-    //         //                     reverse = true;
-    //         //                 }
-    //         //             }
-    //         //         }
-    //         //     }
-    //         // }
-
-    //     }
-
-    //     // console.log(snakingMap)
-    //     // console.log(trackCoordinates[startIndex]);
-    //     // console.log(trackCoordinates[endIndex]);
-    //     // console.log(shortestSnake);
-        
-    //     // trackCoordinates.splice(startIndex+ 1, shortestSnake);
-
-    //     return numNeighbors;
-    // }
-
-    // getNeighbors(coordinate:number[]) {
-    //     let neighbors:number[][] = [];
-
-    //     let up:number[] = [coordinate[0] - 1, coordinate[1]];
-    //     let down:number[] = [coordinate[0] + 1, coordinate[1]];
-    //     let left:number[] = [coordinate[0], coordinate[1] - 1];
-    //     let right:number[] = [coordinate[0], coordinate[1] + 1];
-
-    //     neighbors.push(up, down, left, right);
-
-    //     return neighbors;
-    // }
-
     findIfClockwiseTrack(trackCoordinates:number[][]) {
         let trackArea:number = this.findTrackArea(trackCoordinates);
         // console.log("trackArea: ", trackArea);
@@ -534,8 +408,8 @@ export default class GeneratePoints {
 
             let coords:number[][] = [trackCoordinates[index - 3], trackCoordinates[index - 2], trackCoordinates[index - 1], trackCoordinates[index], trackCoordinates[index + 1], trackCoordinates[index + 2]];
 
-
-            if (coords[0][0] < coords[1][0] && coords[1][0] < coords[2][0] && coords[2][0] < coords[3][0] && coords[3][0] < coords[4][0] && coords[4][0] < coords[5][0]) { // want min 6 tile straight away for startof track
+            // want min 6 tile straight away for startof track
+            if (coords[0][0] < coords[1][0] && coords[1][0] < coords[2][0] && coords[2][0] < coords[3][0] && coords[3][0] < coords[4][0] && coords[4][0] < coords[5][0]) { 
                 startFound = true;
             }
             else if (coords[0][0] > coords[1][0] && coords[1][0] > coords[2][0] && coords[2][0] > coords[3][0] && coords[3][0] > coords[4][0] && coords[4][0] > coords[5][0]) {
@@ -608,6 +482,83 @@ export default class GeneratePoints {
     
         area /= 2;
         return area;
+    }
+
+    findOuterPtsFromInnerStraights(trackCoordinates:number[][]) {
+        let temp:number[];
+
+        for (let i = 0; i < trackCoordinates.length; i++) {
+
+        }
+    }
+
+    findInnerTrackNeighbors(trackCoordinates:number[][]) {
+        let trackMap:Map<string, coordinate> = new Map;
+        for (let i = 0; i < trackCoordinates.length - 1; i++) {
+            let stringKey:string = JSON.stringify(trackCoordinates[i]);
+            let tempCoord:coordinate;
+
+            if (trackMap.get(stringKey) == null) {
+                tempCoord = {
+                    index : i,
+                    numNeighbors : 0,
+
+                };
+                trackMap.set(stringKey, tempCoord);
+            } 
+        }
+
+        for (let i = 0; i < trackCoordinates.length; i++) {
+            let stringKey:string = JSON.stringify(trackCoordinates[i]);
+            let numNeighbors:number = 0;
+            let possibleNeighbors:number[][] = this.getNeighbors(trackCoordinates[i]);
+
+            for (let j = 0; j < possibleNeighbors.length; j++) {
+                let neighborKey = JSON.stringify(possibleNeighbors[j]);
+                let tempCoord:coordinate | undefined = trackMap.get(neighborKey);
+                                
+                if (tempCoord != null) { 
+                    if (possibleNeighbors[j][0] < trackCoordinates[i][0]) {
+                        if (tempCoord.downVert == undefined) {
+                            tempCoord.downVert = trackCoordinates[i];
+                            tempCoord.numNeighbors++;
+                        }
+                    } else if (possibleNeighbors[j][0] > trackCoordinates[i][0]) {
+                        if (tempCoord.upVert == undefined) {
+                            tempCoord.upVert = trackCoordinates[i];
+                            tempCoord.numNeighbors++;
+                        }
+                    } else if (possibleNeighbors[j][1] < trackCoordinates[i][1]) {
+                        if (tempCoord.rightHorz == undefined) {
+                            tempCoord.rightHorz = trackCoordinates[i];
+                            tempCoord.numNeighbors++;
+                        }
+                    } else if (possibleNeighbors[j][1] > trackCoordinates[i][1]) {
+                        if (tempCoord.leftHorz == undefined) {
+                            tempCoord.leftHorz = trackCoordinates[i];
+                            tempCoord.numNeighbors++;
+                        }
+                    }
+                    trackMap.set(neighborKey, tempCoord);
+                }
+            }
+        
+            this.trackNeighborMap = trackMap;
+            return trackMap;
+        }
+    }
+
+    getNeighbors(coordinate:number[]) {
+        let neighbors:number[][] = [];
+
+        let up:number[] = [coordinate[0] - 1, coordinate[1]];
+        let down:number[] = [coordinate[0] + 1, coordinate[1]];
+        let left:number[] = [coordinate[0], coordinate[1] - 1];
+        let right:number[] = [coordinate[0], coordinate[1] + 1];
+
+        neighbors.push(up, down, left, right);
+
+        return neighbors;
     }
 
 }
