@@ -5,12 +5,12 @@ import TileMapConstruct from "./TileMapConstruct"
 import FowTexture from "./FowTexture"
 import Car from "./Car"
 import Bike from "./Bike"
-import timer from "./timer"
 
 // import types
 import type ConfigData from "./ConfigData"
 import type {force, dir} from "./forceDirTypes"
 import FowLayer from "./FowLayer"
+//import timer from "./timer"
 
 export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
@@ -33,6 +33,7 @@ export default class GameScene extends Phaser.Scene {
     numLevels:number;
     collectedCheckpoints:number;
     totalCheckpoints:number;
+    //timer: timer;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -58,25 +59,33 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
+        //this.load.image('clock', './assets/chronometer.png');
+
+        this.load.image('clock', './assets/icons8-timer-64.png');
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
 
-        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
-
-        // every 1000ms (1s) call this.onEventTimer
-        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
-
+       
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
     
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-        //this.timer = new timer(this, this.mapConfigData);
+       
+        var centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
+        this.add.image(centerX - 550, 200, 'clock').setDisplaySize(300, 300);
+        this.timerText = this.add.text(centerX, 200, '00:' + this.countdown, {fontStyle: "Bold", fontSize: "220px", color: "#ffffff"}).setOrigin(0.5);
 
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+
+        //this.timer = new timer(this, this.mapConfigData, 45);
+
+        
         // create player vehicle class
         switch (this.playerVehicle) {
             case 'car': {
@@ -173,6 +182,12 @@ export default class GameScene extends Phaser.Scene {
     // counts down timer using Phaser logic
     onEventTimer() {
         this.countdown -= 1; // one second
-        this.timerText.setText('Timer: ' + this.countdown);
+        if (this.countdown < 10) {
+            this.timerText.setText('00:' + '0' + this.countdown);    
+        } else {
+            this.timerText.setText('00:' + this.countdown);
+        }
+        
     }
+
 }

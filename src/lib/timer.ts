@@ -2,47 +2,55 @@
 
 import type ConfigData from "./ConfigData";
 
-
-
+const startTime = new Date().getTime(); 
 
 export default class timer{
     scene: Phaser.Scene;
-    startTime: Date;
+    startTimeObject: Date;
+    //startTime: number;
+    currentTimeObject: Date;
+    //currentTime: number;
     totalTime: number;
     timeElapsed: number;
-    timeLabel: String;
+    //timeLabel: String;
     mapConfigData: ConfigData;
     centerX: number;
     gameTimer: any;
-    
-    
+    timerEvent: Phaser.Time.TimerEvent;
+    timeLabel: Phaser.GameObjects.Text;
 
-   constructor(scene: Phaser.Scene, mapConfigData: ConfigData) {
+   constructor(scene: Phaser.Scene, mapConfigData: ConfigData, totalTime: number) {
         this.scene = scene;
-        this.startTime = new Date();
-        this.totalTime = 120;  //120 sec
+        this.startTimeObject = new Date();
+        //const startTime = this.startTimeObject.getTime();
+        //this.currentTime = new Date();
+        this.totalTime = totalTime;
+
         this.timeElapsed = 0;
         this.mapConfigData = mapConfigData;  
         
-        this.formatTimer(this.scene);
+        this.formatTimer(this.totalTime);
         
         // this.gameTimer = game.time.events.loop(100, function(){
         //     this.updateTimer();
         // });
 
-
-        this.scene.game
+        this.timerEvent = this.scene.time.addEvent({ delay: 1000, callback: this.updateTimer, loop: true });
     }
 
-    formatTimer(scene: Phaser.Scene) {
-        this.scene = scene;
+    private formatTimer(totalTime: number) {
+        this.totalTime = totalTime;
+        //this.scene = scene;
         this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
 
-        var timeLabel = this.scene.add.text(this.centerX, 100, 'Timer', {fontSize: '250px'}).setFill('#ffffff').setShadow(2, 2, "#333333", 2).setOrigin(0.5, 0);
+        this.timeLabel = this.scene.add.text(this.centerX, 100, 'Timer: ' + this.updateTimer(this.totalTime), {fontSize: "250px", color: "#FFFFFF"}).setOrigin(0.5, 0);
+
+        // = this.scene.add.text(this.centerX, 100, 'Timer', {fontSize: '250px'}).setFill('#ffffff').setShadow(2, 2, "#333333", 2).setOrigin(0.5, 0);
 
 
         //this.timeLabel.text = result;
-        timeLabel.setText('time: ' + this.updateTimer());
+        
+        //this.timeLabel.setText('time: ' + this.updateTimer());
 
         //label.setText('timeScale: ');
         // this.timeLabel = this.scene.add.text(this.scene.world.centerX, 100, "00:00", {font: "100px Arial", fill: "#fff"});
@@ -52,27 +60,38 @@ export default class timer{
     }
 
 
-    updateTimer() {
-        //this.scene = scene;
-        var currentTime = new Date();
-        var timeDifference = this.startTime.getTime() - currentTime.getTime();
+    private updateTimer(totalTime: number) {
+        this.totalTime = totalTime;
         
+        this.currentTimeObject = new Date();
+        var currentTime = this.currentTimeObject.getTime();
+        var timeDifference = startTime - currentTime;
+        console.log("starting time " + startTime);
+        console.log("current time " + currentTime);
+
         //Time elapsed in seconds
         this.timeElapsed = Math.abs(timeDifference / 1000);
+        console.log("timeElapsed: " + this.timeElapsed);
         
         //Time remaining in seconds
         var timeRemaining = this.totalTime - this.timeElapsed;
-        
+        console.log("timeRemaining: " + timeRemaining);
+
         //Convert seconds into minutes and seconds
         var minutes = Math.floor(timeRemaining / 60);
         var seconds = Math.floor(timeRemaining) - (60 * minutes);
+
+        console.log("minutes: " + minutes);
+        console.log("seconds: " + seconds);
         
-        //Display minutes, add a 0 to the start if less than 2 digits
+        //Format minutes and seconds by adding a 0 to the start if less than 2 digits
         var result = (minutes < 10) ? "0" + minutes : minutes;
-        
-        //Display seconds, add a 0 to the start if less than 2 digits
         result += (seconds < 10) ? ":0" + seconds : ":" + seconds;
+        
+        console.log("result " + result);
+
         return result;
+        //this.timeLabel.text = result;
     }
 
 

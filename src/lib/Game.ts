@@ -1,8 +1,8 @@
 import ConfigData from "./ConfigData"
 import StartScene from "./StartScene"
 import GameScene from "./GameScene"
-import EndScene from "./EndScene"
 import Phaser from "phaser"
+import EndScene from "./EndScene";
 
 const tileDimension = 128;
 const tileMapHeight = 40;
