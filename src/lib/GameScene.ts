@@ -8,37 +8,31 @@ import Bike from "./Bike"
 
 // import types
 import type ConfigData from "./ConfigData"
-import type FowTexture from "./FowTexture"
 
 export default class GameScene extends Phaser.Scene {
-    playerVehicle: string;
     image: string;
+    playerVehicle: string;
     mapConfigData: ConfigData;
-    player: Bike | Car;
     mapArray: MapArray;
     tileMap: TileMapConstruct;
+    fow: FowLayer;
+    player: Bike | Car;
     playerSprite: Phaser.GameObjects.Sprite;
-    keys: object;
-
     vision: Phaser.GameObjects.Graphics;
     rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture;
-
     gasKey: Phaser.Input.Keyboard.Key;
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
     leftKey: Phaser.Input.Keyboard.Key;
-
-    angleDiff: number;
-    playerAngle: number;
-    fow: FowLayer;
-    initTimer:number;
-    countdown:number;
     timerText:Phaser.GameObjects.Text;
     timerEvent:Phaser.Time.TimerEvent;
-    numLevels:number;
-    collectedCheckpoints:number;
-    totalCheckpoints:number;
+    angleDiff: number;
+    playerAngle: number;
+    initTimer: number;
+    countdown: number;
+    numLevels: number;
+    collectedCheckpoints: number;
+    totalCheckpoints: number;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -72,7 +66,7 @@ export default class GameScene extends Phaser.Scene {
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-        
+
         this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
 
         // every 1000ms (1s) call this.onEventTimer

@@ -8,7 +8,7 @@ import Player from "./Player"
 export default class Bike extends Player {
 
     constructor(map: MapArray, mapConfigData: ConfigData) {
-        super(map, mapConfigData);        
+        super(map, mapConfigData);
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
