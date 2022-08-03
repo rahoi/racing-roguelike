@@ -19,7 +19,6 @@ export default class GameScene extends Phaser.Scene {
     player: Bike | Car;
     playerSprite: Phaser.GameObjects.Sprite;
     vision: Phaser.GameObjects.Graphics;
-    rt: Phaser.GameObjects.RenderTexture;
     gasKey: Phaser.Input.Keyboard.Key;
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
@@ -33,6 +32,7 @@ export default class GameScene extends Phaser.Scene {
     numLevels: number;
     collectedCheckpoints: number;
     totalCheckpoints: number;
+    
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -59,26 +59,19 @@ export default class GameScene extends Phaser.Scene {
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
         
-        // add sprite oil spill
-        this.load.image('oil', 'assets/oilSpill.png');
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-
-        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
-
-        // every 1000ms (1s) call this.onEventTimer
-        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
-
+       
         // add race track
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-    
+
         // add fog of war
         this.fow = new FowLayer(this.mapConfigData);
-        this.fow.mapLayer(this, this.tileMap.tileMap);   
+        this.fow.mapLayer(this, this.tileMap.tileMap);        
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
 
         // add input keys
@@ -102,6 +95,12 @@ export default class GameScene extends Phaser.Scene {
         // create player sprite
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
         this.playerSprite.angle = 90
+
+        // timer
+        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+
     }
     
     update() {
@@ -115,10 +114,9 @@ export default class GameScene extends Phaser.Scene {
         this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
 
         // this.car.onTrack()
-        // texture.updateCarMask(this.vision, this.car);
-       
+        // fow update
         this.fow.calculateFow(this, this.player);
-
+       
         // if timer goes to 0, switch to end scene
         if (this.countdown < 0) {
             this.scene.stop('GameScene');

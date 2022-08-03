@@ -15,7 +15,4 @@ export default class Bike extends Player {
         super.updateLoc(gas, brake, left, right)
     }
 
-    // getLocX(): number {
-    //     super();
-    // }
 }
