@@ -1,50 +1,51 @@
 import type ConfigData from "./ConfigData"
 import terrainArray from "./TerrainArray"
 import PlaceTrackTiles from "./PlaceTrackTiles"
-import GeneratePoints from "./GeneratePoints"
-// works in node, not on browser
-import hull from "hull.js"
-import catmulRomInterpolation from "catmull-rom-interpolator"
+import GenerateInnerTrack from "./GenerateInnerTrack"
 
 export default class TrackGeneration {
-    mapArray:number[][];
-    firstPt:number[];
-    startIndex:number;
-    startLine:number[];
-    startTile:number;
-    playerStartPt:number[];
-    innerTrack:number[][];
-    outerTrack:number[][];
-    isClockwise:boolean;
+    mapArray:number[][];    // stores all tile values for tile map
+    innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
+    outerTrack:number[][];  // array of outer track points
+
+    firstPt:number[];   // first point in inner track array
+    startIndex:number;  // index of start line in inner track array
+    startLine:number[]; // coordinate of start line
+    startTile:number;   // tile at start line
+    playerStartPt:number[]; // the player's starting point
+    isClockwise:boolean;    // true if innerTrack runs clockwise
     placeTrackTiles:PlaceTrackTiles;
-    generatePoints:GeneratePoints;
+    generateInnerTrack:GenerateInnerTrack;
 
     // constants for generating track
-    numPts:number;
+    numPts:number;  // number of random points to generate for initial track generation
 
     mapHeight:number;
     mapWidth:number;
-    margin:number;
-    borderWidth:number; // y
-    borderHeight:number; // x
+    margin:number;  // percentage of map dimension to calculate border
+    borderWidth:number; // buffer around sides of game screen
+    borderHeight:number; // buffer around top and bottom of game screen
 
-    concavityVal:number;
+    ptAdjustScale:number;  // value to scale the difference between min/max height/width and the coordinate height/width
 
-    convexityDifficulty:number;
-    convexityDisp:number;
+    concavityVal:number;   // used to calculate convex hull, from 1 to inf, closer to 1: hugs shape more
 
-    trackAngle:number;
+    convexityDifficulty:number; // used to adjust track convexity, the closer the value is to 0, the harder the track should be 
+    convexityDisp:number;   // used to adjust track convexity, maximum point displacement
 
-    splineAlpha:number;
-    splinePtsBtHull:number;
-    minTrackLength:number;
-    maxTrackLength:number;
+    trackAngle:number;  // in degrees
+
+    splineAlpha:number; // used in catmull rom interpolation, from 0 to 1, centripedal:  0.5, chordal (more rounded): 1
+    splinePtsBtHull:number; // number of points to add between track points to smoothen shape
+
+    minTrackLength:number;  // minimum track length
+    maxTrackLength:number;  // maximum track length
 
     constructor(mapConfigData:ConfigData) {
         this.mapArray = [];
         this.firstPt = [];
 
-        this.numPts = 30;
+        this.numPts = 50;
 
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
@@ -53,111 +54,49 @@ export default class TrackGeneration {
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
 
-        this.concavityVal = 50;   // from 1 to inf, closer to 1: hugs shape more
+        this.ptAdjustScale = 0.25;
+
+        this.concavityVal = 50;
 
         this.convexityDifficulty = 0.5;
-        this.convexityDisp = 10; //the closer the value is to 0, the harder the track should be 
+        this.convexityDisp = 10;
 
         this.trackAngle = 95; // in degrees
 
-        this.splineAlpha = 0.75; // alpha: 0 to 1, centripedal:  0.5, chordal (more rounded): 1
+        this.splineAlpha = 0.75;
         this.splinePtsBtHull = 2;
 
         this.minTrackLength = 150;
         this.maxTrackLength = 250;
 
-        this.generatePoints = new GeneratePoints(this.numPts, this.margin, this.concavityVal, this.convexityDifficulty, this.convexityDisp, this.trackAngle, this.splineAlpha, this.splinePtsBtHull, this.minTrackLength, this.maxTrackLength, mapConfigData);
+        this.generateInnerTrack = new GenerateInnerTrack(this.numPts, this.margin, this.ptAdjustScale, this.concavityVal, this.convexityDifficulty, this.convexityDisp, this.trackAngle, this.splineAlpha, this.splinePtsBtHull, this.minTrackLength, this.maxTrackLength, mapConfigData);
     }
 
     createMapArray() {
-        // creating mapArray matrix
-        let points:number[][] = this.generatePoints.generateRandomPoints();
-        let convexHull:number[][] = this.generatePoints.findConvexHull(points);
-        console.log("after convexhull")
-        for (let i = 0; i < convexHull.length; i++) {
-            console.log(i, convexHull[i])
-        }
+        this.innerTrack = this.generateInnerTrack.generateInnnerRaceTrack();
 
-        // this.findIfClockwiseTrack(convexHull);
-
-        // let numPtMoves:number = 3;
-        // let distVal:number = 10;
-        // for(let i = 0; i < numPtMoves; i++) {  
-        //     // convexHull = this.generatePoints.movePtsApart(convexHull, distVal);  
-        // } 
-        // console.log("after move")
-        // for (let i = 0; i < convexHull.length; i++) {
-        //     console.log(i, convexHull[i])
-        // }
-
-        //push apart again, so we can stabilize the points distances. 
-        let adjustedConvexPts:number[][] = this.generatePoints.adjustConvexity(convexHull);
-
-
-        // numPtMoves = 3;
-        // distVal = 5;
-        // for(let i = 0; i < numPtMoves; i++) {  
-        //     // adjustedConvexPts = this.generatePoints.movePtsApart(adjustedConvexPts, distVal);  
-        // } 
-        // console.log("move")
-        // for (let i = 0; i < adjustedConvexPts.length; i++) {
-        //     console.log(i, adjustedConvexPts[i])
-        // }
-
-        let fixedAnglePts:number[][] = adjustedConvexPts;
-        let numPtMoves = 1;
-        for(let i = 0; i < numPtMoves; i++) {
-            fixedAnglePts = this.generatePoints.fixTrackAngles(fixedAnglePts); 
-            
-            // adjustedPts = this.movePtsApart(adjustedPts);  
-        }  
-        for (let i = 0; i < fixedAnglePts.length; i++) {
-            console.log(i, fixedAnglePts[i])
-            
-        }
-
-        let splinePts:number[][] = this.generatePoints.findSpline(fixedAnglePts);
-
-        console.log(splinePts.length)
-        for (let i = 0; i < splinePts.length; i++) {
-            console.log(i, splinePts[i])
-            
-        }
-
-        let trackCoordinates:number[][] = this.generatePoints.fillInTrack(splinePts);
-        console.log("track length: ", trackCoordinates.length);
-
-        // let numNeighbors:number = this.removeSnaking(trackCoordinates);
-        // console.log("# neighbors: ", numNeighbors);
-
-        // let loop:number[][] = this.fillInLoop(fixedAnglePts);
-
-        if (trackCoordinates.length < this.minTrackLength || trackCoordinates.length > this.maxTrackLength) {
+        if (this.innerTrack.length < this.minTrackLength || this.innerTrack.length > this.maxTrackLength) {
             this.mapArray = [];
-
             this.innerTrack = [];
             // clockwiseTrack;
             this.createMapArray();
         } else {
-            console.log("done track")
-            this.firstPt = trackCoordinates[0];
-            this.innerTrack = trackCoordinates;
-            this.isClockwise = this.generatePoints.findIfClockwiseTrack(trackCoordinates);
-            this.startIndex = this.generatePoints.findStartIndex(trackCoordinates);
-            this.startLine = this.generatePoints.findStartLineCoord(trackCoordinates);
-            this.startTile = this.generatePoints.findStartTile(trackCoordinates);
-            this.playerStartPt = this.generatePoints.findPlayerStart(trackCoordinates);
+            this.firstPt = this.innerTrack[0];
+            this.innerTrack = this.innerTrack;
+            this.isClockwise = this.generateInnerTrack.findIfClockwiseTrack(this.innerTrack);
+            this.startIndex = this.generateInnerTrack.findStartIndex(this.innerTrack);
+            this.startLine = this.generateInnerTrack.findStartLineCoord(this.innerTrack);
+            this.startTile = this.generateInnerTrack.findStartTile(this.innerTrack);
+            this.playerStartPt = this.generateInnerTrack.findPlayerStart(this.innerTrack);
 
             console.log("1st pt: ", this.firstPt);
             console.log("player start: ", this.playerStartPt);
 
             // fill in mapArray with grass tiles, then inner track with road tiles
-            this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, trackCoordinates, this.mapHeight, this.mapWidth, this.isClockwise, this.startIndex, this.startTile);
+            this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.startIndex, this.startTile);
 
             this.mapArray = this.placeTrackTiles.fillTrackTiles();
         }
-        // for (let i = 0; i < trackCoordinates.length; i++) {
-        //         console.log("(", this.outerTrack[i][0], ", ", this.outerTrack[i][1], ")  --> ", i);
-        // } 
+
     }
 }

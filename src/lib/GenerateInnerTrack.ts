@@ -1,12 +1,12 @@
 import type {coordinate} from "./coordinateType"
-import type ConfigData from "./ConfigData.js"
-import terrainArray from "./TerrainArray.js"
+import type ConfigData from "./ConfigData"
+import terrainArray from "./TerrainArray"
 
 import hull from "hull.js"
 import catmulRomInterpolation from "catmull-rom-interpolator"
 
 
-export default class GeneratePoints {
+export default class GenerateInnerTrack {
     numPts:number;
     startLine:number[];
     startIndex:number;
@@ -24,6 +24,8 @@ export default class GeneratePoints {
     borderWidth:number;
     borderHeight:number;
 
+    ptAdjustScale:number;
+
     concavityVal:number;
 
     convexityDifficulty:number;
@@ -37,30 +39,70 @@ export default class GeneratePoints {
     minTrackLength:number;
     maxTrackLength:number;
 
-    constructor(numPts:number, margin:number, concavityVal:number, convexityDifficulty:number, convexityDisp:number, trackAngle:number, 
+    constructor(numPts:number, margin:number, ptAdjustScale:number, concavityVal:number, convexityDifficulty:number, convexityDisp:number, trackAngle:number, 
         splineAlpha:number, splinePtsBtHull:number, minTrackLength:number, maxTrackLength:number, mapConfigData:ConfigData) {
         this.numPts = numPts;
 
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.margin = margin;  // buffer around screen border
+        this.margin = margin;   // buffer around screen border
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
 
-        // constants passed in from instantiation
+        // constants used in helper functions passed in from instantiation
+        this.ptAdjustScale = ptAdjustScale;
+
         this.concavityVal = concavityVal;   // from 1 to inf, closer to 1: hugs shape more
 
-        this.convexityDifficulty = convexityDifficulty;
-        this.convexityDisp = convexityDisp; //the closer the value is to 0, the harder the track should be 
+        this.convexityDifficulty = convexityDifficulty; //the closer the value is to 0, the harder the track should be 
+        this.convexityDisp = convexityDisp;
 
-        this.trackAngle = trackAngle; // in degrees
+        this.trackAngle = trackAngle;   // in degrees
 
         this.splineAlpha = splineAlpha; // alpha: 0 to 1, centripedal:  0.5, chordal (more rounded): 1
         this.splinePtsBtHull = splinePtsBtHull;
 
         this.minTrackLength = minTrackLength;
         this.maxTrackLength = maxTrackLength;
+    }
+
+    // main function to generate the inner race track points 
+    generateInnnerRaceTrack() {
+        // generate random points
+        let points:number[][] = this.generateRandomPoints();
+
+        // finding the convex hull of the generated points
+        let convexHull:number[][] = this.findConvexHull(points);
+
+        // push points in the inner track array, so we can stabilize the points distances 
+        let numPtMoves:number = 3;
+        let distVal:number = 2.5;
+        for(let i = 0; i < numPtMoves; i++) {  
+            convexHull = this.movePtsApart(convexHull, distVal);  
+        } 
+
+        // adjust convexity of track by adding points between current track points
+        let adjustedConvexPts:number[][] = this.adjustConvexity(convexHull)
+        for(let i = 0; i < numPtMoves; i++) {  
+            adjustedConvexPts = this.movePtsApart(adjustedConvexPts, distVal);  
+        }
+
+        // fix the angles between points closer to this.trackAngle
+        let fixedAnglePts:number[][] = adjustedConvexPts;
+        for(let i = 0; i < numPtMoves; i++) {
+            fixedAnglePts = this.fixTrackAngles(adjustedConvexPts, this.trackAngle); 
+            fixedAnglePts = this.movePtsApart(fixedAnglePts, distVal);  
+        }  
+
+        // smoothens out the inner track array using catmull rom interpolation
+        let splinePts:number[][] = this.findSpline(fixedAnglePts);
+
+        // fills in the missing points in the inner track array
+        let trackCoordinates:number[][] = this.fillInTrack(splinePts);
+        // console.log("track length: ", trackCoordinates.length);
+
+        return trackCoordinates;
     }
 
     generateRandomPoints() {
@@ -78,90 +120,88 @@ export default class GeneratePoints {
         return points;
     }
 
-    findConvexHull(points:number[][]) {
+    findConvexHull(trackCoordinates:number[][]) {
         // calculating convex hull points
         let convexHull:object[] = [];
 
-        convexHull = hull(points, this.concavityVal);
+        convexHull = hull(trackCoordinates, this.concavityVal);
         convexHull.pop();
 
         return convexHull as number[][];
     }
 
-    // movePtsApart(points:number[][], distVal:number) {  
-    //     // let distVal:number = 10; 
-    //     let maxDist:number = distVal ** 2;
-    //     let distBtPts:number;
+    movePtsApart(trackCoordinates:number[][], distVal:number) {  
+        // let distVal:number = 10; 
+        let maxDist:number = distVal ** 2;
+        let distBtPts:number;
 
-    //     for (let i = 0; i < points.length; i++) {
-    //         for (let j = i + 1; j < points.length; ++j) {
-    //             distBtPts = ((points[j][0] - points[i][0]) ** 2) + ((points[j][1] - points[i][1]) ** 2);
+        for (let i = 0; i < trackCoordinates.length; i++) {
+            for (let j = i + 1; j < trackCoordinates.length; ++j) {
+                distBtPts = ((trackCoordinates[j][0] - trackCoordinates[i][0]) ** 2) + ((trackCoordinates[j][1] - trackCoordinates[i][1]) ** 2);
 
-    //             // console.log("dist",distSq)
-    //             if (distBtPts < maxDist) {
-    //                 let dx = points[j][0] - points[i][0];
-    //                 let dy = points[j][1] - points[i][1];
-    //                 let dl = Math.sqrt(dx ** 2 + dy ** 2);
-    //                 dx /= dl;
-    //                 dy /= dl;
-    //                 let diff = distVal - dl;
-    //                 dx *= diff;
-    //                 dy *= diff;
-    //                 points[j][0] += dx;
-    //                 points[j][1] += dy; 
-    //                 points[i][0] -= dx;
-    //                 points[i][1] -= dy; 
+                // console.log("dist",distSq)
+                if (distBtPts < maxDist) {
+                    let dx = trackCoordinates[j][0] - trackCoordinates[i][0];
+                    let dy = trackCoordinates[j][1] - trackCoordinates[i][1];
+                    let dl = Math.sqrt(dx ** 2 + dy ** 2);
+                    dx /= dl;
+                    dy /= dl;
+                    let diff = distVal - dl;
+                    dx *= diff;
+                    dy *= diff;
+                    trackCoordinates[j][0] += dx;
+                    trackCoordinates[j][1] += dy; 
+                    trackCoordinates[i][0] -= dx;
+                    trackCoordinates[i][1] -= dy; 
 
-    //                 console.log(i)
-    //                 console.log("in move")
-    //                 console.log(points[i], points[j])
-    //                 points[i] = this.checkPtWithinBorder(points[i]);
-    //                 points[j] = this.checkPtWithinBorder(points[j]);
-    //             }
-    //         }
-    //     }
+                    trackCoordinates[i] = this.checkPtWithinBorder(trackCoordinates[i]);
+                    trackCoordinates[j] = this.checkPtWithinBorder(trackCoordinates[j]);
+                }
+            }
+        }
 
-    //     return points;
-    // }
+        return trackCoordinates;
+    }
 
+    // ptAdjustScale: value to scale the difference between min/max height/width and the coordinate height/width
     checkPtWithinBorder(coordinate:number[]) {
-        // if less than border
         let minHeight:number = this.borderHeight;
         let minWidth:number = this.borderWidth;
 
         // if less than border
-        coordinate[0] = coordinate[0] < minHeight ? minHeight : coordinate[0];
-        coordinate[1] = coordinate[1] < minWidth ? minWidth : coordinate[1];
+        coordinate[0] = (coordinate[0] < minHeight) ? (minHeight + (coordinate[0] - minHeight) * this.ptAdjustScale) : coordinate[0];
+        coordinate[1] = (coordinate[1] < minWidth) ? (minWidth + (coordinate[1] - minWidth) * this.ptAdjustScale) : coordinate[1];
 
         // if greater than border
         let maxHeight:number = this.mapHeight - this.borderHeight;
         let maxWidth:number = this.mapWidth - this.borderWidth;
 
-        coordinate[0] = coordinate[0] >= maxHeight  ? maxHeight : coordinate[0];
-        coordinate[1] = coordinate[1] >= maxWidth ? maxWidth : coordinate[1];
+        coordinate[0] = (coordinate[0] > maxHeight) ? (maxHeight - (coordinate[0] - maxHeight) * this.ptAdjustScale) : coordinate[0];
+        coordinate[1] = (coordinate[1] > maxWidth) ? (maxWidth - (coordinate[1] - maxWidth) * this.ptAdjustScale) : coordinate[1];
 
         return coordinate;
     }
 
-    adjustConvexity(points:number[][]) {
+    adjustConvexity(trackCoordinates:number[][]) {
         let adjustedPoints:number[][] = [];  
         let displacement:number[] = [];  
 
 
-        for(let i = 0; i < points.length; i++) {  
-            let dispLen:number = (Math.random() ** this.convexityDifficulty) * this.convexityDisp;  
-            displacement = [0, 1];  
+        for(let i = 0; i < trackCoordinates.length; i++) {  
+            let dispLen:number = (Math.random() ** this.convexityDifficulty) * this.convexityDisp;
+            // displacement = [0, 1];
+            displacement = [Math.random(), Math.random()];
 
-            let rotationRad = (Math.random() * 360) * Math.PI / 180
-            displacement = this.rotatePt(displacement, rotationRad);
+            let rotation = (Math.random() * 360) * Math.PI / 180
+            displacement = this.rotatePt(displacement, rotation);
             displacement[0] *= dispLen
             displacement[1] *= dispLen
 
-            adjustedPoints[i * 2] = points[i];  
-            adjustedPoints[i * 2 + 1] = points[i];  
+            adjustedPoints[i * 2] = trackCoordinates[i];  
+            adjustedPoints[i * 2 + 1] = trackCoordinates[i];  
       
             let nextPt:number[];
-            nextPt = i < points.length - 1 ? points[i + 1] : points[0];
+            nextPt = i < trackCoordinates.length - 1 ? trackCoordinates[i + 1] : trackCoordinates[0];
 
             let temp:number[] = [];
             // midpoint calculation
@@ -189,72 +229,77 @@ export default class GeneratePoints {
         return point;
     }
 
-    fixTrackAngles(points:number[][]) {
-        for(let i = 0; i < points.length; i++) {  
-            let prev:number = (i - 1 < 0) ? points.length-1 : i-1;  
-            let next:number = (i + 1) % points.length;  
+    // desiredAngle in degrees
+    fixTrackAngles(trackCoordinates:number[][], desiredAngle:number) {
+        for(let i = 0; i < trackCoordinates.length; i++) {  
+            let prev:number = (i - 1 < 0) ? trackCoordinates.length - 1 : i - 1;  
+            let next:number = (i + 1) % trackCoordinates.length;
 
-            let px:number = points[i][0] - points[prev][0];  
-            let py:number = points[i][1] - points[prev][1];  
-            let pl:number = Math.sqrt(px ** 2 + py ** 2);  
-            px /= pl;  
-            py /= pl;  
+            // normalizing the vector from current (i) point to previous point
+            let prevX:number = trackCoordinates[i][0] - trackCoordinates[prev][0];  
+            let prevY:number = trackCoordinates[i][1] - trackCoordinates[prev][1];  
+            let distaneToPrev:number = Math.sqrt(prevX ** 2 + prevY ** 2);  
+            prevX /= distaneToPrev;  
+            prevY /= distaneToPrev;  
             
-            let nx:number = points[i][0] - points[next][0];
-            let ny:number = points[i][1] - points[next][1];
-            nx = -nx;  
-            ny = -ny;  
-            let nl:number = Math.sqrt(nx**2 + ny**2);  
-            nx /= nl;  
-            ny /= nl;  
+            // normalizing the vector from current (i) point to next point
+            let nextX:number = -(trackCoordinates[i][0] - trackCoordinates[next][0]);
+            let nextY:number = -(trackCoordinates[i][1] - trackCoordinates[next][1]);
+            let distanceToNext:number = Math.sqrt(nextX ** 2 + nextY ** 2);  
+            nextX /= distanceToNext;  
+            nextY /= distanceToNext;  
 
-            let a:number = Math.atan2((px * ny - py * nx), (px * nx + py * ny));  
+            // calculating angle in radians between vectors using atan2 of the perpendicular cross product and dot product
+            let angle:number = Math.atan2((prevX * nextY - prevY * nextX), (prevX * nextX + prevY * nextY));  
 
-            if(Math.abs(a * 180 / Math.PI) <= this.trackAngle) continue;  
+            // exits function if the angle between the vectors is at least desiredAngle
+            if(Math.abs(angle * 180 / Math.PI) <= desiredAngle) continue;  
 
-            let nA = this.trackAngle * Math.sign(a) * Math.PI / 180;  
-            let diff = nA - a;  
+
+            let nA = desiredAngle * Math.sign(angle) * Math.PI / 180;  
+            let diff = nA - angle;  // in radians
+
+            // let newNextPt:number[] = this.rotatePt(points[next], diff);
+            // points[next][0] = points[i][0] + newX;  
+            // points[next][1] = points[i][1] + newY;  
             let cos = Math.cos(diff);  
             let sin = Math.sin(diff);  
-            let newX = nx * cos - ny * sin;  
-            let newY = nx * sin + ny * cos;  
-            newX *= nl;  
-            newY *= nl;  
-            points[next][0] = points[i][0] + newX;  
-            points[next][1] = points[i][1] + newY;  
+            let newX = nextX * cos - nextY * sin;  
+            let newY = nextX * sin + nextY * cos;  
+            newX *= distanceToNext;  
+            newY *= distanceToNext;  
+            trackCoordinates[next][0] = trackCoordinates[i][0] + newX;  
+            trackCoordinates[next][1] = trackCoordinates[i][1] + newY;  
 
             // if less than 0
-            points[next] = this.checkPtWithinBorder(points[next]);
+            trackCoordinates[next] = this.checkPtWithinBorder(trackCoordinates[next]);
         }
 
-        return points;
+        return trackCoordinates;
     }
 
-    findSpline(convexHull:number[][]) {
+    findSpline(trackCoordinates:number[][]) {
         // calculating catmull rom spline points
         let splinePts:number[][] = [];
         let ptCount = 0;
 
-        splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
+        splinePts = catmulRomInterpolation(trackCoordinates, this.splineAlpha, this.splinePtsBtHull, true);
         // splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
         // splinePts = catmulRomInterpolation(convexHull, this.splineAlpha, this.splinePtsBtHull, true);
 
         for (let i = 0; i < splinePts.length; i++) {
-            // if (spline) {
-                splinePts[ptCount][0] = Math.trunc(splinePts[ptCount][0]);
-                splinePts[ptCount][1] = Math.trunc(splinePts[ptCount][1]);
-                ptCount++;
-            // }
-            
+            splinePts[i][0] = Math.trunc(splinePts[i][0]);
+            splinePts[i][1] = Math.trunc(splinePts[i][1]);
         }
+        // add the first pt in the track to the back to complete the loop
         splinePts.push([splinePts[0][0], splinePts[0][1]]);
 
         return splinePts;
     }
 
-    fillInTrack(splinePts:number[][]) {
+    fillInTrack(trackCoordinates:number[][]) {
         // filling in polygon
-        let trackCoordinates:number[][] = splinePts;
+        // let trackCoordinates:number[][] = splinePts;
         let prevPrevInd:number = -1;
         let prevPt:number[] = trackCoordinates[0];
         
