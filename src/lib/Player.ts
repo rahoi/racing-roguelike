@@ -113,14 +113,19 @@ export default class Player {
     }
 
     applyFriction() {
+        /* set minimum speed */
         if (this.velocity.getMagnitude() < 0.02) {
             this.velocity.set(0,0)
         }
 
+        /* set friction (prop to vel) and drag (wind resistance: prop to vel squared):
+         * frictionForce = velocity * friction 
+         * dragForce = velocity * vel.mag * drag */
         let frictionForce = Vector.multiplyScalar(this.velocity, this.friction)
         let dragForce = Vector.multiplyScalar(this.velocity, this.velocity.getMagnitude())
         dragForce = Vector.multiplyScalar(dragForce, this.drag)
 
+        /* friciton is more significant when moving slowly */
         if (this.velocity.getMagnitude() < 50) {
             frictionForce = Vector.multiplyScalar(frictionForce, 3)
         }
