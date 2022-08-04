@@ -35,19 +35,10 @@ export default class GameScene extends Phaser.Scene {
         this.mapConfigData = mapConfigData;
     }
 
-    init(data: any) {
-        this.playerVehicle = data.id;
-        this.image = data.image;
-        this.initTimer = data.timer;
-        this.countdown = data.timer;
-        this.numLevels = data.numLevels;
-    }
-
     preload() {
-        this.load.image(this.playerVehicle, this.image)
+        this.load.image('car', 'assets/Cars/car_blue_3.png')
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        
     }
 
     create() {
@@ -69,12 +60,6 @@ export default class GameScene extends Phaser.Scene {
         // create player sprite
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
         this.playerSprite.angle = 90
-
-        // timer
-        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
-        // every 1000ms (1s) call this.onEventTimer
-        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
-
     }
     
     update() {
