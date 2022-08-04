@@ -39,7 +39,7 @@ export default class Player {
     slipSpeed: number
     tractionFast: number
     tractionSlow: number
-
+    offRoadFactor: number
 
     constructor(map: MapArray, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
@@ -67,14 +67,15 @@ export default class Player {
         this.steerFactor = 15           // amount that front wheel turns
         this.enginePower = 1.5          // forward acceleration force
         this.brakingFactor = -0.05      // backwards acceleration force
-        this.maxReverseSpeed = 50       // max reverse velocity
+        this.maxReverseSpeed = 20       // max reverse velocity
 
-        // set environment attributes: at speed 600, drag force overcomes friction force
+        // set environment attributes: at speed , drag force overcomes friction force
         this.friction = -0.02
         this.drag = -0.001
         this.slipSpeed = 10
         this.tractionFast = 0.00001
         this.tractionSlow = 0.7
+        this.offRoadFactor = 3.5
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
@@ -88,7 +89,7 @@ export default class Player {
 
         /* acceleration input */
         if (gas) {
-            //console.log("GAS ------------------------------------------")
+            console.log("GAS ------------------------------------------")
             this.acceleration.setX(Math.cos(this.heading * Math.PI / 180) * this.enginePower)
             this.acceleration.setY(Math.sin(this.heading * Math.PI / 180) * this.enginePower)
         }
@@ -103,12 +104,13 @@ export default class Player {
         /* set up velocity dependents */
         this.applyFriction()
         this.calculateSteering()
-        //console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
         //console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
 
         /* set new position */
         this.velocity = Vector.add(this.velocity, this.acceleration)
         this.pos = Vector.add(this.pos, this.velocity)
+        //console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        //console.log("vel mag :" + this.velocity.getMagnitude())
         //console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
     }
 
@@ -125,9 +127,9 @@ export default class Player {
         let dragForce = Vector.multiplyScalar(this.velocity, this.velocity.getMagnitude())
         dragForce = Vector.multiplyScalar(dragForce, this.drag)
 
-        /* friciton is more significant when moving slowly */
-        if (this.velocity.getMagnitude() < 50) {
-            frictionForce = Vector.multiplyScalar(frictionForce, 3)
+        /* off road has more friction) */
+        if (!this.onTrack()) {
+            frictionForce = Vector.multiplyScalar(frictionForce, this.offRoadFactor)
         }
 
         this.acceleration = Vector.add(this.acceleration, dragForce)
@@ -192,17 +194,17 @@ export default class Player {
         return this.heading;
     }
 
-    playerMask(scene: Phaser.Scene){
-        const mask = scene.make.image({
-            x: this.pos.getX(),
-            y: this.pos.getY(),
-            key: 'mask',
-            add: true
-        });
-    }
+    // playerMask(scene: Phaser.Scene) {
+    //     const mask = scene.make.image({
+    //         x: this.pos.getX(),
+    //         y: this.pos.getY(),
+    //         key: 'mask',
+    //         add: true
+    //     });
+    // }
 
     onTrack() {
-        let currTile = this.map.mapArray[Math.trunc(this.pos.getY() / 128)][Math.trunc(this.pos.getX() / 128)]
+        let currTile = this.map.mapArray[Math.trunc((-1) * this.pos.getY() / 128)][Math.trunc(this.pos.getX() / 128)]
         
         // logging car's position on the tilemap (not its pixel position)
         // console.log("x: ", Math.trunc(this.posX / 128), " y: ", Math.trunc(this.posY / 128))
