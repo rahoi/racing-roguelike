@@ -1,3 +1,4 @@
+import type {coordinate} from "./coordinateType"
 import type ConfigData from "./ConfigData"
 import terrainArray from "./TerrainArray"
 import PlaceTrackTiles from "./PlaceTrackTiles"
@@ -7,11 +8,13 @@ export default class TrackGeneration {
     mapArray:number[][];    // stores all tile values for tile map
     innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
     outerTrack:number[][];  // array of outer track points
+    neighborMap:Map<string, coordinate>;
+    allTrackPoints:number[][];
+    outerRim:number[][];
 
-    firstInnerPt:number[];   // first point in inner track array
-    startIndex:number;  // index of start line in inner track array
-    startLine:number[]; // coordinate of start line
-    startTile:number;   // tile at start line
+    innerStartLineIndex:number;  // index of start line in inner track array
+    innerStartLinePt:number[]; // coordinate of start line
+    innerStartTile:number;   // tile at start line
     playerStartPt:number[]; // coordinate of the player's starting point
     isClockwise:boolean;    // true if innerTrack runs clockwise
     placeTrackTiles:PlaceTrackTiles;
@@ -43,28 +46,28 @@ export default class TrackGeneration {
 
     constructor(mapConfigData:ConfigData) {
         this.mapArray = [];
-        this.firstInnerPt = [];
+        // this.firstInnerPt = [];
 
-        this.numPts = 50;
+        this.numPts = 20;
 
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.margin = 0.2;  // buffer around screen border
+        this.margin = 0.18;  // buffer around screen border
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
 
-        this.ptAdjustScale = 0.25;
+        this.ptAdjustScale = 0.325;
 
-        this.concavityVal = 50;
+        this.concavityVal = 80;
 
-        this.convexityDifficulty = 0.5;
-        this.convexityDisp = 10;
+        this.convexityDifficulty = 0.25;
+        this.convexityDisp = 12;
 
-        this.trackAngle = 95; // in degrees
+        this.trackAngle = 110; // in degrees
 
-        this.splineAlpha = 0.75;
-        this.splinePtsBtHull = 2;
+        this.splineAlpha = 0.99;
+        this.splinePtsBtHull = 1;
 
         this.minTrackLength = 150;
         this.maxTrackLength = 250;
@@ -81,22 +84,89 @@ export default class TrackGeneration {
             // clockwiseTrack;
             this.createMapArray();
         } else {
-            this.firstInnerPt = this.innerTrack[0];
             this.innerTrack = this.innerTrack;
-            this.isClockwise = this.generateInnerTrack.findIfClockwiseTrack(this.innerTrack);
-            this.startIndex = this.generateInnerTrack.findStartIndex(this.innerTrack);
-            this.startLine = this.generateInnerTrack.findStartLineCoord(this.innerTrack);
-            this.startTile = this.generateInnerTrack.findStartTile(this.innerTrack);
-            this.playerStartPt = this.generateInnerTrack.findPlayerStart(this.innerTrack);
+            this.isClockwise = this.generateInnerTrack.getIsClockwise();
+            this.innerStartLineIndex = this.generateInnerTrack.getStartLineIndex();
+            this.innerStartLinePt = this.generateInnerTrack.getStartLineCoord();
+            this.innerStartTile = this.generateInnerTrack.getStartTile();
+            this.playerStartPt = this.generateInnerTrack.getPlayerStart();
 
-            console.log("1st pt: ", this.firstInnerPt);
+            console.log("clockwise: ", this.isClockwise);
+            console.log("first pt: ", this.innerTrack[0])
+            console.log("start line: ", this.innerStartLinePt);
             console.log("player start: ", this.playerStartPt);
+            console.log("start tile: ", this.innerStartTile);
 
             // fill in mapArray with grass tiles, then inner track with road tiles
-            this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.startIndex, this.startTile);
+            this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.innerStartLineIndex, this.innerStartTile);
 
             this.mapArray = this.placeTrackTiles.fillTrackTiles();
+            this.neighborMap = this.placeTrackTiles.getNeighborMap();
+            this.allTrackPoints = this.placeTrackTiles.getAllTrackPts();
+            this.outerRim = this.placeTrackTiles.getOuterRim();
+
+            // finds if there a long, narrow offshoots
+            // ie: where a two adjacent points both only have two neighbors in the rest of the track points
+            let offshoots:boolean = this.#checkNarrowOffshoots(this.neighborMap);
+
+            // finds if outer rim ever doubles back on itself
+            let doublesBack:boolean = this.#checkDoublingBack(this.outerRim);
+
+            // regenerates map if there are any offshoots or doubling back
+            if (doublesBack || offshoots) {
+                this.mapArray = [];
+                this.innerTrack = [];
+                this.createMapArray();
+            } else{
+                console.log("track length: ", this.innerTrack.length);
+            }
+            
+        }
+    }
+
+    #checkNarrowOffshoots(neighborMap:Map<string, coordinate>) {
+        for (let key of neighborMap.keys()) {
+            let neighbor:coordinate | undefined = neighborMap.get(key);
+
+            if (neighbor != null && neighbor.numNeighbors <= 2) {
+                let upCoordString = JSON.stringify(neighbor.upVert);
+                let neighborUp:coordinate | undefined = neighborMap.get(upCoordString);
+
+                let downCoordString = JSON.stringify(neighbor.downVert);
+                let neighborDown:coordinate | undefined = neighborMap.get(downCoordString);
+    
+                let leftCoordString = JSON.stringify(neighbor.leftHorz);
+                let neighborLeft:coordinate | undefined = neighborMap.get(leftCoordString);
+    
+                let rightCoordString = JSON.stringify(neighbor.rightHorz);
+                let neighborRight:coordinate | undefined = neighborMap.get(rightCoordString);
+
+                if ((neighborUp != null && neighborUp.numNeighbors == 2) 
+                || (neighborDown != null && neighborDown.numNeighbors == 2)
+                || (neighborLeft != null && neighborLeft.numNeighbors == 2)
+                || (neighborRight != null && neighborRight.numNeighbors == 2)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // checks if the points in the track double back on themselves
+    #checkDoublingBack(trackCoordinates:number[][]) {
+        for (let i = 0; i < trackCoordinates.length - 1; i++) {
+            let currIndex = i;
+            let nextIndex = i + 1;
+
+            let heightDiff = Math.abs(trackCoordinates[nextIndex][0] - trackCoordinates[currIndex][0]);
+            let widthDiff = Math.abs(trackCoordinates[nextIndex][1] - trackCoordinates[currIndex][1]);
+
+            // dupicate points were already removed from the track arrays so if the sum of differences between their coordinates
+            // is greater than 1, the track doubles back on itself
+            if (heightDiff + widthDiff > 1) {
+                return true;
+            }
         }
 
+        return false;
     }
 }
