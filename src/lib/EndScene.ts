@@ -6,6 +6,7 @@ export default class EndScene extends Phaser.Scene {
     active:boolean = false;
     score:number;
     numLevels:number;
+    endSound: Phaser.Sound.BaseSound;
 
     constructor(mapConfigData: ConfigData) {
         super("EndScene");
@@ -17,7 +18,18 @@ export default class EndScene extends Phaser.Scene {
         this.numLevels = data.numLevels;
     }
 
+    preload() {
+        this.load.audio('endSound', './assets/game-over-sound.wav');
+    }
+
     create() {
+        //sound 
+        this.endSound = this.sound.add('endSound');
+
+        this.endSound.play({
+            loop: false
+        });
+
         // when viewing the entire map
         const x = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
         const y = this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2 - 300;
@@ -39,6 +51,7 @@ export default class EndScene extends Phaser.Scene {
 
         // reloads the game when pointer clicks then is let up
         this.input.on("pointerup", () =>  {
+            this.endSound.destroy();
             location.reload()
         });
 

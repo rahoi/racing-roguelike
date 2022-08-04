@@ -23,9 +23,20 @@ export default class StartScene extends Phaser.Scene {
     preload() {
         this.load.image('car', 'assets/Cars/car_blue_3.png')
         this.load.image('bike', 'assets/Motorcycles/motorcycle_yellow.png')
+        this.load.audio('startSound', './assets/video-game-land-sound.wav');
     }
 
     create() {
+
+        //sound 
+        var startSceneSound = this.sound.add('startSound');
+
+        startSceneSound.play({
+            loop: true
+        });
+
+
+
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.5,
@@ -66,6 +77,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
+                startSceneSound.destroy();
                 this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
             })
         })
@@ -81,6 +93,10 @@ export default class StartScene extends Phaser.Scene {
 		//         this.scene.start('GameScene')
         //     })
         // }, this);
+
+
+
+
     }
 
 }
