@@ -1,21 +1,20 @@
 // import classes
-import Phaser from "phaser"
+import type ConfigData from "./ConfigData"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
+import FowTexture from "./FowTexture"
 import Car from "./Car"
-
-// import types
-import type ConfigData from "./ConfigData"
+import Phaser from "phaser"
 
 export default class GameScene extends Phaser.Scene {
-    image: string;
-    playerVehicle: string;
     mapConfigData: ConfigData;
     mapArray: MapArray;
     tileMap: TileMapConstruct;
     player: Car;
     playerSprite: Phaser.GameObjects.Sprite;
     vision: Phaser.GameObjects.Graphics;
+    rt: Phaser.GameObjects.RenderTexture;
+    texture: FowTexture;
     gasKey: Phaser.Input.Keyboard.Key;
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
@@ -44,10 +43,11 @@ export default class GameScene extends Phaser.Scene {
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-       
-        // add race track
+
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
+        this.texture = new FowTexture(this.mapConfigData);
+        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
 
         // add input keys
         this.gasKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -58,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
         this.player = new Car(this.mapArray, this.mapConfigData)
 
         // create player sprite
-        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
+        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), 'car')
         this.playerSprite.angle = 90
     }
     
