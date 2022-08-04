@@ -28,4 +28,13 @@ export default class Car extends Player {
     onTrack() {
         return super.onTrack()
     }
+
+    carMask(scene: Phaser.Scene){
+        const mask = scene.make.image({
+            x: this.posX,
+            y: this.posY,
+            key: 'mask',
+            add: true
+        });
+    }
 }

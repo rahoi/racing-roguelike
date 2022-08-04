@@ -14,7 +14,6 @@ export default class Bike extends Player {
 
     updateDir(dir: dir) {
         super.updateDir(dir)
-        
     }
 
     updateLoc(force: force) {

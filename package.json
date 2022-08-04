@@ -24,7 +24,7 @@
   "dependencies": {
     "catmull-rom-interpolator": "^1.0.1",
     "hull.js": "^1.0.2",
-    "phaser": "^3.55.2",
-    "three": "^0.142.0"
+    "mrpas": "^2.0.0",
+    "phaser": "^3.55.2"
   }
 }
