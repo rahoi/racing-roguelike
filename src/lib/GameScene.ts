@@ -1,133 +1,90 @@
-import type ConfigData from "./ConfigData"
+// import classes
+import Phaser from "phaser"
 import MapArray from "./MapArray"
 import TileMapConstruct from "./TileMapConstruct"
-import FowTexture from "./FowTexture"
 import Car from "./Car"
-import Phaser from "phaser"
+
+// import types
+import type ConfigData from "./ConfigData"
 
 export default class GameScene extends Phaser.Scene {
+    image: string;
+    playerVehicle: string;
     mapConfigData: ConfigData;
-    car: Car;
     mapArray: MapArray;
     tileMap: TileMapConstruct;
-    carSprite: Phaser.GameObjects.Sprite;
-    keys: object;
-
+    player: Car;
+    playerSprite: Phaser.GameObjects.Sprite;
     vision: Phaser.GameObjects.Graphics;
-    rt: Phaser.GameObjects.RenderTexture;
-    texture: FowTexture;
-
     gasKey: Phaser.Input.Keyboard.Key;
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
     leftKey: Phaser.Input.Keyboard.Key;
-
-    gas: number
-    brake: number
-    right: number
-    left: number
-
-    angleDiff: number
-    carAngle: number
-
+    timerText:Phaser.GameObjects.Text;
+    timerEvent:Phaser.Time.TimerEvent;
+    angleDiff: number;
+    playerAngle: number;
+    initTimer: number;
+    countdown: number;
+    numLevels: number;
+    collectedCheckpoints: number;
+    totalCheckpoints: number;
+    
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
         this.mapConfigData = mapConfigData;
     }
 
+    init(data: any) {
+        this.playerVehicle = data.id;
+        this.image = data.image;
+        this.initTimer = data.timer;
+        this.countdown = data.timer;
+        this.numLevels = data.numLevels;
+    }
+
     preload() {
-        this.load.image('car', 'assets/Cars/car_blue_small_3.png')
+        this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
+        
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-
+       
+        // add race track
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
-        this.texture = new FowTexture(this.mapConfigData);
-        this.rt = this.texture.mapTexture(this, this.tileMap.tileMap)
-
-        this.car = new Car(this.mapArray, this.mapConfigData)
-        this.carSprite = this.add.sprite(this.car.posX, this.car.posY, 'car')
-        this.carSprite.angle = 90
-        this.vision = this.texture.carMask(this, this.rt, this.car)
-        this.texture.createCamera(this, this.vision)
-        
-        // let car = new carCharacter()
-        // add car to pixel x pixel location
-        // add onTrack() function to Car.js
 
         // add input keys
         this.gasKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.brakeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        
+        this.player = new Car(this.mapArray, this.mapConfigData)
 
-        // type force = { w: boolean, s: boolean }
-        // this.force = <force>{
-        //     'w': false,
-        //     's': false,
-        // }
+        // create player sprite
+        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
+        this.playerSprite.angle = 90
 
-        // this.force = {
-        //     'gas': false,
-        //     'brake': false
-        // }
+        // timer
+        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
-        // this.dir = {
-        //     'left': false,
-        //     'right': false
-        // }
     }
     
     update() {
-        // update which forces are at play
-        if (this.gasKey.isDown) {
-            this.gas = 1
-        } else if (this.gasKey.isUp) {
-            this.gas = 0
-        }
-        if (this.brakeKey.isDown) {
-            this.brake = 1
-        } else if (this.brakeKey.isUp) {
-            this.brake = 0
-        }
-        if (this.leftKey.isDown) {
-            this.left = 1
-        } else if (this.leftKey.isUp) {
-            this.left = 0
-        }
-        if (this.rightKey.isDown) {
-            this.right = 1
-        } else if (this.rightKey.isUp) {
-            this.right = 0
-        }
+        // move the player object
+        this.playerAngle = this.player.getHeading()
+        this.player.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown)
+        this.angleDiff = this.playerAngle - this.player.getHeading()
 
-
-        this.carAngle = this.car.getAngle()
-        this.car.updateLoc(this.gas, this.brake, this.left, this.right)
-        this.angleDiff = this.carAngle - this.car.getAngle()
-
-        this.carSprite.setAngle(this.carSprite.angle + this.angleDiff)
-        this.carSprite.setPosition(this.car.getLocX(), (-1) * this.car.getLocY());
-        
-        
-
-
-
-        // this.car.updateDir(this.dir)
-        // this.carSprite.angle -= this.car.angleDiff
-        // console.log("phaser angle: " + this.carSprite.angle)
-        // this.car.updateLoc(this.force)        
-        // this.carSprite.setPosition(this.car.posX, this.car.posY);
-
-
-        // this.car.onTrack()
-        // texture.updateCarMask(this.vision, this.car);
+        // draw the sprite
+        this.playerSprite.setAngle(this.playerSprite.angle + this.angleDiff)
+        this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());       
     }
 }
-
-// export default gameScene
