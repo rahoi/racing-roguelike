@@ -8,11 +8,11 @@ export default class TrackGeneration {
     innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
     outerTrack:number[][];  // array of outer track points
 
-    firstPt:number[];   // first point in inner track array
+    firstInnerPt:number[];   // first point in inner track array
     startIndex:number;  // index of start line in inner track array
     startLine:number[]; // coordinate of start line
     startTile:number;   // tile at start line
-    playerStartPt:number[]; // the player's starting point
+    playerStartPt:number[]; // coordinate of the player's starting point
     isClockwise:boolean;    // true if innerTrack runs clockwise
     placeTrackTiles:PlaceTrackTiles;
     generateInnerTrack:GenerateInnerTrack;
@@ -43,7 +43,7 @@ export default class TrackGeneration {
 
     constructor(mapConfigData:ConfigData) {
         this.mapArray = [];
-        this.firstPt = [];
+        this.firstInnerPt = [];
 
         this.numPts = 50;
 
@@ -81,7 +81,7 @@ export default class TrackGeneration {
             // clockwiseTrack;
             this.createMapArray();
         } else {
-            this.firstPt = this.innerTrack[0];
+            this.firstInnerPt = this.innerTrack[0];
             this.innerTrack = this.innerTrack;
             this.isClockwise = this.generateInnerTrack.findIfClockwiseTrack(this.innerTrack);
             this.startIndex = this.generateInnerTrack.findStartIndex(this.innerTrack);
@@ -89,7 +89,7 @@ export default class TrackGeneration {
             this.startTile = this.generateInnerTrack.findStartTile(this.innerTrack);
             this.playerStartPt = this.generateInnerTrack.findPlayerStart(this.innerTrack);
 
-            console.log("1st pt: ", this.firstPt);
+            console.log("1st pt: ", this.firstInnerPt);
             console.log("player start: ", this.playerStartPt);
 
             // fill in mapArray with grass tiles, then inner track with road tiles
