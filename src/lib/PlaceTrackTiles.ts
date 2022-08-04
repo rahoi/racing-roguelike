@@ -21,8 +21,8 @@ export default class PlaceTiles {
 
     isClockwise:boolean;
 
-    constructor(mapArray:number[][], innerTrack:number[][], mapHeight:number, mapWidth:number, isClockwise:boolean, startIndex:number, startTile:number) {
-        this.mapArray = mapArray;
+    constructor(innerTrack:number[][], mapHeight:number, mapWidth:number, isClockwise:boolean, startIndex:number, startTile:number) {
+        // this.mapArray = mapArray;
         this.trackCoordinates = [];
         // this.trackCoordinates = innerTrack; // fill trackCoordinates with inner points
         this.innerTrack = innerTrack;
@@ -45,13 +45,13 @@ export default class PlaceTiles {
     fillTrackTiles() {
         // fill entire map with dirt/glass tiles
         let mapArray = [];
-        mapArray = this.fillGrassTiles(mapArray, this.mapHeight, this.mapWidth);
+        mapArray = this.#fillGrassTiles(mapArray, this.mapHeight, this.mapWidth);
 
         // place inner track tiles on the map
-        mapArray = this.placeInnerTiles(mapArray, this.isClockwise, this.innerTrack, this.startIndex, this.innerStartTile);
+        mapArray = this.#placeInnerTiles(mapArray, this.isClockwise, this.innerTrack, this.startIndex, this.innerStartTile);
 
         // finding outer track using inner track tiles
-        let outerTrackArrays:{trackCoordinates:number[][]; outerTrack:number[][]; outerTrackString:string[];} = this.findOuterTrackPtsFromInner(mapArray, this.isClockwise, this.innerTrack, this.innerTrackString, this.outerTrack, this.outerTrackString);
+        let outerTrackArrays:{trackCoordinates:number[][]; outerTrack:number[][]; outerTrackString:string[];} = this.#findOuterTrackPtsFromInner(mapArray, this.isClockwise, this.innerTrack, this.innerTrackString, this.outerTrack, this.outerTrackString);
         this.trackCoordinates = outerTrackArrays.trackCoordinates;
         this.outerTrack = outerTrackArrays.outerTrack;
         this.outerTrackString = outerTrackArrays.outerTrackString;
@@ -61,20 +61,32 @@ export default class PlaceTiles {
             mapArray[this.outerTrack[i][0]][this.outerTrack[i][1]] = terrainArray.dirt;
         }
 
-        console.log("track:", this.trackCoordinates.length);
-        this.neighborMap = this.findTrackNeighbors(this.trackCoordinates);
-        console.log("neighbor map", this.neighborMap.size);
-
+        // get map of each track points neighbors that are also on the track
+        this.neighborMap = this.#findTrackNeighbors(this.trackCoordinates);
         
-        let arrays:{mapArray:number[][]; outerRim:number[][];} = this.placeOuterTiles(mapArray, this.outerTrack, this.outerTrackString, this.neighborMap, this.isClockwise, this.startIndex, this.innerStartTile);
-        this.mapArray = arrays.mapArray;
+        // places outer tiles on the map array, returns the map array and an array of all outer track points along the outer rim of the track
+        let arrays:{mapArray:number[][]; outerRim:number[][];} = this.#placeOuterTiles(mapArray, this.outerTrack, this.outerTrackString, this.neighborMap, this.isClockwise, this.startIndex, this.innerStartTile);
+        mapArray = arrays.mapArray;
         this.outerRim = arrays.outerRim;
 
-        return this.mapArray;
+        this.mapArray = mapArray;
+        return mapArray;
     }
 
+    getNeighborMap() {
+        return this.neighborMap;
+    }
 
-    fillGrassTiles(mapArray:number[][], mapHeight:number, mapWidth:number) {
+    getAllTrackPts() {
+        return this.trackCoordinates;
+    }
+
+    getOuterRim() {
+        return this.outerRim;
+    }
+
+    // ----------------------------------Priavte helper functions----------------------------------
+    #fillGrassTiles(mapArray:number[][], mapHeight:number, mapWidth:number) {
         for (let i = 0; i < mapHeight; i++) {
             let temp:number[] = [];
             for (let j = 0; j < mapWidth; j++) {
@@ -121,7 +133,7 @@ export default class PlaceTiles {
 
     }
 
-    placeInnerTiles(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], startIndex:number, startTile:number) {
+    #placeInnerTiles(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], startIndex:number, startTile:number) {
         let prevIndex:number;
         let currIndex:number;
         let nextIndex:number;
@@ -146,13 +158,13 @@ export default class PlaceTiles {
                 mapArray[curr[0]][curr[1]] = startTile;
 
             } else {
-                mapArray[curr[0]][curr[1]] = this.findInnerTile(mapArray, isClockwise, prev, curr, next);
+                mapArray[curr[0]][curr[1]] = this.#findTile(mapArray, isClockwise, prev, curr, next);
             }
         }
         return mapArray;
     }
 
-    findInnerTile(mapArray:number[][], isClockwise:boolean, prev:number[], curr:number[], next:number[]) {
+    #findTile(mapArray:number[][], isClockwise:boolean, prev:number[], curr:number[], next:number[]) {
         let tile:number;
         let prev_array:number[] = [];
 
@@ -211,7 +223,7 @@ export default class PlaceTiles {
         return tile;
     }
 
-    findOuterTrackPtsFromInner(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], innerTrackString:string[], outerTrack:number[][], outerTrackString:string[]) {
+    #findOuterTrackPtsFromInner(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], innerTrackString:string[], outerTrack:number[][], outerTrackString:string[]) {
         let trackCoordinates:number[][] = []; // creating array of all track coordinates
         let innerCoord:number[];
         let innerTile:number;
@@ -349,7 +361,7 @@ export default class PlaceTiles {
         return {trackCoordinates, outerTrack, outerTrackString};
     }
 
-    findTrackNeighbors(trackCoordinates:number[][]) {
+    #findTrackNeighbors(trackCoordinates:number[][]) {
         let neighborMap:Map<string, coordinate> = new Map;
         for (let i = 0; i < trackCoordinates.length - 1; i++) {
             let stringKey:string = JSON.stringify(trackCoordinates[i]);
@@ -365,7 +377,7 @@ export default class PlaceTiles {
         }
 
         for (let i = 0; i < trackCoordinates.length; i++) {
-            let possibleNeighbors:number[][] = this.findNeighbors(trackCoordinates[i]);
+            let possibleNeighbors:number[][] = this.#findNeighbors(trackCoordinates[i]);
 
             for (let j = 0; j < possibleNeighbors.length; j++) {
                 let neighborKey = JSON.stringify(possibleNeighbors[j]);
@@ -400,7 +412,7 @@ export default class PlaceTiles {
         return neighborMap;
     }
 
-    findNeighbors(coordinate:number[]) {
+    #findNeighbors(coordinate:number[]) {
         let neighbors:number[][] = [];
 
         let up:number[] = [coordinate[0] - 1, coordinate[1]];
@@ -413,14 +425,14 @@ export default class PlaceTiles {
         return neighbors;
     }
 
-    placeOuterTiles(mapArray:number[][], outerTrack:number[][], outerTrackString:string[], neighborMap:Map<string, coordinate>, isClockwise:boolean, startIndex:number, innerStartTile:number) {
+    #placeOuterTiles(mapArray:number[][], outerTrack:number[][], outerTrackString:string[], neighborMap:Map<string, coordinate>, isClockwise:boolean, startIndex:number, innerStartTile:number) {
         let outerRim:number[][] = JSON.parse(JSON.stringify(outerTrack));   // holds track pts on the outer rim of the race track
         let outerRimString:string[] = [];
 
         for (let i = 0; i <  outerTrack.length; i++) {
             let outerCoordKey = JSON.stringify(outerTrack[i]);
 
-            let isBlank:boolean = this.determineIfBlank(outerCoordKey, outerTrackString, neighborMap);
+            let isBlank:boolean = this.#determineIfBlank(outerCoordKey, outerTrackString, neighborMap);
            
             if (isBlank) {
                 mapArray[outerTrack[i][0]][outerTrack[i][1]] = terrainArray.blank_road;
@@ -467,14 +479,14 @@ export default class PlaceTiles {
                 mapArray[curr[0]][curr[1]] = outerStartTile;
 
             } else {
-                mapArray[curr[0]][curr[1]] = this.findInnerTile(mapArray, !isClockwise, prev, curr, next);
+                mapArray[curr[0]][curr[1]] = this.#findTile(mapArray, !isClockwise, prev, curr, next);
             }
         }
 
         return {mapArray, outerRim};
     }
 
-    determineIfBlank(outerCoordKey:string, outerTrackString:string[], neighborMap:Map<string, coordinate>) {
+    #determineIfBlank(outerCoordKey:string, outerTrackString:string[], neighborMap:Map<string, coordinate>) {
         let coordinate:coordinate | undefined = neighborMap.get(outerCoordKey);
         let numOuterNeighbors = 0;
 
@@ -507,21 +519,5 @@ export default class PlaceTiles {
         }
 
         return (numOuterNeighbors == 1);
-    }
-
-    findOuterTile(mapArray:number[][], isClockwise:boolean, prev:number[], curr:number[], next:number[]) {
-
-    }
-
-    getNeighborMap() {
-        return this.neighborMap;
-    }
-
-    getAllTrackPts() {
-        return this.trackCoordinates;
-    }
-
-    getOuterRim() {
-        return this.outerRim;
     }
 }

@@ -7,35 +7,38 @@ import catmulRomInterpolation from "catmull-rom-interpolator"
 
 
 export default class GenerateInnerTrack {
-    numPts:number;
-    startLineCoord:number[];
-    startIndexBeforeOffset:number;
-    innerStartTile:number;
-    playerStartPt:number[];
-    isClockwise:boolean;
-    trackNeighborMap:Map<string, coordinate>;
+    innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
+    startLinePt:number[];    // coordinate of start line
+    startIndexBeforeOffset:number;  // index of start line in inner track before offsetting inner track so start line is at index 1
+    innerStartTile:number;  // tile at start line
+    playerStartPt:number[]; // coordinate of the player's starting point
+    isClockwise:boolean;    // true if innerTrack runs clockwise
+    trackNeighborMap:Map<string, coordinate>;   // map of each track point's track neighbors
+    
+    // constants for generating track, sent in as param in constructor
+    numPts:number; // number of random points to generate for initial track generation
 
     mapHeight:number;
     mapWidth:number;
 
-    margin:number;
-    borderWidth:number;
-    borderHeight:number;
+    margin:number;  // percentage of map dimension to calculate border
+    borderWidth:number; // buffer around sides of game screen
+    borderHeight:number;    // buffer around top and bottom of game screen
 
-    ptAdjustScale:number;
+    ptAdjustScale:number;   // value to scale the difference between min/max height/width and the coordinate height/width
 
-    concavityVal:number;
+    concavityVal:number;    // used to calculate convex hull, from 1 to inf, closer to 1: hugs shape more
 
-    convexityDifficulty:number;
-    convexityDisp:number;
+    convexityDifficulty:number; // used to adjust track convexity, the closer the value is to 0, the harder the track should be 
+    convexityDisp:number;   // used to adjust track convexity, maximum point displacement
 
-    trackAngle:number;
+    trackAngle:number;  // desired minimum angle between track points, in degrees
 
-    splineAlpha:number;
-    splinePtsBtHull:number;
+    splineAlpha:number; // used in catmull rom interpolation, from 0 to 1 (exclusive), centripedal:  0.5, chordal (more rounded): 1
+    splinePtsBtHull:number; // number of points to add between track points to smoothen shape
 
-    minTrackLength:number;
-    maxTrackLength:number;
+    minTrackLength:number;  // minimum track length
+    maxTrackLength:number;  // maximum track length
 
     constructor(numPts:number, margin:number, ptAdjustScale:number, concavityVal:number, convexityDifficulty:number, convexityDisp:number, trackAngle:number, 
         splineAlpha:number, splinePtsBtHull:number, minTrackLength:number, maxTrackLength:number, mapConfigData:ConfigData) {
@@ -106,16 +109,39 @@ export default class GenerateInnerTrack {
 
             this.startIndexBeforeOffset = this.#findStartIndexBeforeOffset(innerTrack);
             
-            this.startLineCoord = this.#findStartLineCoord(innerTrack, this.startIndexBeforeOffset);
+            this.startLinePt = this.#findStartLineCoord(innerTrack, this.startIndexBeforeOffset);
             this.innerStartTile = this.#findStartTile(innerTrack, this.startIndexBeforeOffset, this.isClockwise);
             this.playerStartPt = this.#findPlayerStart(innerTrack, this.startIndexBeforeOffset);
 
             innerTrack = this.#offsetInnerTrack(innerTrack, this.startIndexBeforeOffset);
         }
 
+        this.innerTrack = innerTrack;
         return innerTrack;
     }
 
+    getIsClockwise() {
+        return this.isClockwise;
+    }
+
+    // after offsetting inner track, start line is at index 1
+    getStartLineIndex() {
+        return 1;
+    }
+
+    getStartLineCoord() {
+        return this.startLinePt;
+    }
+
+    getStartTile() {
+        return this.innerStartTile;
+    }
+
+    getPlayerStart() {
+        return this.playerStartPt;
+    }
+
+    // ----------------------------------Priavte helper functions----------------------------------
     #generateRandomPoints(numPts:number, mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number) {
         // generating random points
         let points:number[][] = [];
@@ -453,10 +479,6 @@ export default class GenerateInnerTrack {
         return isClockwise;
     }
 
-    getIsClockwise() {
-        return this.isClockwise;
-    }
-
     #findStartIndexBeforeOffset(trackCoordinates:number[][]) {
         let startFound:boolean = false;
         // let index:number = 2; // starts at the index before start line's min desired index, ie: min value for player's start index
@@ -503,18 +525,9 @@ export default class GenerateInnerTrack {
         return startIndex;
     }
 
-    // after offsetting inner track
-    getStartLineIndex() {
-        return 1;
-    }
-
     //
     #findStartLineCoord(trackCoordinates:number[][], startIndexBeforeOffset:number) {
         return trackCoordinates[startIndexBeforeOffset];
-    }
-
-    getStartLineCoord() {
-        return this.startLineCoord;
     }
 
     #findStartTile(trackCoordinates:number[][], startIndex:number, isClockwise:boolean) {
@@ -536,16 +549,8 @@ export default class GenerateInnerTrack {
         return startTile;
     }
 
-    getStartTile() {
-        return this.innerStartTile;
-    }
-
     #findPlayerStart(trackCoordinates:number[][], startIndexBeforeOffset:number) {
         return trackCoordinates[startIndexBeforeOffset - 1];
-    }
-
-    getPlayerStart() {
-        return this.playerStartPt;
     }
 
     // if calculated area using shoelace formula is negative, track is clockwise
@@ -571,74 +576,5 @@ export default class GenerateInnerTrack {
 
         return newInnerTrack;
     }
-
-    // findInnerTrackNeighbors(trackCoordinates:number[][]) {
-    //     let trackMap:Map<string, coordinate> = new Map;
-    //     for (let i = 0; i < trackCoordinates.length - 1; i++) {
-    //         let stringKey:string = JSON.stringify(trackCoordinates[i]);
-    //         let tempCoord:coordinate;
-
-    //         if (trackMap.get(stringKey) == null) {
-    //             tempCoord = {
-    //                 index : i,
-    //                 numNeighbors : 0,
-
-    //             };
-    //             trackMap.set(stringKey, tempCoord);
-    //         } 
-    //     }
-
-    //     for (let i = 0; i < trackCoordinates.length; i++) {
-    //         let stringKey:string = JSON.stringify(trackCoordinates[i]);
-    //         let numNeighbors:number = 0;
-    //         let possibleNeighbors:number[][] = this.getNeighbors(trackCoordinates[i]);
-
-    //         for (let j = 0; j < possibleNeighbors.length; j++) {
-    //             let neighborKey = JSON.stringify(possibleNeighbors[j]);
-    //             let tempCoord:coordinate | undefined = trackMap.get(neighborKey);
-                                
-    //             if (tempCoord != null) { 
-    //                 if (possibleNeighbors[j][0] < trackCoordinates[i][0]) {
-    //                     if (tempCoord.downVert == undefined) {
-    //                         tempCoord.downVert = trackCoordinates[i];
-    //                         tempCoord.numNeighbors++;
-    //                     }
-    //                 } else if (possibleNeighbors[j][0] > trackCoordinates[i][0]) {
-    //                     if (tempCoord.upVert == undefined) {
-    //                         tempCoord.upVert = trackCoordinates[i];
-    //                         tempCoord.numNeighbors++;
-    //                     }
-    //                 } else if (possibleNeighbors[j][1] < trackCoordinates[i][1]) {
-    //                     if (tempCoord.rightHorz == undefined) {
-    //                         tempCoord.rightHorz = trackCoordinates[i];
-    //                         tempCoord.numNeighbors++;
-    //                     }
-    //                 } else if (possibleNeighbors[j][1] > trackCoordinates[i][1]) {
-    //                     if (tempCoord.leftHorz == undefined) {
-    //                         tempCoord.leftHorz = trackCoordinates[i];
-    //                         tempCoord.numNeighbors++;
-    //                     }
-    //                 }
-    //                 trackMap.set(neighborKey, tempCoord);
-    //             }
-    //         }
-        
-    //         this.trackNeighborMap = trackMap;
-    //         return trackMap;
-    //     }
-    // }
-
-    // getNeighbors(coordinate:number[]) {
-    //     let neighbors:number[][] = [];
-
-    //     let up:number[] = [coordinate[0] - 1, coordinate[1]];
-    //     let down:number[] = [coordinate[0] + 1, coordinate[1]];
-    //     let left:number[] = [coordinate[0], coordinate[1] - 1];
-    //     let right:number[] = [coordinate[0], coordinate[1] + 1];
-
-    //     neighbors.push(up, down, left, right);
-
-    //     return neighbors;
-    // }
 
 }

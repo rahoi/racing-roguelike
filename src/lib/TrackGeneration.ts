@@ -8,9 +8,9 @@ export default class TrackGeneration {
     mapArray:number[][];    // stores all tile values for tile map
     innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
     outerTrack:number[][];  // array of outer track points
-    neighborMap:Map<string, coordinate>;
-    allTrackPoints:number[][];
-    outerRim:number[][];
+    neighborMap:Map<string, coordinate>;    // map of each track point's track neighbors
+    allTrackPoints:number[][];  // array of all track points in the track
+    outerRim:number[][];    // array of outer track tiles along the outer rim of the race track
 
     innerStartLineIndex:number;  // index of start line in inner track array
     innerStartLinePt:number[]; // coordinate of start line
@@ -28,6 +28,7 @@ export default class TrackGeneration {
     margin:number;  // percentage of map dimension to calculate border
     borderWidth:number; // buffer around sides of game screen
     borderHeight:number; // buffer around top and bottom of game screen
+    innerBoundsSize:number;
 
     ptAdjustScale:number;  // value to scale the difference between min/max height/width and the coordinate height/width
 
@@ -36,9 +37,9 @@ export default class TrackGeneration {
     convexityDifficulty:number; // used to adjust track convexity, the closer the value is to 0, the harder the track should be 
     convexityDisp:number;   // used to adjust track convexity, maximum point displacement
 
-    trackAngle:number;  // in degrees
+    trackAngle:number;  // desired minimum angle between track points, in degrees
 
-    splineAlpha:number; // used in catmull rom interpolation, from 0 to 1, centripedal:  0.5, chordal (more rounded): 1
+    splineAlpha:number; // used in catmull rom interpolation, from 0 to 1 (exclusive), centripedal:  0.5, chordal (more rounded): 1
     splinePtsBtHull:number; // number of points to add between track points to smoothen shape
 
     minTrackLength:number;  // minimum track length
@@ -56,6 +57,7 @@ export default class TrackGeneration {
         this.margin = 0.18;  // buffer around screen border
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
+        this.innerBoundsSize = 3 // 2 tile buffer for the edges of the map, and 1 tile buffer for the outer track
 
         this.ptAdjustScale = 0.325;
 
@@ -78,12 +80,18 @@ export default class TrackGeneration {
     createMapArray() {
         this.innerTrack = this.generateInnerTrack.generateInnnerRaceTrack();
 
-        if (this.innerTrack.length < this.minTrackLength || this.innerTrack.length > this.maxTrackLength) {
+        let innerBoundsCheck = this.#checkInnerTrackBounds(this.innerTrack, this.innerBoundsSize, this.mapHeight, this.mapWidth);
+
+        // regenerates inner track if current inner track is shorter than the min length, longer than the max length, 
+        // or its points are outside of the map's inner track bounds buffer
+        if (this.innerTrack.length < this.minTrackLength || this.innerTrack.length > this.maxTrackLength || innerBoundsCheck) {
             this.mapArray = [];
             this.innerTrack = [];
             // clockwiseTrack;
             this.createMapArray();
+        
         } else {
+            // populates map data from the generated inner track
             this.innerTrack = this.innerTrack;
             this.isClockwise = this.generateInnerTrack.getIsClockwise();
             this.innerStartLineIndex = this.generateInnerTrack.getStartLineIndex();
@@ -91,14 +99,8 @@ export default class TrackGeneration {
             this.innerStartTile = this.generateInnerTrack.getStartTile();
             this.playerStartPt = this.generateInnerTrack.getPlayerStart();
 
-            console.log("clockwise: ", this.isClockwise);
-            console.log("first pt: ", this.innerTrack[0])
-            console.log("start line: ", this.innerStartLinePt);
-            console.log("player start: ", this.playerStartPt);
-            console.log("start tile: ", this.innerStartTile);
-
             // fill in mapArray with grass tiles, then inner track with road tiles
-            this.placeTrackTiles = new PlaceTrackTiles(this.mapArray, this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.innerStartLineIndex, this.innerStartTile);
+            this.placeTrackTiles = new PlaceTrackTiles(this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.innerStartLineIndex, this.innerStartTile);
 
             this.mapArray = this.placeTrackTiles.fillTrackTiles();
             this.neighborMap = this.placeTrackTiles.getNeighborMap();
@@ -124,6 +126,23 @@ export default class TrackGeneration {
         }
     }
 
+    // check if inner track goes beyond map height and map width buffer
+    #checkInnerTrackBounds(innerTrack:number[][], innerBoundsSize:number, mapHeight:number, mapWidth:number) {
+        let outOfBounds:boolean = false;
+        for (let i = 0; i < innerTrack.length; i++) {
+            if (innerTrack[i][0] < innerBoundsSize
+                || innerTrack[i][0] > (mapHeight - 1) - innerBoundsSize
+                || innerTrack[i][1] < innerBoundsSize
+                || innerTrack[i][1] > (mapWidth - 1) - innerBoundsSize) {
+                outOfBounds = true;
+            }
+        }
+
+        return outOfBounds;
+    }
+
+    // checks if track contains narrow, long offshoots,
+    // where two adjacent points both only have two neighbors from the rest of the track points
     #checkNarrowOffshoots(neighborMap:Map<string, coordinate>) {
         for (let key of neighborMap.keys()) {
             let neighbor:coordinate | undefined = neighborMap.get(key);
