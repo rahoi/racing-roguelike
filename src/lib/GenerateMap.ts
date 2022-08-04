@@ -1,20 +1,36 @@
 import TrackGeneration from "./TrackGeneration"
 import type ConfigData from "./ConfigData"
 
-export default class MapArray {
-    mapArray: number[][];
-    firstPt: number[];
-    track: TrackGeneration;
+export default class GenerateMap {
+    mapArray:number[][];    // array of tiles in map
+    innerStartLinePt:number[];
+    innerStartTile:number;
+    innerStartLineIndex:number;
+    playerStartPt:number[];
+    trackCoordinates:number[][];
+    innerTrack:number[][];
+    outerTrack:number[][];
+    isClockwise:boolean;
+    track:TrackGeneration;
     
     constructor(mapConfigData: ConfigData) {
         this.track = new TrackGeneration(mapConfigData);
 
         this.track.createMapArray();
-        this.mapArray = this.track.mapArray;
-        this.firstPt = this.track.firstPt;
 
-        // console.log(this.firstPt);
-        // console.log(this.mapArray[20]);
+        this.mapArray = this.track.mapArray;
+
+        this.innerTrack = this.track.innerTrack;
+        this.outerTrack = this.track.outerTrack;
+
+        this.innerStartLinePt = this.track.innerStartLinePt;
+        this.innerStartTile = this.track.innerStartTile;
+        this.innerStartLineIndex = this.track.innerStartLineIndex;
+
+        this.playerStartPt = this.track.playerStartPt;
+
+        this.isClockwise = this.track.isClockwise;
+
     }
 
 }

@@ -1,11 +1,11 @@
 import type ConfigData from "./ConfigData"
-import type MapArray from "./MapArray"
+import type GenerateMap from "./GenerateMap"
 import terrainArray from "./TerrainArray"
 import Vector from "./Vector2"
 
 export default class Player {
     // map variables
-    map: MapArray;
+    map: GenerateMap;
     tileDimension: number;
     mapHeight: number;
     mapWidth: number;
@@ -41,7 +41,7 @@ export default class Player {
     tractionSlow: number
     offRoadFactor: number
 
-    constructor(map: MapArray, mapConfigData: ConfigData) {
+    constructor(map: GenerateMap, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
@@ -53,9 +53,8 @@ export default class Player {
         this.mapWidth = mapConfigData.mapWidth;
 
         // car placement
-        this.pos = new Vector(map.firstPt[1] * this.tileDimension + this.tileDimension / 2,
-                        (-1) * (map.firstPt[0] * this.tileDimension + this.tileDimension / 2))
-        //this.pos = new Vector(2000, -3000) // for testing
+        this.pos = new Vector(map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2,
+                        (-1) * (map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2))
 
         // set initial velocity and player angles
         this.velocity = new Vector(0,0)

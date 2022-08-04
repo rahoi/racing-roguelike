@@ -1,6 +1,6 @@
 // import classes
 import Phaser from "phaser"
-import MapArray from "./MapArray"
+import GenerateMap from "./GenerateMap"
 import TileMapConstruct from "./TileMapConstruct"
 import FowLayer from "./FowLayer"
 import Car from "./Car"
@@ -13,7 +13,7 @@ export default class GameScene extends Phaser.Scene {
     image: string;
     playerVehicle: string;
     mapConfigData: ConfigData;
-    mapArray: MapArray;
+    mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
     fow: FowLayer;
     player: Bike | Car;
@@ -64,11 +64,15 @@ export default class GameScene extends Phaser.Scene {
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-       
-        // add race track
-        this.mapArray = new MapArray(this.mapConfigData);
-        this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
 
+        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+
+        // add race track
+        this.mapGeneration = new GenerateMap(this.mapConfigData);
+        this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
+    
         // add fog of war
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);        
@@ -83,11 +87,11 @@ export default class GameScene extends Phaser.Scene {
         // create player object
         switch (this.playerVehicle) {
             case 'car': {
-                this.player = new Car(this.mapArray, this.mapConfigData)
+                this.player = new Car(this.mapGeneration, this.mapConfigData)
                 break;
             }
             case 'bike': {
-                this.player = new Bike(this.mapArray, this.mapConfigData)
+                this.player = new Bike(this.mapGeneration, this.mapConfigData)
                 break;
             }
         }
