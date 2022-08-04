@@ -62,7 +62,7 @@ export default class FowLayer{
 				if (!tile) {
 				 	continue;
 				}
-                tile.tint = 0x3e3e3e; //0x000000;  //black color
+                tile.tint = 0x000000;  //black color
 			}
 		}	
 	}

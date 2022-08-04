@@ -22,8 +22,6 @@ export default class GameScene extends Phaser.Scene {
     keys: object;
     force: force;
     dir: dir;
-    vision: Phaser.GameObjects.Graphics;
-    rt: Phaser.GameObjects.RenderTexture;
     fow: FowLayer;
     initTimer:number;
     countdown:number;
@@ -69,31 +67,28 @@ export default class GameScene extends Phaser.Scene {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
 
-        //sound 
+        const clockLayer = this.add.layer();
+        
+        var clock = this.add.image(0, 0,'clock')
+        clockLayer.add(clock, true);
+
+        //sound
         this.gameSound = this.sound.add('gameSound');
 
         this.gameSound.play({
             loop: true
         });
-
-        //camera
-        const camZoom = this.cameras.main;
-
-        //  Test 1 - Change the x/y and keep w/h the same and the scene is cropped properly. The x/y appear to offset from the top left.
-        //camZoom.setViewport(0, 0, 800, 600);
-
-        //  Test 2 - Combine Test 1 with 'zoom' and the scene is no longer cropped and the viewport size is scaled wrong
-
-       
+      
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
     
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-       
+
         var centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
-        this.add.image(centerX - 550, 200, 'clock').setDisplaySize(300, 300);
+
+        //this.add.image(centerX - 550, 200, 'clock').setDisplaySize(300, 300);
         this.timerText = this.add.text(centerX, 200, '00:' + this.countdown, {fontStyle: "Bold", fontSize: "220px", color: "#ffffff"}).setOrigin(0.5);
 
         // every 1000ms (1s) call this.onEventTimer
@@ -141,18 +136,13 @@ export default class GameScene extends Phaser.Scene {
             'a': false,
             'd': false
         }
-
-        //follow the player
+        
+        //camera
+        const camZoom = this.cameras.main;
         camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
-        
-        //camZoom.setViewport(this.player.posX - 1000, this.player.posY - 1000, this.player.posX + 100, this.player.posY + 100);
-        //camZoom.setScroll(this.player.posX, this.player.posY);
         camZoom.zoom = 2;
-        
-        var camPlayer = this.cameras.main;
-        //camPlayer.centerOn(this.playerSprite.x, this.playerSprite.y);
         camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
-        camZoom.followOffset.set(-300, 300) 
+        camZoom.followOffset.set(300, 300);
 
     }
 
@@ -189,7 +179,7 @@ export default class GameScene extends Phaser.Scene {
         this.fow.calculateFow(this, this.player);
 
         // if timer goes to 0, switch to end scene
-        if (this.countdown < 0) {
+        if (this.countdown === 0) {
             this.scene.stop('GameScene');
             this.gameSound.destroy();
             this.scene.start('EndScene', {numLevels: this.numLevels});

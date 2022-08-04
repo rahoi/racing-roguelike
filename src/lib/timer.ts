@@ -41,8 +41,8 @@ export default class timer{
     private formatTimer(totalTime: number) {
         this.totalTime = totalTime;
         //this.scene = scene;
-        this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
-
+        this.centerX = this.scene.scale.width / 2; //this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
+        
         this.timeLabel = this.scene.add.text(this.centerX, 100, 'Timer: ' + this.updateTimer(this.totalTime), {fontSize: "250px", color: "#FFFFFF"}).setOrigin(0.5, 0);
 
         // = this.scene.add.text(this.centerX, 100, 'Timer', {fontSize: '250px'}).setFill('#ffffff').setShadow(2, 2, "#333333", 2).setOrigin(0.5, 0);
