@@ -1,8 +1,8 @@
 // import classes
 import Phaser from "phaser"
-import MapArray from "./MapArray"
+import GenerateMap from "./GenerateMap"
 import TileMapConstruct from "./TileMapConstruct"
-import FowTexture from "./FowTexture"
+// import FowTexture from "./FowTexture"
 import Car from "./Car"
 import Bike from "./Bike"
 
@@ -16,7 +16,7 @@ export default class GameScene extends Phaser.Scene {
     image: string;
     mapConfigData: ConfigData;
     player: Bike | Car;
-    mapArray: MapArray;
+    mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
     playerSprite: Phaser.GameObjects.Sprite;
     keys: object;
@@ -71,8 +71,8 @@ export default class GameScene extends Phaser.Scene {
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
-        this.mapArray = new MapArray(this.mapConfigData);
-        this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
+        this.mapGeneration = new GenerateMap(this.mapConfigData);
+        this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
     
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
@@ -81,11 +81,11 @@ export default class GameScene extends Phaser.Scene {
         // create player vehicle class
         switch (this.playerVehicle) {
             case 'car': {
-                this.player = new Car(this.mapArray, this.mapConfigData)
+                this.player = new Car(this.mapGeneration, this.mapConfigData)
                 break;
             }
             case 'bike': {
-                this.player = new Bike(this.mapArray, this.mapConfigData)
+                this.player = new Bike(this.mapGeneration, this.mapConfigData)
                 break;
             }
         }

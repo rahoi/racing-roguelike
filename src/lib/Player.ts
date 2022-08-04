@@ -1,5 +1,5 @@
 import type ConfigData from "./ConfigData"
-import type MapArray from "./MapArray"
+import type GenerateMap from "./GenerateMap"
 import type {force, dir} from "./forceDirTypes"
 import terrainArray from "./TerrainArray"
 
@@ -13,12 +13,12 @@ export default class Vehicle {
     rotate: number;
     brakePower: number;
     stall: number;
-    map: MapArray;
+    map: GenerateMap;
     tileDimension: number;
     mapHeight: number;
     mapWidth: number;
 
-    constructor(map: MapArray, mapConfigData: ConfigData) {
+    constructor(map: GenerateMap, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
@@ -29,8 +29,8 @@ export default class Vehicle {
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.posX = map.firstPt[1] * this.tileDimension + this.tileDimension / 2;
-        this.posY = map.firstPt[0] * this.tileDimension + this.tileDimension / 2;
+        this.posX = map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2;
+        this.posY = map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2;
 
         this.speed = 0;
         this.acc = 0.10;

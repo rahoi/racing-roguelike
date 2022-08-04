@@ -1,232 +1,191 @@
+import type {coordinate} from "./coordinateType"
 import type ConfigData from "./ConfigData"
 import terrainArray from "./TerrainArray"
-// works in node, not on browser
-import hull from "hull.js"
-import catmulRomInterpolation from "catmull-rom-interpolator"
+import PlaceTrackTiles from "./PlaceTrackTiles"
+import GenerateInnerTrack from "./GenerateInnerTrack"
 
 export default class TrackGeneration {
-    mapArray: number[][];
-    firstPt: number[];
-    margin: number;
-    borderWidth: number;
-    borderHeight: number;
-    numPts: number;
-    mapHeight: number;
-    mapWidth: number;
+    mapArray:number[][];    // stores all tile values for tile map
+    innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
+    outerTrack:number[][];  // array of outer track points
+    neighborMap:Map<string, coordinate>;    // map of each track point's track neighbors
+    allTrackPoints:number[][];  // array of all track points in the track
+    outerRim:number[][];    // array of outer track tiles along the outer rim of the race track
 
-    constructor(mapConfigData: ConfigData) {
+    innerStartLineIndex:number;  // index of start line in inner track array
+    innerStartLinePt:number[]; // coordinate of start line
+    innerStartTile:number;   // tile at start line
+    playerStartPt:number[]; // coordinate of the player's starting point
+    isClockwise:boolean;    // true if innerTrack runs clockwise
+    placeTrackTiles:PlaceTrackTiles;
+    generateInnerTrack:GenerateInnerTrack;
+
+    // constants for generating track
+    numPts:number;  // number of random points to generate for initial track generation
+
+    mapHeight:number;
+    mapWidth:number;
+    margin:number;  // percentage of map dimension to calculate border
+    borderWidth:number; // buffer around sides of game screen
+    borderHeight:number; // buffer around top and bottom of game screen
+    innerBoundsSize:number;
+
+    ptAdjustScale:number;  // value to scale the difference between min/max height/width and the coordinate height/width
+
+    concavityVal:number;   // used to calculate convex hull, from 1 to inf, closer to 1: hugs shape more
+
+    convexityDifficulty:number; // used to adjust track convexity, the closer the value is to 0, the harder the track should be 
+    convexityDisp:number;   // used to adjust track convexity, maximum point displacement
+
+    trackAngle:number;  // desired minimum angle between track points, in degrees
+
+    splineAlpha:number; // used in catmull rom interpolation, from 0 to 1 (exclusive), centripedal:  0.5, chordal (more rounded): 1
+    splinePtsBtHull:number; // number of points to add between track points to smoothen shape
+
+    minTrackLength:number;  // minimum track length
+    maxTrackLength:number;  // maximum track length
+
+    constructor(mapConfigData:ConfigData) {
         this.mapArray = [];
-        this.firstPt = [];
+        // this.firstInnerPt = [];
+
+        this.numPts = 20;
 
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.margin = 0.05;  // buffer around screen border
+        this.margin = 0.18;  // buffer around screen border
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
         this.borderHeight = Math.trunc(this.mapHeight * this.margin);
-        this.numPts = 30;
+        this.innerBoundsSize = 3 // 2 tile buffer for the edges of the map, and 1 tile buffer for the outer track
+
+        this.ptAdjustScale = 0.325;
+
+        this.concavityVal = 80;
+
+        this.convexityDifficulty = 0.25;
+        this.convexityDisp = 12;
+
+        this.trackAngle = 110; // in degrees
+
+        this.splineAlpha = 0.99;
+        this.splinePtsBtHull = 1;
+
+        this.minTrackLength = 150;
+        this.maxTrackLength = 250;
+
+        this.generateInnerTrack = new GenerateInnerTrack(this.numPts, this.margin, this.ptAdjustScale, this.concavityVal, this.convexityDifficulty, this.convexityDisp, this.trackAngle, this.splineAlpha, this.splinePtsBtHull, this.minTrackLength, this.maxTrackLength, mapConfigData);
     }
 
     createMapArray() {
-        // creating mapArray matrix
+        this.innerTrack = this.generateInnerTrack.generateInnnerRaceTrack();
 
-        let points: number[][] = this.generateRandomPoints();
-        let convexHull: number[][] = this.findConvexHull(points);
-        let splinePts: number[][] = this.findSpline(convexHull);
+        let innerBoundsCheck = this.#checkInnerTrackBounds(this.innerTrack, this.innerBoundsSize, this.mapHeight, this.mapWidth);
 
+        // regenerates inner track if current inner track is shorter than the min length, longer than the max length, 
+        // or its points are outside of the map's inner track bounds buffer
+        if (this.innerTrack.length < this.minTrackLength || this.innerTrack.length > this.maxTrackLength || innerBoundsCheck) {
+            this.mapArray = [];
+            this.innerTrack = [];
+            // clockwiseTrack;
+            this.createMapArray();
+        
+        } else {
+            // populates map data from the generated inner track
+            this.innerTrack = this.innerTrack;
+            this.isClockwise = this.generateInnerTrack.getIsClockwise();
+            this.innerStartLineIndex = this.generateInnerTrack.getStartLineIndex();
+            this.innerStartLinePt = this.generateInnerTrack.getStartLineCoord();
+            this.innerStartTile = this.generateInnerTrack.getStartTile();
+            this.playerStartPt = this.generateInnerTrack.getPlayerStart();
 
-        for (let i = 0; i < this.mapHeight; i++) {
-            let temp: number[] = [];
-            for (let j = 0; j < this.mapWidth; j++) {
-                temp.push(162);
+            // fill in mapArray with grass tiles, then inner track with road tiles
+            this.placeTrackTiles = new PlaceTrackTiles(this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.innerStartLineIndex, this.innerStartTile);
+
+            this.mapArray = this.placeTrackTiles.fillTrackTiles();
+            this.neighborMap = this.placeTrackTiles.getNeighborMap();
+            this.allTrackPoints = this.placeTrackTiles.getAllTrackPts();
+            this.outerRim = this.placeTrackTiles.getOuterRim();
+
+            // finds if there a long, narrow offshoots
+            // ie: where a two adjacent points both only have two neighbors in the rest of the track points
+            let offshoots:boolean = this.#checkNarrowOffshoots(this.neighborMap);
+
+            // finds if outer rim ever doubles back on itself
+            let doublesBack:boolean = this.#checkDoublingBack(this.outerRim);
+
+            // regenerates map if there are any offshoots or doubling back
+            if (doublesBack || offshoots) {
+                this.mapArray = [];
+                this.innerTrack = [];
+                this.createMapArray();
+            } else{
+                console.log("track length: ", this.innerTrack.length);
             }
-
-            this.mapArray.push(temp)
+            
         }
-
-        let trackCoordinates = this.fillInLoop(splinePts);
-        trackCoordinates = this.removeLoops(trackCoordinates);
-        this.firstPt = trackCoordinates[0];
-
-        for (let i = 0; i < trackCoordinates.length; i++) {
-            this.mapArray[trackCoordinates[i][0]][trackCoordinates[i][1]] = 252;
-            // this.mapArray[splinePts[i][0]][splinePts[i][1]] = 221
-        }
-
-        // console.log(JSON.stringify(splinePts));
-
     }
 
-    generateRandomPoints() {
-        // generating random points
-        let points: number[][] = [];
-
-        for (let i = 0; i < this.numPts; i++) {
-            let temp:number[] = [];
-            temp[0] = Math.random() * (this.mapWidth - 2 * this.borderWidth) + this.borderWidth;
-            temp[1] = Math.random() * (this.mapHeight - 2 * this.borderHeight) + this.borderHeight;
-
-            points.push(temp);
-        }
-        return points;
-    }
-
-    findConvexHull(points: number[][]) {
-        // calculating convex hull points
-        const concavityVal: number = 15;   // from 1 to inf, closer to 1: hugs shape more
-        let convexHull: object[] = [];
-
-        convexHull = hull(points, concavityVal);
-        convexHull.pop();
-
-        return convexHull as number[][];
-    }
-
-    findSpline(convexHull: number[][]) {
-        // calculating catmull rom spline points
-        // alpha: 0 to 1, centripedal:  0.5, chordal (more rounded): 1
-        const alpha:number = 0.75;
-        const ptsBtHull:number = 5;
-
-        let splinePts: number[][] = [];
-
-        splinePts = catmulRomInterpolation(convexHull, alpha, ptsBtHull, true);
-        for (let i = 0; i < splinePts.length; i++) {
-            splinePts[i][0] = Math.trunc(splinePts[i][0]);
-            splinePts[i][1] = Math.trunc(splinePts[i][1]);
-        }
-        splinePts.push([splinePts[0][0], splinePts[0][1]]);
-
-        return splinePts;
-    }
-
-    fillInLoop(splinePts: number[][]) {
-        // filling in polygon
-        let prevPrevInd:number = -1;
-        let prevPt:number[] = splinePts[0];
-
-
-        for (let i = 1; i < splinePts.length; i++) {
-            if (prevPt[0] == splinePts[i][0] && prevPt[1] == splinePts[i][1]) {
-                splinePts.splice(i, 1);
-                i--;
-                prevPt = splinePts[i];
-                continue;
+    // check if inner track goes beyond map height and map width buffer
+    #checkInnerTrackBounds(innerTrack:number[][], innerBoundsSize:number, mapHeight:number, mapWidth:number) {
+        let outOfBounds:boolean = false;
+        for (let i = 0; i < innerTrack.length; i++) {
+            if (innerTrack[i][0] < innerBoundsSize
+                || innerTrack[i][0] > (mapHeight - 1) - innerBoundsSize
+                || innerTrack[i][1] < innerBoundsSize
+                || innerTrack[i][1] > (mapWidth - 1) - innerBoundsSize) {
+                outOfBounds = true;
             }
+        }
 
-            if (i == splinePts.length) {
-                continue;
-            }
+        return outOfBounds;
+    }
 
-            let xDiff:number = Math.abs(prevPt[0] - splinePts[i][0]);
-            let yDiff:number = Math.abs(prevPt[1] - splinePts[i][1]);
-            let tempPt:number[] = prevPt;
+    // checks if track contains narrow, long offshoots,
+    // where two adjacent points both only have two neighbors from the rest of the track points
+    #checkNarrowOffshoots(neighborMap:Map<string, coordinate>) {
+        for (let key of neighborMap.keys()) {
+            let neighbor:coordinate | undefined = neighborMap.get(key);
 
-            if (xDiff != 0) {
-                tempPt = (prevPt[0] - splinePts[i][0] > 0) ? [prevPt[0] - 1, prevPt[1]] : [prevPt[0] + 1, prevPt[1]]; // if curr height smaller
+            if (neighbor != null && neighbor.numNeighbors <= 2) {
+                let upCoordString = JSON.stringify(neighbor.upVert);
+                let neighborUp:coordinate | undefined = neighborMap.get(upCoordString);
 
-                if (tempPt == splinePts[prevPrevInd]) {
-                    tempPt[0] = splinePts[i][0];
-                    tempPt[1] = prevPt[1];
+                let downCoordString = JSON.stringify(neighbor.downVert);
+                let neighborDown:coordinate | undefined = neighborMap.get(downCoordString);
+    
+                let leftCoordString = JSON.stringify(neighbor.leftHorz);
+                let neighborLeft:coordinate | undefined = neighborMap.get(leftCoordString);
+    
+                let rightCoordString = JSON.stringify(neighbor.rightHorz);
+                let neighborRight:coordinate | undefined = neighborMap.get(rightCoordString);
+
+                if ((neighborUp != null && neighborUp.numNeighbors == 2) 
+                || (neighborDown != null && neighborDown.numNeighbors == 2)
+                || (neighborLeft != null && neighborLeft.numNeighbors == 2)
+                || (neighborRight != null && neighborRight.numNeighbors == 2)) {
+                    return true;
                 }
-                splinePts.splice(i, 0, tempPt);
-
-                xDiff = Math.abs(prevPt[0] - splinePts[i][0]);
-                yDiff = Math.abs(prevPt[1] - splinePts[i][1]);
             }
-            else if (yDiff != 0) {
-                tempPt = (prevPt[1] - splinePts[i][1] > 0) ? [prevPt[0], prevPt[1] - 1] : tempPt = [prevPt[0], prevPt[1] + 1]; // if curr width smaller
-                splinePts.splice(i, 0, tempPt);
-
-            }
-
-            prevPrevInd++;
-            prevPt = splinePts[i];
         }
-
-        return splinePts;
     }
 
-    removeLoops(trackCoordinates:number[][]) {
-        let coordinateMap = new Map<string, number[]>();
-        let originialTrackLength = trackCoordinates.length;
-
-        // fill map with key: coordinate, value: array of indicies from loop
+    // checks if the points in the track double back on themselves
+    #checkDoublingBack(trackCoordinates:number[][]) {
         for (let i = 0; i < trackCoordinates.length - 1; i++) {
-            let coordKey:string = JSON.stringify(trackCoordinates[i]);
+            let currIndex = i;
+            let nextIndex = i + 1;
 
-            if (coordinateMap.get(coordKey) == null) {
-                coordinateMap.set(coordKey, [i]);
-            } else {
-                coordinateMap.set(coordKey, [...coordinateMap.get(coordKey), i]);
+            let heightDiff = Math.abs(trackCoordinates[nextIndex][0] - trackCoordinates[currIndex][0]);
+            let widthDiff = Math.abs(trackCoordinates[nextIndex][1] - trackCoordinates[currIndex][1]);
+
+            // dupicate points were already removed from the track arrays so if the sum of differences between their coordinates
+            // is greater than 1, the track doubles back on itself
+            if (heightDiff + widthDiff > 1) {
+                return true;
             }
         }
 
-        // if there are duplicate coordinates
-        if (coordinateMap.size < originialTrackLength) {
-            for (let [coordKey, loopIndicesArray] of coordinateMap) {
-                if (loopIndicesArray.length >= 2) {
-                    // find shortest loop 
-                    let loopStart:number;
-                    let shortestLoop:number;
-
-                    // if already removed one loop, recheck for indices
-                    if (originialTrackLength > trackCoordinates.length) {
-                        let tempArray:number[] = [];
-
-                        for (let i = 0 ; i < trackCoordinates.length; i++) {
-                            if (coordKey == JSON.stringify(trackCoordinates[i])) {
-                                tempArray.push(i);
-                            }
-                        }
-                        loopIndicesArray = tempArray;
-                    }
-
-                    // find shortest loop 
-                    let lastLoopIndex:boolean = false;
-                    let endOfTrackIndex:boolean = false;
-                    for (let i = 0 ; i < loopIndicesArray.length; i++) {
-                        if (i == 0) {   // if index is first in loop array
-                            loopStart = 0;
-                            shortestLoop = Math.abs(loopIndicesArray[1] - loopIndicesArray[0]);
-                        } else {
-                            let nextIndex:number = (loopIndicesArray[i] == trackCoordinates.length - 2) ? loopIndicesArray[0] : loopIndicesArray[i + 1];
-                            let tempLength:number = (loopIndicesArray[i] == trackCoordinates.length - 2) ? loopIndicesArray[0] : Math.abs(nextIndex - loopIndicesArray[i]);
-
-                            // if loop starts at last index in loop array (not last in entire track array)
-                            if (i == loopIndicesArray.length - 1 && loopIndicesArray[i] != trackCoordinates.length - 2) {
-                                nextIndex = loopIndicesArray[0];
-                                tempLength = trackCoordinates.length - 1 - loopIndicesArray[i] + loopIndicesArray[0];
-                            }
-
-                            shortestLoop = Math.min(shortestLoop, tempLength);
-                            if (tempLength == shortestLoop) {
-                                endOfTrackIndex = (loopIndicesArray[i] == trackCoordinates.length - 2) ? true : false;
-                                lastLoopIndex = (!endOfTrackIndex && i == loopIndicesArray.length - 1) ? true :false;
-
-                                loopStart = i;
-                            }
-                        }
-                    }
-
-                    if (endOfTrackIndex) {    // if loop starts at last track point
-                        trackCoordinates.splice(trackCoordinates.length - 1, 1);
-                        trackCoordinates.splice(0, shortestLoop);
-
-                    } else if (lastLoopIndex) {   // if loop starts at last index in loop array
-                        let currTrackLen:number = trackCoordinates.length;
-                        trackCoordinates.splice(loopIndicesArray[loopStart] + 1, currTrackLen - 1 - loopIndicesArray[loopStart]);
-                        trackCoordinates.splice(0, shortestLoop - (currTrackLen - 1 - loopIndicesArray[loopStart]));
-
-                    } else {    // if loop doesnt start at end of track array
-                        trackCoordinates.splice(loopIndicesArray[loopStart], shortestLoop);
-                    }
-                    
-                }
-            }
-        }
-
-        return trackCoordinates;
+        return false;
     }
-
 }
