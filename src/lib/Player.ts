@@ -89,7 +89,7 @@ export default class Player {
 
         /* acceleration input */
         if (gas) {
-            console.log("GAS ------------------------------------------")
+            //console.log("GAS ------------------------------------------")
             this.acceleration.setX(Math.cos(this.heading * Math.PI / 180) * this.enginePower)
             this.acceleration.setY(Math.sin(this.heading * Math.PI / 180) * this.enginePower)
         }
@@ -104,14 +104,7 @@ export default class Player {
         /* set up velocity dependents */
         this.applyFriction()
         this.calculateSteering()
-        //console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
-
-        /* set new position */
-        this.velocity = Vector.add(this.velocity, this.acceleration)
-        this.pos = Vector.add(this.pos, this.velocity)
-        //console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
-        //console.log("vel mag :" + this.velocity.getMagnitude())
-        //console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
+        this.setPos()
     }
 
     applyFriction() {
@@ -169,7 +162,9 @@ export default class Player {
             traction = this.tractionFast
         }
         
-        /* find new velocity */
+        /* find new velocity:
+         * velocity = lerp(headingVector * vel.mag, velocity, traction)
+         *          = (headingVector * vel.mag * traction) + (1 - traction * velocity) */
         let velNorm = this.velocity.normalize()
         let d = Vector.dot(this.headingVector, velNorm)
         if (d > 0) {
@@ -179,7 +174,35 @@ export default class Player {
             this.velocity = Vector.multiplyScalar(this.headingVector, Math.min(this.velocity.getMagnitude(), this.maxReverseSpeed))
             this.velocity = Vector.multiplyScalar(this.velocity, -1)
         }
-        //console.log("FINAL velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+    }
+
+    setPos() {
+        /* set velocity */
+        this.velocity = Vector.add(this.velocity, this.acceleration)
+        this.pos = Vector.add(this.pos, this.velocity)
+        
+        /* check if player is out of bounds */
+        if (this.pos.getX() < this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setX(this.wheelBase)
+        } else if (this.pos.getX() > this.mapWidth * this.tileDimension - this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setX(this.mapWidth * this.tileDimension - this.wheelBase)
+        }
+
+        if (this.pos.getY() > (-1) * this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setY((-1) * this.wheelBase)
+        } else if (this.pos.getY() < (-1) * (this.mapHeight * this.tileDimension - this.wheelBase)) {
+            this.velocity.set(0,0)
+            this.pos.setY((-1) * (this.mapHeight * this.tileDimension - this.wheelBase))
+        }
+
+        /* logging added acceleration, velocity, and position */
+        // console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
+        // console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        // console.log("vel mag: " + this.velocity.getMagnitude())
+        // console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
     }
 
     getLocX() {
