@@ -65,11 +65,11 @@ export default class GameScene extends Phaser.Scene {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
 
-        this.timerText = this.add.text(32, 32, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
-        // add race track
+        // generate race track
         this.mapGeneration = new GenerateMap(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
     
