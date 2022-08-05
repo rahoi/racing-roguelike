@@ -1,7 +1,6 @@
 // import types
 import type ConfigData from "./ConfigData"
 import type GenerateMap from "./GenerateMap"
-import type {force, dir} from "./forceDirTypes"
 
 // import classes
 import Player from "./Player"
@@ -12,29 +11,7 @@ export default class Car extends Player {
         super(map, mapConfigData);        
     }
 
-    updateDir(dir: dir) {
-        super.updateDir(dir)
-        
-    }
-
-    updateLoc(force: force) {
-        super.updateLoc(force, 0)
-    }
-
-    updateMap() {
-        super.updateMap()
-    }
-
-    onTrack() {
-        return super.onTrack()
-    }
-
-    carMask(scene: Phaser.Scene){
-        const mask = scene.make.image({
-            x: this.posX,
-            y: this.posY,
-            key: 'mask',
-            add: true
-        });
+    updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
+        super.updateLoc(gas, brake, left, right)
     }
 }

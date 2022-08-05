@@ -1,22 +1,45 @@
 import type ConfigData from "./ConfigData"
 import type GenerateMap from "./GenerateMap"
-import type {force, dir} from "./forceDirTypes"
 import terrainArray from "./TerrainArray"
+import Vector from "./Vector2"
 
-export default class Vehicle {
-    posX: number;
-    posY: number;
-    speed: number;
-    acc: number;
-    maxSpeed: number;
-    angle: number;
-    rotate: number;
-    brakePower: number;
-    stall: number;
+export default class Player {
+    // map variables
     map: GenerateMap;
     tileDimension: number;
     mapHeight: number;
     mapWidth: number;
+
+    // player input
+    accInput: number
+    turnInput: number
+    
+    // player vectors
+    pos: Vector
+    velocity: Vector
+    headingVector: Vector
+    acceleration: Vector
+    frontWheel: Vector
+    backWheel: Vector
+
+    // player angles
+    heading: number
+    steerAngle: number
+    
+    // player attributes
+    wheelBase: number
+    steerFactor: number
+    enginePower: number
+    brakingFactor: number
+    maxReverseSpeed: number
+
+    // environment attributes
+    friction: number
+    drag: number
+    slipSpeed: number
+    tractionFast: number
+    tractionSlow: number
+    offRoadFactor: number
 
     constructor(map: GenerateMap, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive
@@ -29,90 +52,181 @@ export default class Vehicle {
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        this.posX = map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2;
-        this.posY = map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2;
+        // car placement
+        this.pos = new Vector(map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2,
+                        (-1) * (map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2))
 
-        this.speed = 0;
-        this.acc = 0.10;
-        this.maxSpeed = 30;
-        this.angle = 0;
-        this.rotate = 2.5;
-        this.brakePower = 0.5;
-        this.stall = 0;
+        // set initial velocity and player angles
+        this.velocity = new Vector(0,0)
+        this.heading = 0
+        this.steerAngle = 0
+    
+        // set player attributes
+        this.wheelBase = 70             // distance between front and rear wheels
+        this.steerFactor = 15           // amount that front wheel turns
+        this.enginePower = 1.5          // forward acceleration force
+        this.brakingFactor = -0.05      // backwards acceleration force
+        this.maxReverseSpeed = 20       // max reverse velocity
+
+        // set environment attributes: at speed , drag force overcomes friction force
+        this.friction = -0.02
+        this.drag = -0.001
+        this.slipSpeed = 10
+        this.tractionFast = 0.00001
+        this.tractionSlow = 0.7
+        this.offRoadFactor = 3.5
     }
 
-    updateDir(dir: dir) {
-        if (dir.d && this.speed != 0) {
-            this.angle += this.rotate
-        } else if (dir.a && this.speed != 0) {
-            this.angle -= this.rotate
-        }
-    }
+    updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
+        this.acceleration = new Vector(0,0)
 
-    updateLoc(force: force, factor: number) {
-        if (force.s) { // braking
-            if (this.speed > 0) {
-                this.speed -= this.brakePower
-            }
-            if (this.speed <= 0 && this.stall < 10) { // coming to a stop
-                this.speed = 0
-                this.stall++
-            } else { // reversing
-                this.speed -= this.acc
-                if (Math.abs(this.speed) > this.maxSpeed) {
-                    this.speed = this.maxSpeed * -1
-                }
-            }
-            this.updateMap()
-        } else if (force.w) { // accelerating
-            this.speed += this.acc + factor
-            if (this.speed > this.maxSpeed) {
-                this.speed = this.maxSpeed
-            }
-            this.updateMap()
-            this.stall = 0
-        } else if (!force.w) { // coasting
-            if (this.speed > 0) { // moving forward
-                this.speed -= (this.acc * 2)
-                if (this.speed < 0) { // coming to a stop
-                    this.speed = 0
-                }
-            }
-            if (this.speed < 0) { // moving backwards
-                this.speed += (this.acc * 2)
-            }
-            this.updateMap()
-            this.stall = 0
-        }
-    }
+        /* steering input */
+        this.turnInput = 0
+        if (left) this.turnInput += 1
+        if (right) this.turnInput -= 1
+        this.steerAngle = this.turnInput * this.steerFactor
 
-    updateMap() {
-        if (!this.onTrack()) {
-            this.speed = this.speed * 0.9
+        /* acceleration input */
+        if (gas) {
+            //console.log("GAS ------------------------------------------")
+            this.acceleration.setX(Math.cos(this.heading * Math.PI / 180) * this.enginePower)
+            this.acceleration.setY(Math.sin(this.heading * Math.PI / 180) * this.enginePower)
         }
 
-        this.posX += Math.cos(this.angle * Math.PI / 180) * this.speed
-        this.posY += Math.sin(this.angle * Math.PI / 180) * this.speed
+        /* braking input */
+        if (brake) {
+            //console.log("BRAKE ------------------------------------------")
+            this.acceleration.setX(Math.cos(this.heading * Math.PI / 180) * this.brakingFactor)
+            this.acceleration.setY(Math.sin(this.heading * Math.PI / 180) * this.brakingFactor)
+        }
         
-        if (this.posX < 32) {
-            this.speed = 0
-            this.posX = 32
-        } else if (this.posX > this.tileDimension * this.mapWidth - 32) {
-            this.speed = 0
-            this.posX = this.tileDimension * this.mapWidth - 32
+        /* set up velocity dependents */
+        this.applyFriction()
+        this.calculateSteering()
+        this.setPos()
+    }
+
+    applyFriction() {
+        /* set minimum speed */
+        if (this.velocity.getMagnitude() < 0.02) {
+            this.velocity.set(0,0)
         }
 
-        if (this.posY < 32) {
-            this.speed = 0
-            this.posY = 32
-        } else if (this.posY > this.tileDimension * this.mapHeight - 48) {
-            this.speed = 0
-            this.posY = this.tileDimension * this.mapHeight - 48
+        /* set friction (prop to vel) and drag (wind resistance: prop to vel squared):
+         * frictionForce = velocity * friction 
+         * dragForce = velocity * vel.mag * drag */
+        let frictionForce = Vector.multiplyScalar(this.velocity, this.friction)
+        let dragForce = Vector.multiplyScalar(this.velocity, this.velocity.getMagnitude())
+        dragForce = Vector.multiplyScalar(dragForce, this.drag)
+
+        /* off road has more friction) */
+        if (!this.onTrack()) {
+            frictionForce = Vector.multiplyScalar(frictionForce, this.offRoadFactor)
+        }
+
+        this.acceleration = Vector.add(this.acceleration, dragForce)
+        this.acceleration = Vector.add(this.acceleration, frictionForce)
+    }
+
+    calculateSteering() {
+        /* set up back wheel:
+         * backWheel = pos - wheelBase/2 * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
+        this.backWheel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
+        this.backWheel = Vector.multiplyScalar(this.backWheel, this.wheelBase / 2)
+        this.backWheel = Vector.subtract(this.pos, this.backWheel)
+
+        /* set up front wheel:
+         * frontWheel = pos + wheelBase/2 * new Vector(Math.cos(this.carHeading), Math.sin(this.carHeading)) */
+        this.frontWheel = new Vector(Math.cos(this.heading * Math.PI / 180), Math.sin(this.heading * Math.PI / 180))
+        this.frontWheel = Vector.multiplyScalar(this.frontWheel, this.wheelBase / 2)
+        this.frontWheel = Vector.add(this.pos, this.frontWheel)
+   
+        /* move back wheel: backWheel += velocity */
+        this.backWheel = Vector.add(this.backWheel, this.velocity)
+
+        /* move front wheel: frontWheel += velocity.rotate(steeringAngle) */
+        let velRotated = this.velocity.rotate(this.steerAngle)
+        this.frontWheel = Vector.add(this.frontWheel, velRotated)
+       
+        /* calculate new direction vector: NORMALIZE(frontWheel - backWheel) */
+        this.headingVector = Vector.subtract(this.frontWheel, this.backWheel)
+        this.headingVector = this.headingVector.normalize()
+        
+        /* calculate new heading angle */
+        this.heading = this.headingVector.getAngle()
+
+        /* determine what traction */
+        let traction = this.tractionSlow
+        if (this.velocity.getMagnitude() > this.slipSpeed) {
+            traction = this.tractionFast
+        }
+        
+        /* find new velocity:
+         * velocity = lerp(headingVector * vel.mag, velocity, traction)
+         *          = (headingVector * vel.mag * traction) + (1 - traction * velocity) */
+        let velNorm = this.velocity.normalize()
+        let d = Vector.dot(this.headingVector, velNorm)
+        if (d > 0) {
+            let tmp = Vector.multiplyScalar(this.headingVector, this.velocity.getMagnitude())
+            this.velocity = Vector.lerp(tmp, this.velocity, traction)
+        } else if (d < 0) {
+            this.velocity = Vector.multiplyScalar(this.headingVector, Math.min(this.velocity.getMagnitude(), this.maxReverseSpeed))
+            this.velocity = Vector.multiplyScalar(this.velocity, -1)
         }
     }
+
+    setPos() {
+        /* set velocity */
+        this.velocity = Vector.add(this.velocity, this.acceleration)
+        this.pos = Vector.add(this.pos, this.velocity)
+        
+        /* check if player is out of bounds */
+        if (this.pos.getX() < this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setX(this.wheelBase)
+        } else if (this.pos.getX() > this.mapWidth * this.tileDimension - this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setX(this.mapWidth * this.tileDimension - this.wheelBase)
+        }
+
+        if (this.pos.getY() > (-1) * this.wheelBase) {
+            this.velocity.set(0,0)
+            this.pos.setY((-1) * this.wheelBase)
+        } else if (this.pos.getY() < (-1) * (this.mapHeight * this.tileDimension - this.wheelBase)) {
+            this.velocity.set(0,0)
+            this.pos.setY((-1) * (this.mapHeight * this.tileDimension - this.wheelBase))
+        }
+
+        /* logging added acceleration, velocity, and position */
+        // console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
+        // console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        // console.log("vel mag: " + this.velocity.getMagnitude())
+        // console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
+    }
+
+    getLocX() {
+        return this.pos.getX();
+    }
+
+    getLocY() {
+        return this.pos.getY();
+    }
+
+    getHeading() {
+        return this.heading;
+    }
+
+    // playerMask(scene: Phaser.Scene) {
+    //     const mask = scene.make.image({
+    //         x: this.pos.getX(),
+    //         y: this.pos.getY(),
+    //         key: 'mask',
+    //         add: true
+    //     });
+    // }
 
     onTrack() {
-        let currTile = this.map.mapArray[Math.trunc(this.posY / 128)][Math.trunc(this.posX / 128)]
+        let currTile = this.map.mapArray[Math.trunc((-1) * this.pos.getY() / 128)][Math.trunc(this.pos.getX() / 128)]
         
         // logging car's position on the tilemap (not its pixel position)
         // console.log("x: ", Math.trunc(this.posX / 128), " y: ", Math.trunc(this.posY / 128))
