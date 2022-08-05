@@ -1,8 +1,10 @@
 //import Phaser from "phaser";
 
+
 import type ConfigData from "./ConfigData";
 
 const startTime = new Date().getTime(); 
+const initialTime = 15;
 
 export default class timer{
     scene: Phaser.Scene;
@@ -18,13 +20,16 @@ export default class timer{
     gameTimer: any;
     timerEvent: Phaser.Time.TimerEvent;
     timeLabel: Phaser.GameObjects.Text;
+    timeLeft: number;
+    energyMask: Phaser.GameObjects.Sprite;
+    scenePlugin: Phaser.Scenes.ScenePlugin;
 
-   constructor(scene: Phaser.Scene, mapConfigData: ConfigData, totalTime: number) {
+   constructor(scene: Phaser.Scene, mapConfigData: ConfigData) {
         this.scene = scene;
         this.startTimeObject = new Date();
         //const startTime = this.startTimeObject.getTime();
         //this.currentTime = new Date();
-        this.totalTime = totalTime;
+        //this.totalTime = totalTime;
 
         this.timeElapsed = 0;
         this.mapConfigData = mapConfigData;  
@@ -94,7 +99,68 @@ export default class timer{
         //this.timeLabel.text = result;
     }
 
+    private preloadImages() {
+        this.scene.load.image("energycontainer", "./assets/timeContainer.png");
+        this.scene.load.image("energybar", "./assets/timeBar.png");
+    }
 
+    displayTimer(scene: Phaser.Scenes.ScenePlugin) {
+        this.scenePlugin = scene;
+        //this.scene.
+        //this.preloadImages();
+
+        this.timeLeft = initialTime;
+        //this.scene = scene;
+
+        // the energy container. A simple sprite
+        let energyContainer = this.scene.add.sprite(this.centerX, 3500, "energycontainer");
+ 
+        // the energy bar. Another simple sprite
+        let energyBar = this.scene.add.sprite(energyContainer.x + 46, energyContainer.y, "energybar");
+ 
+        // a copy of the energy bar to be used as a mask. Another simple sprite but...
+        this.energyMask = this.scene.add.sprite(energyBar.x, energyBar.y, "energybar");
+ 
+        // ...it's not visible...
+        this.energyMask.visible = false;
+ 
+        // and we assign it as energyBar's mask.
+        energyBar.mask = new Phaser.Display.Masks.BitmapMask(this.scene, this.energyMask);
+ 
+        // a boring timer.
+        this.gameTimer = this.scene.time.addEvent({
+            delay: 1000,
+            callback: function(){
+                this.timeLeft --;
+ 
+                // dividing enery bar width by the number of seconds gives us the amount
+                // of pixels we need to move the energy bar each second
+                let stepWidth = this.energyMask.displayWidth / initialTime;
+ 
+                // moving the mask
+                this.energyMask.x -= stepWidth;
+                if(this.timeLeft === 0){
+                    this.scenePlugin.stop('GameScene');
+                    //this.gameSound.destroy();
+                    this.scenePlugin.start('EndScene');
+
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    // // counts down timer using Phaser logic
+    // onEventTimer() {
+    //     this.countdown -= 1; // one second
+    //     if (this.countdown < 10) {
+    //         this.timerText.setText('00:' + '0' + this.countdown);  
+    //     } else {
+    //         this.timerText.setText('00:' + this.countdown);
+    //     }
+        
+    // }
 
 }
 

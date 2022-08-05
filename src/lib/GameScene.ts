@@ -9,17 +9,8 @@ import Bike from "./Bike"
 import type ConfigData from "./ConfigData"
 import type {force, dir} from "./forceDirTypes"
 import FowLayer from "./FowLayer"
+import timer from "./timer"
 //import timer from "./timer"
-
-const cameraClockConfig = {
-    key: 'GameScene',
-    cameras:
-        {
-            width: 400,
-            height: 300,
-            backgroundColor: '#ff0000'
-        }
-    }
 
 export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
@@ -40,12 +31,11 @@ export default class GameScene extends Phaser.Scene {
     numLevels:number;
     collectedCheckpoints:number;
     totalCheckpoints:number;
-    //timer: timer;
+    timer: timer;
     gameSound: Phaser.Sound.BaseSound;
     clockObject: Phaser.GameObjects.Image;
 
     constructor(mapConfigData:ConfigData) {
-        //super('cameraClockConfig');
         super('GameScene');
         this.mapConfigData = mapConfigData;
 
@@ -73,20 +63,22 @@ export default class GameScene extends Phaser.Scene {
 
         this.load.image('clock', './assets/icons8-timer-64.png');
         this.load.audio('gameSound', './assets/race-track-sound.wav');
+
+        this.load.image("energycontainer", "./assets/timeContainer.png");
+        this.load.image("energybar", "./assets/timeBar.png");
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
 
-        const clockLayer = this.add.layer();
+        // const clockLayer = this.add.layer();
         
-        var clock = this.add.image(0, 0,'clock')
-        clockLayer.add(clock, true);
+        // var clock = this.add.image(0, 0,'clock')
+        // clockLayer.add(clock, true);
 
         //sound
         this.gameSound = this.sound.add('gameSound');
-
         this.gameSound.play({
             loop: true
         });
@@ -99,19 +91,13 @@ export default class GameScene extends Phaser.Scene {
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
 
         var centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
-
-        this.clockObject = this.add.image(centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
+        //this.clockObject = this.add.image(centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
        
-        
-
-
-
-        
         // every 1000ms (1s) call this.onEventTimer
-        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+        //this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
-        //this.timer = new timer(this, this.mapConfigData, 45);
-
+        this.timer = new timer(this, this.mapConfigData);
+        this.timer.displayTimer(this.scene);
         
         // create player vehicle class
         switch (this.playerVehicle) {
@@ -165,18 +151,6 @@ export default class GameScene extends Phaser.Scene {
         camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
         camZoom.followOffset.set(300, 300);
 
-        //cameraClock.systems.add.image(200,200, 'clock')
-        
-
-
-        // var UIText1 = this.add.text(0, 32, '0');
-        // UIText1.cameraFilter = this.setCamera(camZoom);
-
-
-       
-        // cameraClock.setBackgroundColor('0xff00ff')
-        // cameraClock.setBounds(0, 0, 200, 200);
-
         this.timerText = this.add.text(
             centerX, 
             3700, 
@@ -220,7 +194,7 @@ export default class GameScene extends Phaser.Scene {
         this.player.updateLoc(this.force)
         this.playerSprite.setPosition(this.player.posX, this.player.posY);
         // this.car.onTrack()
-        // texture.updateCarMask(this.vision, this.car);
+        
         this.fow.calculateFow(this, this.player);
 
         // if timer goes to 0, switch to end scene
