@@ -10,7 +10,12 @@ export default class StartScene extends Phaser.Scene {
     vehicles: Phaser.GameObjects.Sprite[]; 
     selectedVehicle: string;
     timer: number;
-    numLevels:number;
+    numLevels: number;
+    bindingsText: Phaser.GameObjects.Text;
+    gasKey: string;
+    brakeKey: string;
+    leftKey: string;
+    rightKey: string;
     //vehicles: Phaser.GameObjects.Group;
 
     constructor(mapConfigData: ConfigData) {
@@ -18,6 +23,33 @@ export default class StartScene extends Phaser.Scene {
         this.mapConfigData = mapConfigData;
         this.timer = 60; // timer for first level
         this.numLevels = 1;
+    }
+
+    init(data: any) {
+        // check if keys have been rebind
+        if (typeof data.gasKey === 'undefined') {
+            this.gasKey = 'SPACE'
+        } else {
+            this.gasKey = data.gasKey
+        }
+        
+        if (typeof data.brakeKey === 'undefined') {
+            this.brakeKey = 'S'
+        } else {
+            this.brakeKey = data.brakeKey
+        }
+
+        if (typeof data.leftKey === 'undefined') {
+            this.leftKey = 'A'
+        } else {
+            this.leftKey = data.leftKey
+        }
+
+        if (typeof data.rightKey === 'undefined') {
+            this.rightKey= 'D'
+        } else {
+            this.rightKey = data.rightKey
+        }
     }
 
     preload() {
@@ -28,13 +60,27 @@ export default class StartScene extends Phaser.Scene {
     create() {
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.5,
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3,
                 'Select a vehicle to start!', {fontSize: '250px'}).setOrigin(0.5, 0.5)
 
         // key bindings text
-        // this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-        // this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.3,
-        // 'Key Bindings', {fontSize: '150px'}).setOrigin(0.5, 0.5)
+        this.bindingsText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
+                                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.1,
+                                'Key Binding Options', {fontSize: '155px'}).setOrigin(0.5, 0.5)
+        this.bindingsText.setInteractive()
+        this.bindingsText.on('pointerover', () => {
+            this.scale.updateBounds()
+            this.bindingsText.setScale(1.15)
+        })
+        this.bindingsText.on('pointerout', () => {
+            this.scale.updateBounds()
+            this.bindingsText.setScale(1)
+        })
+        this.bindingsText.on('pointerdown', () => {
+            this.scale.updateBounds()
+            this.scene.stop('StartScene');
+            this.scene.start('BindingsScene');
+        })
         
         // add vehicle class sprites
         this.carSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
@@ -52,7 +98,16 @@ export default class StartScene extends Phaser.Scene {
         // select vehicle class
         this.vehicles.forEach( (vehicle) => {
             vehicle.setInteractive()
+            vehicle.on('pointerover', () => {
+                this.scale.updateBounds()
+                vehicle.setScale(5)
+            })
+            vehicle.on('pointerout', () => {
+                this.scale.updateBounds()
+                vehicle.setScale(4)
+            })
             vehicle.on('pointerdown', () => {
+                this.scale.updateBounds()
                 this.selectedVehicle = vehicle.texture.key;
                 switch (this.selectedVehicle) {
                     case 'car': {
@@ -66,10 +121,18 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
+                this.scene.start('GameScene', {
+                    id: this.selectedVehicle,
+                    image: this.image,
+                    timer: this.timer,
+                    numLevels: this.numLevels,
+                    gasKey: this.gasKey,
+                    brakeKey: this.brakeKey,
+                    leftKey: this.leftKey,
+                    rightKey: this.rightKey
+                });
             })
         })
-
 
         // this.vehicles = this.add.group();
         // this.vehicles.add(this.carSprite)
