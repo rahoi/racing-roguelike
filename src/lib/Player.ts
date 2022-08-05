@@ -56,9 +56,23 @@ export default class Player {
         this.pos = new Vector(map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2,
                         (-1) * (map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2))
 
-        // set initial velocity and player angles
+        // set initial heading
+        if (map.innerStartLinePt[0] - map.playerStartPt[0] != 0) {
+            if (map.innerStartLinePt[0] - map.playerStartPt[0] < 0) {
+                this.heading = 90
+            } else {
+                this.heading = 270
+            }
+        } else if (map.innerStartLinePt[1] - map.playerStartPt[1] != 0 ){
+            if (map.innerStartLinePt[1] - map.playerStartPt[1] < 0) {
+                this.heading = 180
+            } else {
+                this.heading = 0
+            }
+        }
+
+        // set initial velocity and steering angle
         this.velocity = new Vector(0,0)
-        this.heading = 0
         this.steerAngle = 0
     
         // set player attributes
