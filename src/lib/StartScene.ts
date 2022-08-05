@@ -10,14 +10,14 @@ export default class StartScene extends Phaser.Scene {
     vehicles: Phaser.GameObjects.Sprite[]; 
     selectedVehicle: string;
     timer: number;
-    numLevels:number;
+    currentLevel:number;
     //vehicles: Phaser.GameObjects.Group;
 
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
-        this.timer = 60; // timer for first level
-        this.numLevels = 1;
+        this.timer = 120; // number of seconds for first level
+        this.currentLevel = 1;
     }
 
     preload() {
@@ -66,7 +66,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
+                this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.currentLevel});
             })
         })
 
