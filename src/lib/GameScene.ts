@@ -11,6 +11,16 @@ import type {force, dir} from "./forceDirTypes"
 import FowLayer from "./FowLayer"
 //import timer from "./timer"
 
+const cameraClockConfig = {
+    key: 'GameScene',
+    cameras:
+        {
+            width: 400,
+            height: 300,
+            backgroundColor: '#ff0000'
+        }
+    }
+
 export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
     image: string;
@@ -32,9 +42,11 @@ export default class GameScene extends Phaser.Scene {
     totalCheckpoints:number;
     //timer: timer;
     gameSound: Phaser.Sound.BaseSound;
+    clockObject: Phaser.GameObjects.Image;
 
     constructor(mapConfigData:ConfigData) {
-        super("GameScene");
+        //super('cameraClockConfig');
+        super('GameScene');
         this.mapConfigData = mapConfigData;
 
         // resets checkpoints
@@ -88,9 +100,13 @@ export default class GameScene extends Phaser.Scene {
 
         var centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
 
-        //this.add.image(centerX - 550, 200, 'clock').setDisplaySize(300, 300);
-        this.timerText = this.add.text(centerX, 200, '00:' + this.countdown, {fontStyle: "Bold", fontSize: "220px", color: "#ffffff"}).setOrigin(0.5);
+        this.clockObject = this.add.image(centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
+       
+        
 
+
+
+        
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
@@ -138,11 +154,40 @@ export default class GameScene extends Phaser.Scene {
         }
         
         //camera
-        const camZoom = this.cameras.main;
+        var cameraClock = this.cameras;
+        var camZoom = this.cameras.main;
+        
+        //camZoom.ignore(this.clockObject);
+
+        
         camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
         camZoom.zoom = 2;
         camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
         camZoom.followOffset.set(300, 300);
+
+        //cameraClock.systems.add.image(200,200, 'clock')
+        
+
+
+        // var UIText1 = this.add.text(0, 32, '0');
+        // UIText1.cameraFilter = this.setCamera(camZoom);
+
+
+       
+        // cameraClock.setBackgroundColor('0xff00ff')
+        // cameraClock.setBounds(0, 0, 200, 200);
+
+        this.timerText = this.add.text(
+            centerX, 
+            3700, 
+            '00:' + this.countdown, 
+            {
+                fontStyle: "Bold", 
+                fontSize: "120px", 
+                color: "#ffffff"
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0);
 
     }
 
@@ -187,8 +232,7 @@ export default class GameScene extends Phaser.Scene {
         // if all checkpoints are collected before timer runs out, load up next level
         else if(this.collectedAllCheckpoints() == true) {
             this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1});
-        }
-  
+        }  
     }
 
     // checks if all checkpoints has been collected
