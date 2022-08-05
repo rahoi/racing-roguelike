@@ -1,8 +1,7 @@
 import type ConfigData from "./ConfigData"
-import type TileMapConstruct from "./TileMapConstruct"
 import type Bike from "./Bike"
 import type Car from "./Car"
-import game from "./Game";
+import type Truck from "./Truck"
 
 export default class FowTexture {
     scene: Phaser.Scene;
@@ -24,7 +23,7 @@ export default class FowTexture {
         this.tileKey = mapConfigData.tileKey;
     }
 
-    mapTexture(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){ //: Phaser.GameObjects.RenderTexture{
+    mapTexture(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) { //: Phaser.GameObjects.RenderTexture{
         this.scene = scene;
         this.map = map;
        
@@ -43,7 +42,7 @@ export default class FowTexture {
         return this.rt;
     }
 
-    playerMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, player: Bike | Car){
+    playerMask(scene: Phaser.Scene, rt: Phaser.GameObjects.RenderTexture, player: Bike | Car | Truck) {
         this.scene = scene
         this.rt = rt
         this.player = player
@@ -60,7 +59,7 @@ export default class FowTexture {
         return this.playerSurrounding;
     }
 
-    updatePlayerMask(playerSurrounding: Phaser.GameObjects.Graphics, player: Bike | Car){
+    updatePlayerMask(playerSurrounding: Phaser.GameObjects.Graphics, player: Bike | Car | Truck) {
         this.playerSurrounding = playerSurrounding
         this.player = player
         if (this.playerSurrounding){

@@ -5,6 +5,7 @@ import TileMapConstruct from "./TileMapConstruct"
 import FowLayer from "./FowLayer"
 import Car from "./Car"
 import Bike from "./Bike"
+import Truck from "./Truck"
 
 // import types
 import type ConfigData from "./ConfigData"
@@ -16,7 +17,7 @@ export default class GameScene extends Phaser.Scene {
     mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
     fow: FowLayer;
-    player: Bike | Car;
+    player: Bike | Car | Truck;
     playerSprite: Phaser.GameObjects.Sprite;
     vision: Phaser.GameObjects.Graphics;
     gasKey: Phaser.Input.Keyboard.Key;
@@ -92,6 +93,10 @@ export default class GameScene extends Phaser.Scene {
             }
             case 'bike': {
                 this.player = new Bike(this.mapGeneration, this.mapConfigData)
+                break;
+            }
+            case 'truck': {
+                this.player = new Truck(this.mapGeneration, this.mapConfigData)
                 break;
             }
         }
