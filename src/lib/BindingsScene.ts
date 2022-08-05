@@ -1,15 +1,17 @@
-import Phaser from "phaser"
+import Phaser, { Tilemaps } from "phaser"
 import type ConfigData from "./ConfigData"
 
 export default class BindingsScene extends Phaser.Scene {
 
     mapConfigData: ConfigData;
     doneText: Phaser.GameObjects.Text;
+    duplicateText: Phaser.GameObjects.Text;
+    invalidText: Phaser.GameObjects.Text;
     gasText: Phaser.GameObjects.Text;
     brakeText: Phaser.GameObjects.Text;
     leftText: Phaser.GameObjects.Text;
     rightText: Phaser.GameObjects.Text;
-    keyMap: Map<Phaser.GameObjects.Text, string>;
+    bindsArr: Phaser.GameObjects.Text[];
     gasKey: string;
     brakeKey: string;
     leftKey: string;
@@ -21,12 +23,24 @@ export default class BindingsScene extends Phaser.Scene {
         this.mapConfigData = mapConfigData;
     }
 
+    init(data: any) {
+        // set keys
+        this.gasKey = data.gasKey
+        this.brakeKey = data.brakeKey
+        this.leftKey = data.leftKey
+        this.rightKey = data.rightKey
+    }
+
     create() {
-        // default key bindings
-        this.gasKey = 'SPACE'
-        this.brakeKey = 'S'
-        this.leftKey = 'A'
-        this.rightKey = 'D'
+        // create text objects
+        this.duplicateText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
+                    this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 900,
+                    'Key bind already in use, please select another.', {fontSize: '125px'})
+                    .setColor('#ff0000').setOrigin(0.5, 0.5).setVisible(false)
+        this.invalidText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
+                    this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 900,
+                    'Please select a valid key binding for all keys.', {fontSize: '125px'})
+                    .setColor('#ff0000').setOrigin(0.5, 0.5).setVisible(false)
 
         // add scene title
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
@@ -53,44 +67,62 @@ export default class BindingsScene extends Phaser.Scene {
                 3300, this.rightKey, {fontSize: '180px'})
         
         // add text keys to map with default values
-        this.keyMap = new Map;
-        this.keyMap.set(this.gasText, this.gasKey)
-        this.keyMap.set(this.brakeText, this.brakeKey)
-        this.keyMap.set(this.leftText, this.leftKey)
-        this.keyMap.set(this.rightText, this.rightKey)
+        this.bindsArr = [];
+        this.bindsArr.push(this.gasText)
+        this.bindsArr.push(this.brakeText)
+        this.bindsArr.push(this.leftText)
+        this.bindsArr.push(this.rightText)
 
         // make text keys interactive
-        this.keyMap.forEach( (value, key) => {
-            console.log(key)
+        this.bindsArr.forEach( (key) => {
             key.setInteractive()
+
             key.on('pointerover', () => {
-                // this.keyMap.forEach( (otherValue, otherKey) => {
-                //     otherKey.setScale(1)
-                // })
                 this.scale.updateBounds()
+                // remove listener if previously selected key was not updated by user
+                this.bindsArr.forEach( () => {
+                    this.input.keyboard.removeListener('keydown')
+                })
                 key.setScale(1.3)
             })
+
             key.on('pointerout', () => {
                 this.scale.updateBounds()
                 key.setScale(1)
             })
+
             key.on('pointerdown', () => {
                 this.scale.updateBounds()
-                //key.setScale(1.3)
-                this.input.keyboard.once('keydown', (event) => {
-                    this.input.keyboard.addCapture(event.keyCode) // key will not affect the browser
-                    this.pressedKey = event.key
-                    if (event.key == ' ') {
-                        this.pressedKey = 'SPACE'
-                    }
-                    this.pressedKey = this.pressedKey.toUpperCase()
-                    // set key in map and in text overlay
-                    this.keyMap.set(key, this.pressedKey)
-                    key.setText(this.pressedKey)
-                    //key.setScale(1)
-                })
+                this.pressedKey = '_' // set empty key, waiting for user input
+                key.setText(this.pressedKey)
+                let pickBind = () => {
+                    this.input.keyboard.once('keydown', (event) => {
+                        this.invalidText.setVisible(false)
+                        this.duplicateText.setVisible(false)
+
+                        // add capture so keys will not affect browser
+                        this.input.keyboard.addCapture(event.keyCode) 
+                        this.pressedKey = event.key
+                        if (this.pressedKey == ' ') {
+                            this.pressedKey = 'SPACE'
+                        }
+                        this.pressedKey = this.pressedKey.toUpperCase()
+    
+                        // check that key is not already in use
+                        if (alreadyExists(this.pressedKey, this.bindsArr)) {
+                            this.pressedKey = '_'
+                            key.setText(this.pressedKey)
+                            this.invalidText.setVisible(false)
+                            this.duplicateText.setVisible(true)
+                            pickBind() // recusively traverse pickBind until non duplicate is selected
+                        } else {
+                            // set key in map and in text overlay
+                            key.setText(this.pressedKey)    
+                        }
+                    })
+                }
+                pickBind()
             })
-            
         })
 
         // back to start scene
@@ -98,23 +130,47 @@ export default class BindingsScene extends Phaser.Scene {
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 300,
                 'Done', {fontSize: '180px'}).setOrigin(0.5, 0.5)
         this.doneText.setInteractive()
+       
         this.doneText.on('pointerover', () => {
             this.scale.updateBounds()
             this.doneText.setScale(1.2)
         })
+
         this.doneText.on('pointerout', () => {
             this.scale.updateBounds()
             this.doneText.setScale(1)
         })
+        
         this.doneText.on('pointerdown', () => {
             this.scale.updateBounds()
-            this.scene.stop('BindingsScene');
-            this.scene.start('StartScene', {
-                gasKey: this.keyMap.get(this.gasText),
-                brakeKey: this.keyMap.get(this.brakeText),
-                leftKey: this.keyMap.get(this.leftText),
-                rightKey: this.keyMap.get(this.rightText)
-            });
+            // check that all keys are valid
+            if (this.bindsArr.every(hasValidKey)) {
+                // go back to start scene
+                this.scene.stop('BindingsScene');
+                this.scene.start('StartScene', {
+                    gasKey: this.gasText.text,
+                    brakeKey: this.brakeText.text,
+                    leftKey: this.leftText.text,
+                    rightKey: this.rightText.text
+                });
+            } else {
+                this.duplicateText.setVisible(false)
+                this.invalidText.setVisible(true)
+            }
         })
+
+        // helper functions
+        function alreadyExists(newKey: string, oldBindsArr: Phaser.GameObjects.Text[]) {
+            let res = false
+            oldBindsArr.forEach( (oldTextObj: Phaser.GameObjects.Text) => {
+                if (newKey === oldTextObj.text) {
+                    res = true
+                }
+            })
+            return res;
+        }
+        function hasValidKey(key: Phaser.GameObjects.Text) {
+            return (key.text != '_')
+        }
     }
 }

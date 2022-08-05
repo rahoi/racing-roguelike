@@ -26,30 +26,18 @@ export default class StartScene extends Phaser.Scene {
     }
 
     init(data: any) {
-        // check if keys have been rebind
-        if (typeof data.gasKey === 'undefined') {
-            this.gasKey = 'SPACE'
-        } else {
-            this.gasKey = data.gasKey
-        }
-        
-        if (typeof data.brakeKey === 'undefined') {
-            this.brakeKey = 'S'
-        } else {
-            this.brakeKey = data.brakeKey
-        }
+        // set default keybinds and update if needed
+        if (typeof data.gasKey === 'undefined') { this.gasKey = 'SPACE' } 
+        else { this.gasKey = data.gasKey }
 
-        if (typeof data.leftKey === 'undefined') {
-            this.leftKey = 'A'
-        } else {
-            this.leftKey = data.leftKey
-        }
+        if (typeof data.brakeKey === 'undefined') { this.brakeKey = 'S' }
+        else { this.brakeKey = data.brakeKey }
 
-        if (typeof data.rightKey === 'undefined') {
-            this.rightKey= 'D'
-        } else {
-            this.rightKey = data.rightKey
-        }
+        if (typeof data.leftKey === 'undefined') { this.leftKey = 'A' }
+        else { this.leftKey = data.leftKey }
+
+        if (typeof data.rightKey === 'undefined') { this.rightKey= 'D' }
+        else { this.rightKey = data.rightKey }
     }
 
     preload() {
@@ -79,7 +67,12 @@ export default class StartScene extends Phaser.Scene {
         this.bindingsText.on('pointerdown', () => {
             this.scale.updateBounds()
             this.scene.stop('StartScene');
-            this.scene.start('BindingsScene');
+            this.scene.start('BindingsScene', {
+                gasKey: this.gasKey,
+                brakeKey: this.brakeKey,
+                leftKey: this.leftKey,
+                rightKey: this.rightKey
+            });
         })
         
         // add vehicle class sprites
