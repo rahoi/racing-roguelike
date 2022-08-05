@@ -9,22 +9,23 @@ export default class PlaceTiles {
     outerTrack:number[][];
     outerTrackString:string[];
 
+    outerStartLinePt:number[];
+    outerStartTile:number;
+
     outerRim:number[][];
     neighborMap:Map<string, coordinate>;
 
     mapHeight:number;
     mapWidth:number;
 
-    startIndex:number;
+    innerStartIndex:number;
     innerStartTile:number;
     playerStartPt:number[];
 
     isClockwise:boolean;
 
-    constructor(innerTrack:number[][], mapHeight:number, mapWidth:number, isClockwise:boolean, startIndex:number, startTile:number) {
-        // this.mapArray = mapArray;
+    constructor(innerTrack:number[][], mapHeight:number, mapWidth:number, isClockwise:boolean, innerStartIndex:number, startTile:number) {
         this.trackCoordinates = [];
-        // this.trackCoordinates = innerTrack; // fill trackCoordinates with inner points
         this.innerTrack = innerTrack;
         this.innerTrackString = innerTrack.map(coordinate => JSON.stringify(coordinate));
         this.outerTrack = [];
@@ -37,7 +38,7 @@ export default class PlaceTiles {
 
         this.isClockwise = isClockwise;
 
-        this.startIndex = startIndex;
+        this.innerStartIndex = innerStartIndex;
         this.innerStartTile = startTile;
     }
 
@@ -48,7 +49,7 @@ export default class PlaceTiles {
         mapArray = this.#fillGrassTiles(mapArray, this.mapHeight, this.mapWidth);
 
         // place inner track tiles on the map
-        mapArray = this.#placeInnerTiles(mapArray, this.isClockwise, this.innerTrack, this.startIndex, this.innerStartTile);
+        mapArray = this.#placeInnerTiles(mapArray, this.isClockwise, this.innerTrack, this.innerStartIndex, this.innerStartTile);
 
         // finding outer track using inner track tiles
         let outerTrackArrays:{trackCoordinates:number[][]; outerTrack:number[][]; outerTrackString:string[];} = this.#findOuterTrackPtsFromInner(mapArray, this.isClockwise, this.innerTrack, this.innerTrackString, this.outerTrack, this.outerTrackString);
@@ -65,9 +66,11 @@ export default class PlaceTiles {
         this.neighborMap = this.#findTrackNeighbors(this.trackCoordinates);
         
         // places outer tiles on the map array, returns the map array and an array of all outer track points along the outer rim of the track
-        let arrays:{mapArray:number[][]; outerRim:number[][];} = this.#placeOuterTiles(mapArray, this.outerTrack, this.outerTrackString, this.neighborMap, this.isClockwise, this.startIndex, this.innerStartTile);
-        mapArray = arrays.mapArray;
-        this.outerRim = arrays.outerRim;
+        let outerTrack:{mapArray:number[][]; outerRim:number[][]; outerStartTile:number; outerStartPt:number[]} = this.#placeOuterTiles(mapArray, this.outerTrack, this.outerTrackString, this.neighborMap, this.isClockwise, this.innerTrack, this.innerStartIndex, this.innerStartTile);
+        mapArray = outerTrack.mapArray;
+        this.outerRim = outerTrack.outerRim;
+        this.outerStartTile = outerTrack.outerStartTile;
+        this.outerStartLinePt = outerTrack.outerStartPt;
 
         this.mapArray = mapArray;
         return mapArray;
@@ -83,6 +86,14 @@ export default class PlaceTiles {
 
     getOuterRim() {
         return this.outerRim;
+    }
+
+    getOuterStartLineCoord() {
+        return this.outerStartLinePt;
+    }
+
+    getOuterStartTile() {
+        return this.outerStartTile;
     }
 
     // ----------------------------------Priavte helper functions----------------------------------
@@ -154,7 +165,7 @@ export default class PlaceTiles {
             curr = innerTrack[currIndex];
             next = innerTrack[nextIndex];
 
-            if (i == 1) {
+            if (currIndex == startIndex) {
                 mapArray[curr[0]][curr[1]] = startTile;
 
             } else {
@@ -184,7 +195,7 @@ export default class PlaceTiles {
 
         // filling diagonal/corner tiles
         else if ((prev[1] < curr[1] && curr[0] > next[0]) || (prev[0] < curr[0] && curr[1] > next[1])) {
-            prev_array = [terrainArray.straight_left, terrainArray.straight_up, terrainArray.corner_NE, terrainArray.corner_SW, terrainArray.diag_NW];
+            prev_array = [terrainArray.straight_left, terrainArray.straight_up, terrainArray.finish_left, terrainArray.finish_up, terrainArray.corner_NE, terrainArray.corner_SW, terrainArray.diag_NW];
 
             if (prev_array.includes(mapArray[prev[0]][prev[1]])) {
                 tile = terrainArray.corner_NW;
@@ -193,7 +204,7 @@ export default class PlaceTiles {
             }
         }
         else if ((prev[1] > curr[1] && curr[0] > next[0]) || (prev[0] < curr[0] && curr[1] < next[1])) {
-            prev_array = [terrainArray.straight_right, terrainArray.straight_up, terrainArray.corner_NW, terrainArray.corner_SE, terrainArray.diag_NE];
+            prev_array = [terrainArray.straight_right, terrainArray.straight_up, terrainArray.finish_right, terrainArray.finish_up, terrainArray.corner_NW, terrainArray.corner_SE, terrainArray.diag_NE];
 
             if (prev_array.includes(mapArray[prev[0]][prev[1]])) {
                 tile = terrainArray.corner_NE;
@@ -202,7 +213,7 @@ export default class PlaceTiles {
             }        
         }
         else if ((prev[1] > curr[1] && curr[0] < next[0]) || (prev[0] > curr[0] && curr[1] < next[1])) {
-            prev_array = [terrainArray.straight_down, terrainArray.straight_right, terrainArray.corner_SW, terrainArray.corner_NE, terrainArray.diag_SE];
+            prev_array = [terrainArray.straight_down, terrainArray.straight_right, terrainArray.finish_down, terrainArray.finish_right, terrainArray.corner_SW, terrainArray.corner_NE, terrainArray.diag_SE];
 
             if (prev_array.includes(mapArray[prev[0]][prev[1]])) {
                 tile = terrainArray.corner_SE;
@@ -211,7 +222,7 @@ export default class PlaceTiles {
             }        
         }
         else if ((prev[1] < curr[1] && curr[0] < next[0]) || (prev[0] > curr[0] && curr[1] > next[1])) {
-            prev_array = [terrainArray.straight_down, terrainArray.straight_left, terrainArray.corner_NW, terrainArray.corner_SE, terrainArray.diag_SW];
+            prev_array = [terrainArray.straight_down, terrainArray.straight_left, terrainArray.finish_down, terrainArray.finish_left, terrainArray.corner_NW, terrainArray.corner_SE, terrainArray.diag_SW];
 
             if (prev_array.includes(mapArray[prev[0]][prev[1]])) {
                 tile = terrainArray.corner_SW;
@@ -425,7 +436,7 @@ export default class PlaceTiles {
         return neighbors;
     }
 
-    #placeOuterTiles(mapArray:number[][], outerTrack:number[][], outerTrackString:string[], neighborMap:Map<string, coordinate>, isClockwise:boolean, startIndex:number, innerStartTile:number) {
+    #placeOuterTiles(mapArray:number[][], outerTrack:number[][], outerTrackString:string[], neighborMap:Map<string, coordinate>, isClockwise:boolean, innerTrack:number[][], innerStartIndex:number, innerStartTile:number) {
         let outerRim:number[][] = JSON.parse(JSON.stringify(outerTrack));   // holds track pts on the outer rim of the race track
         let outerRimString:string[] = [];
 
@@ -445,6 +456,28 @@ export default class PlaceTiles {
         // push first pt in outerRim to end to complete the loop
         outerRim.push(outerRim[0]);
 
+        // placing start tile on outer track
+        let outerStartTile:number;
+        let outerStartPt:number[] = [];
+
+        if (innerStartTile == terrainArray.finish_up) {
+            outerStartTile = terrainArray.finish_down;
+            outerStartPt = [innerTrack[innerStartIndex][0] + 1, innerTrack[innerStartIndex][1]];
+        }
+        else if (innerStartTile == terrainArray.finish_down) {
+            outerStartTile = terrainArray.finish_up;
+            outerStartPt = [innerTrack[innerStartIndex][0] - 1, innerTrack[innerStartIndex][1]];
+        }
+        else if (innerStartTile == terrainArray.finish_left) {
+            outerStartTile = terrainArray.finish_right;
+            outerStartPt = [innerTrack[innerStartIndex][0], innerTrack[innerStartIndex][1] + 1];
+        }
+        else { // if innerStartTile is terrainArray.finish_right
+            outerStartTile = terrainArray.finish_left;
+            outerStartPt = [innerTrack[innerStartIndex][0], innerTrack[innerStartIndex][1] - 1];
+        }
+        mapArray[outerStartPt[0]][outerStartPt[1]] = outerStartTile;
+
         let prevIndex:number;
         let currIndex:number;
         let nextIndex:number;
@@ -453,44 +486,27 @@ export default class PlaceTiles {
         let curr:number[];
         let next:number[];
         for (let i = 0; i < outerRim.length - 1; i++) {
-            prevIndex = (i - 1 + startIndex) % (outerRim.length - 1);
-            currIndex =  (i + startIndex) % (outerRim.length - 1);
-            nextIndex = (i + 1 + startIndex) % (outerRim.length - 1);
+            prevIndex = (i - 1 + innerStartIndex) % (outerRim.length - 1);
+            currIndex =  (i + innerStartIndex) % (outerRim.length - 1);
+            nextIndex = (i + 1 + innerStartIndex) % (outerRim.length - 1);
 
             // console.log(outerRim[i])
             prev = outerRim[prevIndex];
             curr = outerRim[currIndex];
             next = outerRim[nextIndex];
 
-            if (i == 1) {
-                let outerStartTile:number;
-                if (innerStartTile == terrainArray.finish_up) {
-                    outerStartTile = terrainArray.finish_down;
-                }
-                else if (innerStartTile == terrainArray.finish_down) {
-                    outerStartTile = terrainArray.finish_up;
-                }
-                else if (innerStartTile == terrainArray.finish_left) {
-                    outerStartTile = terrainArray.finish_right;
-                }
-                else { // if innerStartTile is terrainArray.finish_right
-                    outerStartTile = terrainArray.finish_left;
-                }
-                mapArray[curr[0]][curr[1]] = outerStartTile;
-
-            } else {
+            if (JSON.stringify(curr) != JSON.stringify(outerStartPt)) {
                 mapArray[curr[0]][curr[1]] = this.#findTile(mapArray, !isClockwise, prev, curr, next);
             }
         }
-
-        return {mapArray, outerRim};
+        return {mapArray, outerRim, outerStartTile, outerStartPt};
     }
 
     #determineIfBlank(outerCoordKey:string, outerTrackString:string[], neighborMap:Map<string, coordinate>) {
         let coordinate:coordinate | undefined = neighborMap.get(outerCoordKey);
         let numOuterNeighbors = 0;
 
-        // sets tile as blank road if the track pt has 4 neighbors
+        // sets tile as blank road if the track pt has 4 neighbors and at least one of them is on a point on the outer track
         if (coordinate != null && coordinate.numNeighbors == 4) {
             let upCoordString = JSON.stringify(coordinate.upVert);
             let neighborUp:coordinate | undefined = neighborMap.get(upCoordString);

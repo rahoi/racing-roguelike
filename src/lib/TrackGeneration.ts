@@ -13,8 +13,12 @@ export default class TrackGeneration {
     outerRim:number[][];    // array of outer track tiles along the outer rim of the race track
 
     innerStartLineIndex:number;  // index of start line in inner track array
-    innerStartLinePt:number[]; // coordinate of start line
-    innerStartTile:number;   // tile at start line
+    innerStartLinePt:number[]; // coordinate of start line on the inner track
+    innerStartTile:number;   // tile at inner start line
+    
+    outerStartLinePt:number[]; // coordinate of start line on the outer track
+    outerStartTile:number;  // tile at outer start line
+    
     playerStartPt:number[]; // coordinate of the player's starting point
     isClockwise:boolean;    // true if innerTrack runs clockwise
     placeTrackTiles:PlaceTrackTiles;
@@ -106,6 +110,9 @@ export default class TrackGeneration {
             this.neighborMap = this.placeTrackTiles.getNeighborMap();
             this.allTrackPoints = this.placeTrackTiles.getAllTrackPts();
             this.outerRim = this.placeTrackTiles.getOuterRim();
+            
+            this.outerStartLinePt = this.placeTrackTiles.getOuterStartLineCoord();
+            this.outerStartTile = this.placeTrackTiles.getOuterStartTile();
 
             // finds if there a long, narrow offshoots
             // ie: where a two adjacent points both only have two neighbors in the rest of the track points
@@ -121,6 +128,9 @@ export default class TrackGeneration {
                 this.createMapArray();
             } else{
                 console.log("track length: ", this.innerTrack.length);
+                console.log("1st track point: ", this.innerTrack[0]);
+                console.log("start line: ", this.innerStartLinePt);
+                console.log("player start: ", this.playerStartPt);
             }
             
         }
