@@ -9,8 +9,7 @@ import Bike from "./Bike"
 import type ConfigData from "./ConfigData"
 import type {force, dir} from "./forceDirTypes"
 import FowLayer from "./FowLayer"
-import timer from "./timer"
-//import timer from "./timer"
+    
 
 export default class GameScene extends Phaser.Scene {
     playerVehicle: string;
@@ -31,9 +30,11 @@ export default class GameScene extends Phaser.Scene {
     numLevels:number;
     collectedCheckpoints:number;
     totalCheckpoints:number;
-    timer: timer;
     gameSound: Phaser.Sound.BaseSound;
     clockObject: Phaser.GameObjects.Image;
+    timeContainer: Phaser.GameObjects.Sprite
+    timeBar: Phaser.GameObjects.Sprite
+    centerX: number
 
     constructor(mapConfigData:ConfigData) {
         super('GameScene');
@@ -59,46 +60,31 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        //this.load.image('clock', './assets/chronometer.png');
-
+       
         this.load.image('clock', './assets/icons8-timer-64.png');
         this.load.audio('gameSound', './assets/race-track-sound.wav');
 
-        this.load.image("energycontainer", "./assets/timeContainer.png");
-        this.load.image("energybar", "./assets/timeBar.png");
+        this.load.image("timecontainer", "./assets/timeContainer.png");
+        this.load.image("timebar", "./assets/timeBar.png");
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-
-        // const clockLayer = this.add.layer();
-        
-        // var clock = this.add.image(0, 0,'clock')
-        // clockLayer.add(clock, true);
-
-        //sound
-        this.gameSound = this.sound.add('gameSound');
-        this.gameSound.play({
-            loop: true
-        });
       
+        this.GameSound();
+
         this.mapArray = new MapArray(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
     
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);   
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-
-        var centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
-        //this.clockObject = this.add.image(centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
        
         // every 1000ms (1s) call this.onEventTimer
-        //this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+        this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
 
-        this.timer = new timer(this, this.mapConfigData);
-        this.timer.displayTimer(this.scene);
-        
         // create player vehicle class
         switch (this.playerVehicle) {
             case 'car': {
@@ -112,7 +98,7 @@ export default class GameScene extends Phaser.Scene {
         }
         
         this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
-       
+          
         // add input keys
         this.keys = this.input.keyboard.addKeys({
             w: Phaser.Input.Keyboard.KeyCodes.W,
@@ -138,31 +124,9 @@ export default class GameScene extends Phaser.Scene {
             'a': false,
             'd': false
         }
-        
-        //camera
-        var cameraClock = this.cameras;
-        var camZoom = this.cameras.main;
-        
-        //camZoom.ignore(this.clockObject);
-
-        
-        camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
-        camZoom.zoom = 2;
-        camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
-        camZoom.followOffset.set(300, 300);
-
-        this.timerText = this.add.text(
-            centerX, 
-            3700, 
-            '00:' + this.countdown, 
-            {
-                fontStyle: "Bold", 
-                fontSize: "120px", 
-                color: "#ffffff"
-            })
-            .setOrigin(0.5)
-            .setScrollFactor(0);
-
+        this.mainCamera();
+        this.displayTimeBar(15);
+        this.timerLabel();
     }
 
     
@@ -227,5 +191,64 @@ export default class GameScene extends Phaser.Scene {
         }
         
     }
+
+    displayTimeBar(totalTime: number) {
+        this.countdown = totalTime;
+    
+        let timeContainer = this.add.sprite(this.centerX, 3500, "timecontainer");
+        let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
+ 
+        // a copy of the time bar to be used as a mask
+        var timeMask = this.add.sprite(timeBar.x, timeBar.y, "timebar");
+        timeMask.visible = false;
+        timeBar.mask = new Phaser.Display.Masks.BitmapMask(this, timeMask);
+
+        this.time.addEvent({
+            delay: 1000,
+            callback: function(){
+ 
+                // dividing time bar width by the number of seconds gives us the amount
+                // of pixels we need to move the time bar each second
+                let stepWidth = timeMask.displayWidth / totalTime;
+                
+                timeMask.x -= stepWidth; // moving the mask
+            },
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    private GameSound() {
+        this.gameSound = this.sound.add('gameSound');
+        this.gameSound.play({
+            loop: true
+        });
+    }
+
+    private timerLabel() {
+        this.clockObject = this.add.image(this.centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
+
+        this.timerText = this.add.text(
+            this.centerX, 
+            3700, 
+            '00:' + this.countdown, 
+            {
+                fontStyle: "Bold", 
+                fontSize: "120px", 
+                color: "#ffffff"
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+    }
+
+    private mainCamera(){
+        var camZoom = this.cameras.main;        
+        camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
+        camZoom.zoom = 2;
+        camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
+        camZoom.followOffset.set(300, 300);
+    }
+
+    
 
 }

@@ -29,11 +29,11 @@ export default class StartScene extends Phaser.Scene {
     create() {
 
         //sound 
-        var startSceneSound = this.sound.add('startSound');
+        // var startSceneSound = this.sound.add('startSound');
 
-        startSceneSound.play({
-            loop: true
-        });
+        // startSceneSound.play({
+        //     loop: true
+        // });
 
 
 
@@ -77,7 +77,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                startSceneSound.destroy();
+                //startSceneSound.destroy();
                 this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
             })
         })
