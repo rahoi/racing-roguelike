@@ -51,7 +51,7 @@ export default class FowTexture {
         this.playerSurrounding =  this.scene.make.graphics(this.scene);
         this.playerSurrounding.fillStyle(0xffffff);  //.setAlpha(0.4); //0xFFFFFF
         this.playerSurrounding.beginPath();
-        this.playerSurrounding.arc(this.player.posX, this.player.posY, 100, 0, Math.PI *2);
+        this.playerSurrounding.arc(this.player.getLocX(), this.player.getLocY(), 100, 0, Math.PI *2);
         this.playerSurrounding.fillPath();
 
         this.rt.mask = new Phaser.Display.Masks.BitmapMask(this.scene, this.playerSurrounding)
@@ -64,12 +64,12 @@ export default class FowTexture {
         this.playerSurrounding = playerSurrounding
         this.player = player
         if (this.playerSurrounding){
-            this.playerSurrounding.x = player.posX
-            this.playerSurrounding.y = player.posY
+            this.playerSurrounding.x = player.getLocX()
+            this.playerSurrounding.y = player.getLocY()
         }
     }
 
-       // createCamera(scene: Phaser.Scene, vision: Phaser.GameObjects.Graphics) {
+    // createCamera(scene: Phaser.Scene, vision: Phaser.GameObjects.Graphics) {
     //     this.scene = scene;
     //     this.vision = vision;
     //     this.scene.cameras.main.setBounds(0, 0, this.mapWidth * this.tileDimension, this.mapHeight * this.tileDimension);
