@@ -24,8 +24,8 @@ export default class GameScene extends Phaser.Scene {
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
     leftKey: Phaser.Input.Keyboard.Key;
-    timerText:Phaser.GameObjects.Text;
-    timerEvent:Phaser.Time.TimerEvent;
+    timerText: Phaser.GameObjects.Text;
+    timerEvent: Phaser.Time.TimerEvent;
     angleDiff: number;
     playerAngle: number;
     initTimer: number;
@@ -33,7 +33,6 @@ export default class GameScene extends Phaser.Scene {
     numLevels: number;
     collectedCheckpoints: number;
     totalCheckpoints: number;
-    
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -53,6 +52,12 @@ export default class GameScene extends Phaser.Scene {
         this.initTimer = data.timer;
         this.countdown = data.timer;
         this.numLevels = data.numLevels;
+
+        // add input keys
+        this.gasKey = this.input.keyboard.addKey(data.gasKey);
+        this.brakeKey = this.input.keyboard.addKey(data.brakeKey);
+        this.rightKey = this.input.keyboard.addKey(data.rightKey);
+        this.leftKey = this.input.keyboard.addKey(data.leftKey);
     }
 
     preload() {
@@ -78,12 +83,6 @@ export default class GameScene extends Phaser.Scene {
         this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
-
-        // add input keys
-        this.gasKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.brakeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-        this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         
         // create player object
         switch (this.playerVehicle) {
@@ -101,9 +100,13 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // create player sprite
+        // create player sprite and set sprite angle
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
-        this.playerSprite.angle = 90
+        if (this.player.getHeading() == 0 || this.player.getHeading() == 180) {
+            this.playerSprite.angle = this.player.getHeading() + 90
+        } else if (this.player.getHeading() == 90 || this.player.getHeading() == 270) {
+            this.playerSprite.angle = this.player.getHeading() - 90
+        }
     }
     
     update() {
