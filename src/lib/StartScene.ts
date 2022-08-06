@@ -32,7 +32,6 @@ export default class StartScene extends Phaser.Scene {
         //sound 
         this.displaySound();
 
-
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.5,
@@ -89,9 +88,6 @@ export default class StartScene extends Phaser.Scene {
 		//         this.scene.start('GameScene')
         //     })
         // }, this);
-
-
-
 
     }
 

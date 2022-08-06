@@ -82,7 +82,7 @@ export default class GameScene extends Phaser.Scene {
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
     
         // add fog of war
-       this.generateFow();
+        this.generateFow();
        
         // every 1000ms (1s) call this.onEventTimer
         this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
@@ -166,11 +166,9 @@ export default class GameScene extends Phaser.Scene {
         this.countdown = countdown;
         var totalTime = countdown;
     
-        //let timeContainer = this.add.sprite(this.centerX - 250, 3700, "timecontainer");
-        //let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
+        let timeContainer = this.add.sprite(this.centerX - 250, 3700, "timecontainer");
+        let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
         
-        let timeBar = this.add.sprite(this.centerX - 250, 3700, "timebar").setScrollFactor(0);
-
         // a copy of the time bar as a mask
         var timeMask = this.add.sprite(timeBar.x, timeBar.y, "timebar");
         timeMask.visible = false;
