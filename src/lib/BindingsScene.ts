@@ -7,18 +7,19 @@ export default class BindingsScene extends Phaser.Scene {
     doneText: Phaser.GameObjects.Text;
     duplicateText: Phaser.GameObjects.Text;
     invalidText: Phaser.GameObjects.Text;
+    missingText: Phaser.GameObjects.Text;
     gasText: Phaser.GameObjects.Text;
     brakeText: Phaser.GameObjects.Text;
     leftText: Phaser.GameObjects.Text;
     rightText: Phaser.GameObjects.Text;
     bindsArr: Phaser.GameObjects.Text[];
+    flashMap: Map<Phaser.GameObjects.Text, Tweens.Tween>;
     gasKey: string;
     brakeKey: string;
     leftKey: string;
     rightKey: string;
     pressedKey: string;
-    flashMap: Map<Phaser.GameObjects.Text, Tweens.Tween>;
-
+    
     constructor(mapConfigData: ConfigData) {
         super("BindingsScene");
         this.mapConfigData = mapConfigData;
@@ -39,6 +40,10 @@ export default class BindingsScene extends Phaser.Scene {
                     'Key bind already in use, please select another.', {fontSize: '125px'})
                     .setColor('#ff0000').setOrigin(0.5, 0.5).setVisible(false)
         this.invalidText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
+                    this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 900,
+                    'Invalid key, please select a valid bind.', {fontSize: '125px'})
+                    .setColor('#ff0000').setOrigin(0.5, 0.5).setVisible(false)
+        this.missingText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
                     this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 900,
                     'Please select a valid key binding for all keys.', {fontSize: '125px'})
                     .setColor('#ff0000').setOrigin(0.5, 0.5).setVisible(false)
@@ -128,31 +133,72 @@ export default class BindingsScene extends Phaser.Scene {
                     }
                 })
 
-                // set empty key while we wait for user input (if any)
-                this.pressedKey = '_' 
-                key.setText(this.pressedKey)
-
                 // define pickBind function - user picks which key to bind movement to
                 let pickBind = () => {
-                    this.input.keyboard.once('keydown', (event) => {
-                        this.invalidText.setVisible(false)
+                    this.input.keyboard.once('keydown', (event: KeyboardEvent) => {
                         this.duplicateText.setVisible(false) 
-
+                        this.invalidText.setVisible(false)
+                        this.missingText.setVisible(false)
+                        
                         // add capture so keys will not affect browser
                         this.input.keyboard.addCapture(event.keyCode) 
+
+                        // use KeyboardEvent.key for Phaser.Input.Keyboard.Key
+                        let keyMap = {
+                            ' ': 'SPACE',
+                            ',': 'COMMA',
+                            '.': 'PERIOD',
+                            ';': 'SEMICOLON',
+                            '\'': 'QUOTES', 
+                            '/': 'FORWARD_SLASH',
+                            'ArrowUp': 'UP',
+                            'ArrowDown': 'DOWN',
+                            'ArrowLeft': 'LEFT',
+                            'ArrowRight': 'RIGHT',
+                            '1': 'ONE',
+                            '2': 'TWO',
+                            '3': 'THREE',
+                            '4': 'FOUR',
+                            '5': 'FIVE',
+                            '6': 'SIX',
+                            '7': 'SEVEN',
+                            '8': 'EIGHT',
+                            '9': 'NINE',
+                            '0': 'ZERO'
+                        }
+
+                        // array of valid keys
+                        let validKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                            'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'ZERO',
+                            'SPACE', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'TAB', 'SHIFT', 'BACKSPACE',
+                            'COMMA', 'PERIOD', 'SEMICOLON', 'QUOTES', 'FORWARD_SLASH', 'ENTER']
+
+                        // need to use a dictionary for inconsitent keys
                         this.pressedKey = event.key
-                        if (this.pressedKey == ' ') {
-                            this.pressedKey = 'SPACE'
+                        if (keyMap.hasOwnProperty(this.pressedKey)) {
+                            this.pressedKey = keyMap[this.pressedKey]
                         }
                         this.pressedKey = this.pressedKey.toUpperCase()
-    
-                        // check that key is not already in use
-                        if (alreadyExists(this.pressedKey, this.bindsArr)) {
+
+                        // check that selected key is valid
+                        if (!validKeys.includes(this.pressedKey)) {
+                            this.pressedKey = '_'
+                            key.setText(this.pressedKey)                            
+                            this.duplicateText.setVisible(false)
+                            this.missingText.setVisible(false)
+                            this.invalidText.setVisible(true)
+                            // recusively traverse pickBind until valid key is selected
+                            pickBind()
+                        } else if (alreadyExists(this.pressedKey, this.bindsArr)) {
+                            // check that key is not already in use
                             this.pressedKey = '_'
                             key.setText(this.pressedKey)
                             this.invalidText.setVisible(false)
+                            this.missingText.setVisible(false)
                             this.duplicateText.setVisible(true)
-                            pickBind() // recusively traverse pickBind until non duplicate is selected
+                            // recusively traverse pickBind until non duplicate is selected
+                            pickBind()
                         } else {
                             // stop flashing
                             this.flashMap.get(key).restart()
@@ -162,7 +208,12 @@ export default class BindingsScene extends Phaser.Scene {
                         }
                     })
                 }
-                // call pickBind function
+
+                // set empty key while we wait for user input (if any)
+                this.pressedKey = '_' 
+                key.setText(this.pressedKey)
+                
+                // call pickBind() function
                 pickBind()
             })
         })
@@ -197,11 +248,12 @@ export default class BindingsScene extends Phaser.Scene {
                 });
             } else {
                 this.duplicateText.setVisible(false)
-                this.invalidText.setVisible(true)
+                this.invalidText.setVisible(false)
+                this.missingText.setVisible(true)
             }
         })
 
-        // helper functions
+        // helper function: checks for duplicate keys
         function alreadyExists(newKey: string, oldBindsArr: Phaser.GameObjects.Text[]) {
             let res = false
             oldBindsArr.forEach( (oldTextObj: Phaser.GameObjects.Text) => {
@@ -211,6 +263,8 @@ export default class BindingsScene extends Phaser.Scene {
             })
             return res;
         }
+
+        // helper function: checks if all keys have a bind
         function hasValidKey(key: Phaser.GameObjects.Text) {
             return (key.text != '_')
         }

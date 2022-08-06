@@ -23,8 +23,8 @@ export default class GameScene extends Phaser.Scene {
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
     leftKey: Phaser.Input.Keyboard.Key;
-    timerText:Phaser.GameObjects.Text;
-    timerEvent:Phaser.Time.TimerEvent;
+    timerText: Phaser.GameObjects.Text;
+    timerEvent: Phaser.Time.TimerEvent;
     angleDiff: number;
     playerAngle: number;
     initTimer: number;
