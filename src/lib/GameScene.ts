@@ -96,9 +96,13 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // create player sprite
+        // create player sprite and set sprite angle
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
-        this.playerSprite.angle = 90
+        if (this.player.getHeading() == 0 || this.player.getHeading() == 180) {
+            this.playerSprite.angle = this.player.getHeading() + 90
+        } else if (this.player.getHeading() == 90 || this.player.getHeading() == 270) {
+            this.playerSprite.angle = this.player.getHeading() - 90
+        }
     }
     
     update() {
