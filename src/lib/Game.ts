@@ -8,7 +8,7 @@ const tileDimension = 128;
 const tileMapHeight = 40;
 const tileMapWidth = 40;
 const backgroundColor = '#193e04';  //'#bc8044'; 
-const tilesetImageSheet = '/assets/spritesheet_tiles.png';
+const tilesetImageSheet = '/assets/road_spritesheet.png';
 const tileKey = 'tiles';
 
 let mapConfigData = new ConfigData(backgroundColor, tileDimension, tileMapHeight, tileMapWidth, tilesetImageSheet, tileKey);

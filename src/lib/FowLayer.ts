@@ -2,13 +2,14 @@ import { Mrpas } from "mrpas";
 import type Bike from "./Bike";
 import type Car from "./Car";
 import type ConfigData from "./ConfigData";
+//import type Player from "./Player";
 
 const n = 100; // size of the array
 
 export default class FowLayer{
 	map: Phaser.Tilemaps.Tilemap;
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
-	player: Car | Bike;
+	player: Bike | Car;
 	camera: Phaser.Cameras.Scene2D.CameraManager;
     tileDimension: number;
     mapHeight: number;
@@ -49,7 +50,7 @@ export default class FowLayer{
 			this.map.worldToTileX(this.camera.main.worldView.x),
 			this.map.worldToTileY(this.camera.main.worldView.y),
 			this.map.worldToTileX(this.camera.main.worldView.width),
-			this.map.worldToTileX(this.camera.main.worldView.height)
+			this.map.worldToTileY(this.camera.main.worldView.height)
 		)
 	
 		for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
@@ -67,24 +68,25 @@ export default class FowLayer{
 		}	
 	}
 
-    createFow () {
+    private createFow () {
         //determine if a tile can be seen through (floor can't block the vision)
         let isTransparent = (x:number, y:number) => {
             const tile = this.roadLayer.getTileAt(x, y)
             return tile && !tile.collides;  //anything that cannot collide with the car can be seen through
         }
-        this.fow = new Mrpas(this.mapHeight, this.mapWidth, isTransparent);
+        this.fow = new Mrpas(this.mapWidth, this.mapHeight, isTransparent);
     }
 
     calculateFow(scene: Phaser.Scene, player: Car | Bike) {       
         this.scene = scene;
         this.player = player;
     
-        const px = this.map.worldToTileX(this.player.posX);
-        const py = this.map.worldToTileY(this.player.posY);
-        const radius = 4;
+         var px = this.map.worldToTileX(this.player.getLocX());
+         var py = this.map.worldToTileY((-1) * this.player.getLocY());
+         const radius = 4;
 
         let isVisible = (x:number, y:number): boolean => {
+            console.log('calling isVisible');
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
                 return false;  
@@ -92,13 +94,14 @@ export default class FowLayer{
             return true;
         }
 
-        let setVisibility = (x:number, y:number) => {
+        let setVisibility = (x:number, y:number): void => {
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
                 return;
             }
-            const d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
+            var d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
                 new Phaser.Math.Vector2(px, py)));
+
             if (d < radius - 1) {
                 this.isTileSeen[x][y] = true;
                 tile.tint = 0xffffff;  //white color
@@ -108,10 +111,11 @@ export default class FowLayer{
         }
 
         this.fow.compute(
-        px,
-        py,
-        Infinity, 
-        isVisible,
-        setVisibility);
+            px,
+            py,
+            Infinity, 
+            isVisible,
+            setVisibility);
     }
+
 }

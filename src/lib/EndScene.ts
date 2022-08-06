@@ -23,12 +23,8 @@ export default class EndScene extends Phaser.Scene {
     }
 
     create() {
-        //sound 
-        this.endSound = this.sound.add('endSound');
-
-        this.endSound.play({
-            loop: false
-        });
+        //sound
+        this.displaySound();
 
         // when viewing the entire map
         const x = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
@@ -55,6 +51,14 @@ export default class EndScene extends Phaser.Scene {
             location.reload()
         });
 
+    }
+
+    private displaySound() {
+        this.endSound = this.sound.add('endSound');
+
+        this.endSound.play({
+            loop: false
+        });
     }
 
 }

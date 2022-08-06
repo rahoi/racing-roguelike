@@ -12,11 +12,12 @@ export default class StartScene extends Phaser.Scene {
     timer: number;
     numLevels:number;
     //vehicles: Phaser.GameObjects.Group;
+    StartSound: Phaser.Sound.BaseSound;
 
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
-        this.timer = 15; // timer for first level
+        this.timer = 60; // timer for first level
         this.numLevels = 1;
     }
 
@@ -29,12 +30,7 @@ export default class StartScene extends Phaser.Scene {
     create() {
 
         //sound 
-        // var startSceneSound = this.sound.add('startSound');
-
-        // startSceneSound.play({
-        //     loop: true
-        // });
-
+        this.displaySound();
 
 
         // title screen text
@@ -77,7 +73,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                //startSceneSound.destroy();
+                this.StartSound.destroy();
                 this.scene.start('GameScene', {id: this.selectedVehicle, image: this.image, timer: this.timer, numLevels: this.numLevels});
             })
         })
@@ -98,5 +94,14 @@ export default class StartScene extends Phaser.Scene {
 
 
     }
+
+    private displaySound() {
+        this.StartSound = this.sound.add('startSound');
+
+        this.StartSound.play({
+            loop: true
+            });
+        }
+    
 
 }

@@ -1,40 +1,41 @@
 // import classes
 import Phaser from "phaser"
-import MapArray from "./MapArray"
+import GenerateMap from "./GenerateMap"
 import TileMapConstruct from "./TileMapConstruct"
+import FowLayer from "./FowLayer"
 import Car from "./Car"
 import Bike from "./Bike"
 
 // import types
 import type ConfigData from "./ConfigData"
-import type {force, dir} from "./forceDirTypes"
-import FowLayer from "./FowLayer"
-    
 
 export default class GameScene extends Phaser.Scene {
-    playerVehicle: string;
     image: string;
+    playerVehicle: string;
     mapConfigData: ConfigData;
-    player: Bike | Car;
-    mapArray: MapArray;
+    mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
-    playerSprite: Phaser.GameObjects.Sprite;
-    keys: object;
-    force: force;
-    dir: dir;
     fow: FowLayer;
-    initTimer:number;
-    countdown:number;
+    player: Bike | Car;
+    playerSprite: Phaser.GameObjects.Sprite;
+    vision: Phaser.GameObjects.Graphics;
+    gasKey: Phaser.Input.Keyboard.Key;
+    brakeKey: Phaser.Input.Keyboard.Key;
+    rightKey: Phaser.Input.Keyboard.Key;
+    leftKey: Phaser.Input.Keyboard.Key;
     timerText:Phaser.GameObjects.Text;
     timerEvent:Phaser.Time.TimerEvent;
-    numLevels:number;
-    collectedCheckpoints:number;
-    totalCheckpoints:number;
+    angleDiff: number;
+    playerAngle: number;
+    initTimer: number;
+    countdown: number;
+    numLevels: number;
+    collectedCheckpoints: number;
+    totalCheckpoints: number;
+    centerX: number;
     gameSound: Phaser.Sound.BaseSound;
+    winSound: Phaser.Sound.BaseSound;
     clockObject: Phaser.GameObjects.Image;
-    timeContainer: Phaser.GameObjects.Sprite
-    timeBar: Phaser.GameObjects.Sprite
-    centerX: number
 
     constructor(mapConfigData:ConfigData) {
         super('GameScene');
@@ -63,6 +64,7 @@ export default class GameScene extends Phaser.Scene {
        
         this.load.image('clock', './assets/icons8-timer-64.png');
         this.load.audio('gameSound', './assets/race-track-sound.wav');
+        this.load.audio('winSound', './assets/congrats-sound.wav');
 
         this.load.image("timecontainer", "./assets/timeContainer.png");
         this.load.image("timebar", "./assets/timeBar.png");
@@ -71,96 +73,64 @@ export default class GameScene extends Phaser.Scene {
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
-      
-        this.GameSound();
 
-        this.mapArray = new MapArray(this.mapConfigData);
-        this.tileMap = new TileMapConstruct(this, this.mapArray, this.mapConfigData)
+        //sound
+        this.displaySound();
+
+        // generate race track
+        this.mapGeneration = new GenerateMap(this.mapConfigData);
+        this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
     
-        this.fow = new FowLayer(this.mapConfigData);
-        this.fow.mapLayer(this, this.tileMap.tileMap);   
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+        // add fog of war
+       this.generateFow();
        
         // every 1000ms (1s) call this.onEventTimer
-        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
         this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
 
-        // create player vehicle class
+        // every 1000ms (1s) call this.onEventTimer
+        this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
+
+        // add input keys
+        this.gasKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.brakeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        
+        // create player object
         switch (this.playerVehicle) {
             case 'car': {
-                this.player = new Car(this.mapArray, this.mapConfigData)
+                this.player = new Car(this.mapGeneration, this.mapConfigData)
                 break;
             }
             case 'bike': {
-                this.player = new Bike(this.mapArray, this.mapConfigData)
+                this.player = new Bike(this.mapGeneration, this.mapConfigData)
                 break;
             }
         }
-        
-        this.playerSprite = this.add.sprite(this.player.posX, this.player.posY, this.playerVehicle)
-          
-        // add input keys
-        this.keys = this.input.keyboard.addKeys({
-            w: Phaser.Input.Keyboard.KeyCodes.W,
-            a: Phaser.Input.Keyboard.KeyCodes.A,
-            s: Phaser.Input.Keyboard.KeyCodes.S,
-            d: Phaser.Input.Keyboard.KeyCodes.D,
-        })
 
-        // let keys = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        // create player sprite
+        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
+        this.playerSprite.angle = 90
 
-        // type force = { w: boolean, s: boolean }
-        // this.force = <force>{
-        //     'w': false,
-        //     's': false,
-        // }
-
-        this.force = {
-            'w': false,
-            's': false,
-        }
-
-        this.dir = {
-            'a': false,
-            'd': false
-        }
         this.mainCamera();
-        this.displayTimeBar(15);
-        this.timerLabel();
+        this.timerLabel(this.initTimer);
+        this.displayTimeBar(this.initTimer);
     }
-
     
     update() {
-        // update which forces are at play
-        if (this.keys.w.isDown) {
-            this.force.w = true
-        } else if (this.keys.w.isUp) {
-            this.force.w = false
-        }
-        if (this.keys.s.isDown) {
-            this.force.s = true
-        } else if (this.keys.s.isUp) {
-            this.force.s = false
-        }
-        if (this.keys.a.isDown) {
-            this.dir.a = true
-        } else if (this.keys.a.isUp) {
-            this.dir.a = false
-        }
-        if (this.keys.d.isDown) {
-            this.dir.d = true
-        } else if (this.keys.d.isUp) {
-            this.dir.d = false
-        }
+        // move the player object
+        this.playerAngle = this.player.getHeading()
+        this.player.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown)
+        this.angleDiff = this.playerAngle - this.player.getHeading()
 
-        this.player.updateDir(this.dir)
-        this.playerSprite.angle = this.player.angle + 90
-        this.player.updateLoc(this.force)
-        this.playerSprite.setPosition(this.player.posX, this.player.posY);
+        // draw the sprite
+        this.playerSprite.setAngle(this.playerSprite.angle + this.angleDiff)
+        this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
+
         // this.car.onTrack()
-        
+        // fow update
         this.fow.calculateFow(this, this.player);
-
+       
         // if timer goes to 0, switch to end scene
         if (this.countdown === 0) {
             this.scene.stop('GameScene');
@@ -170,7 +140,7 @@ export default class GameScene extends Phaser.Scene {
         // if all checkpoints are collected before timer runs out, load up next level
         else if(this.collectedAllCheckpoints() == true) {
             this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1});
-        }  
+        }
     }
 
     // checks if all checkpoints has been collected
@@ -192,13 +162,16 @@ export default class GameScene extends Phaser.Scene {
         
     }
 
-    displayTimeBar(totalTime: number) {
-        this.countdown = totalTime;
+    displayTimeBar(countdown: number) {
+        this.countdown = countdown;
+        var totalTime = countdown;
     
-        let timeContainer = this.add.sprite(this.centerX, 3500, "timecontainer");
-        let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
- 
-        // a copy of the time bar to be used as a mask
+        //let timeContainer = this.add.sprite(this.centerX - 250, 3700, "timecontainer");
+        //let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
+        
+        let timeBar = this.add.sprite(this.centerX - 250, 3700, "timebar").setScrollFactor(0);
+
+        // a copy of the time bar as a mask
         var timeMask = this.add.sprite(timeBar.x, timeBar.y, "timebar");
         timeMask.visible = false;
         timeBar.mask = new Phaser.Display.Masks.BitmapMask(this, timeMask);
@@ -206,7 +179,6 @@ export default class GameScene extends Phaser.Scene {
         this.time.addEvent({
             delay: 1000,
             callback: function(){
- 
                 // dividing time bar width by the number of seconds gives us the amount
                 // of pixels we need to move the time bar each second
                 let stepWidth = timeMask.displayWidth / totalTime;
@@ -218,14 +190,23 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    private GameSound() {
+    private displaySound() {
         this.gameSound = this.sound.add('gameSound');
         this.gameSound.play({
             loop: true
         });
     }
 
-    private timerLabel() {
+    private displayWinSound() {
+        this.winSound = this.sound.add('winSound');
+        this.winSound.play({
+            loop: false
+        });
+    }
+
+
+    private timerLabel(countdown: number) {
+        this.countdown = countdown;
         this.clockObject = this.add.image(this.centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
 
         this.timerText = this.add.text(
@@ -245,8 +226,14 @@ export default class GameScene extends Phaser.Scene {
         var camZoom = this.cameras.main;        
         camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
         camZoom.zoom = 2;
-        camZoom.startFollow(this.playerSprite, true, 1, 1, this.player.posX, this.player.posY);
+        camZoom.startFollow(this.playerSprite, true, 1, 1, this.playerSprite.x, this.playerSprite.y);
         camZoom.followOffset.set(300, 300);
+    }
+
+    private generateFow(){
+        this.fow = new FowLayer(this.mapConfigData);
+        this.fow.mapLayer(this, this.tileMap.tileMap);        
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
     }
 
     

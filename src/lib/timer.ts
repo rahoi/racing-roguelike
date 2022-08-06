@@ -146,7 +146,7 @@ export default class timer{
         });
     }
 
-        // counts down timer using Phaser logic
+    // counts down timer using Phaser logic
     onEventTimer(timeLabel: Phaser.GameObjects.Text) {
         this.timeLabel = timeLabel;
         //this.countdown -= 1; // one second
