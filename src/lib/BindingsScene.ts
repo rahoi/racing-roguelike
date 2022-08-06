@@ -1,4 +1,4 @@
-import Phaser, { Tilemaps, Tweens } from "phaser"
+import Phaser, { Plugins, Tilemaps, Tweens } from "phaser"
 import type ConfigData from "./ConfigData"
 
 export default class BindingsScene extends Phaser.Scene {
@@ -145,16 +145,7 @@ export default class BindingsScene extends Phaser.Scene {
 
                         // use KeyboardEvent.key for Phaser.Input.Keyboard.Key
                         let keyMap = {
-                            ' ': 'SPACE',
-                            ',': 'COMMA',
-                            '.': 'PERIOD',
-                            ';': 'SEMICOLON',
-                            '\'': 'QUOTES', 
-                            '/': 'FORWARD_SLASH',
-                            'ArrowUp': 'UP',
-                            'ArrowDown': 'DOWN',
-                            'ArrowLeft': 'LEFT',
-                            'ArrowRight': 'RIGHT',
+                            '`': 'BACKTICK',
                             '1': 'ONE',
                             '2': 'TWO',
                             '3': 'THREE',
@@ -164,18 +155,34 @@ export default class BindingsScene extends Phaser.Scene {
                             '7': 'SEVEN',
                             '8': 'EIGHT',
                             '9': 'NINE',
-                            '0': 'ZERO'
+                            '0': 'ZERO',
+                            '[': 'OPEN_BRACKET',
+                            ']': 'CLOSED_BRACKET',
+                            '\\': 'BACK_SLASH',
+                            ';': 'SEMICOLON',
+                            '\'': 'QUOTES',
+                            ',': 'COMMA',
+                            '.': 'PERIOD',
+                            '/': 'FORWARD_SLASH',
+                            'Control': 'CTRL',
+                            ' ': 'SPACE',
+                            'ArrowUp': 'UP',
+                            'ArrowDown': 'DOWN',
+                            'ArrowLeft': 'LEFT',
+                            'ArrowRight': 'RIGHT'
                         }
 
                         // array of valid keys
-                        let validKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                        let validKeys = ['BACKTICK', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN',
+                            'EIGHT', 'NINE', 'ZERO', 'BACKSPACE', 'TAB', 'SHIFT', 'CTRL', 'ALT',
+                            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                            'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'ZERO',
-                            'SPACE', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'TAB', 'SHIFT', 'BACKSPACE',
-                            'COMMA', 'PERIOD', 'SEMICOLON', 'QUOTES', 'FORWARD_SLASH', 'ENTER']
+                            'OPEN_BRACKET', 'CLOSED_BRACKET', 'BACK_SLASH', 'SEMICOLON', 'QUOTES', 'ENTER',
+                            'COMMA', 'PERIOD', 'FORWARD_SLASH', 'SPACE', 'UP', 'DOWN', 'LEFT', 'RIGHT']
 
                         // need to use a dictionary for inconsitent keys
                         this.pressedKey = event.key
+                        console.log(this.pressedKey)
                         if (keyMap.hasOwnProperty(this.pressedKey)) {
                             this.pressedKey = keyMap[this.pressedKey]
                         }
