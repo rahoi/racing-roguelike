@@ -77,7 +77,7 @@ export default class FowLayer{
         this.fow = new Mrpas(this.mapWidth, this.mapHeight, isTransparent);
     }
 
-    calculateFow(scene: Phaser.Scene, player: Car | Bike) {       
+    calculateFow(scene: Phaser.Scene, player: Car | Bike, checkpointLayer: Phaser.GameObjects.Layer) {       
         this.scene = scene;
         this.player = player;
     
@@ -97,6 +97,7 @@ export default class FowLayer{
         let setVisibility = (x:number, y:number): void => {
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
+                checkpointLayer.setVisible(false);
                 return;
             }
             var d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
@@ -105,8 +106,12 @@ export default class FowLayer{
             if (d < radius - 1) {
                 this.isTileSeen[x][y] = true;
                 tile.tint = 0xffffff;  //white color
+
+                checkpointLayer.setVisible(true);
             } else if (this.isTileSeen[x][y] === true && d > radius/2) {
                 tile.tint = 0x3e3e3e;  //gray color
+
+                checkpointLayer.setVisible(false);
             }
         }
 

@@ -18,6 +18,8 @@ export default class GameScene extends Phaser.Scene {
     fow: FowLayer;
     vision: Phaser.GameObjects.Graphics;
 
+    checkpointLayer: Phaser.GameObjects.Layer;
+
     image: string;
     playerVehicle: string;
     player: Bike | Car;
@@ -39,13 +41,8 @@ export default class GameScene extends Phaser.Scene {
 
     checkpoints: Checkpoints;
     checkpointImage: Phaser.GameObjects.Image;
-    // collectedCheckpoints: number;
-    // totalCheckpoints: number;
-    // currentCheckpoint: number[];
 
     lapText: Phaser.GameObjects.Text;
-    // currentLap: number;
-    // totalLaps: number;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -86,9 +83,7 @@ export default class GameScene extends Phaser.Scene {
         // add fog of war
         this.fow = new FowLayer(this.mapConfigData);
         this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-
-        
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
 
         // add current lap to game screen
         this.lapText = this.add.text(450, 150, 'Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps(), {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
@@ -116,8 +111,12 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // add checkpoint image
+        // create checkpoint layer and add checkpoint image
+        this.checkpointLayer = this.add.layer();
+        this.checkpointLayer.setVisible(false);
         this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
+        this.checkpointLayer.add(this.checkpointImage);
+
 
         // create player sprite
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
@@ -133,6 +132,9 @@ export default class GameScene extends Phaser.Scene {
         // draw the sprite
         this.playerSprite.setAngle(this.playerSprite.angle + this.angleDiff)
         this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
+        
+        // fow update
+        this.fow.calculateFow(this, this.player, this.checkpointLayer);
 
         // check if player reached checkpoint, place the next checkpoint on the track
         if (this.checkpoints.updateCheckpoint(this.player)) {
@@ -149,16 +151,9 @@ export default class GameScene extends Phaser.Scene {
             }
 
             // change checkpoint location
+            // this.checkpointLayer.setVisible(false);
             this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]);
-
-            console.log(this.checkpoints.getCheckpointCoordinate());
-            console.log(this.checkpoints.getCheckpointLoc())
-            console.log("curr checkpoint:", this.checkpoints.getCheckpointsCollected())
-            console.log("total checkpoints", this.checkpoints.getTotalNumCheckpoints())
         }
-        
-        // fow update
-        this.fow.calculateFow(this, this.player);
        
         // if timer goes to 0, switch to end scene
         if (this.countdown < 0) {
