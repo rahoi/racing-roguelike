@@ -6,6 +6,11 @@ export default class TileMapConstruct {
     track: object;
     mapArray: number[][];
     tileMap: Phaser.Tilemaps.Tilemap;
+    mapLayer: Phaser.Tilemaps.TilemapLayer;
+    mapConfig: {
+        // data: scene.mapArray, 
+        data: number[][]; tileWidth: number; tileHeight: number; tileKey: string;
+    };
 
     constructor(scene:Phaser.Scene, map: GenerateMap, mapConfigData: ConfigData) {
         this.mapArray = map.mapArray;
@@ -14,16 +19,20 @@ export default class TileMapConstruct {
         this.scene = scene;
         // scene.mapArray = mapArray
 
-        const mapConfig = {
+        this.mapConfig = {
             // data: scene.mapArray, 
             data: this.mapArray,
             tileWidth: mapConfigData.tileDimension, 
-            tileHeight: mapConfigData.tileDimension 
+            tileHeight: mapConfigData.tileDimension,
+            tileKey: mapConfigData.tileKey 
         }
+        this.tileMap = this.scene.make.tilemap(this.mapConfig);
+    }
 
-        this.tileMap = scene.make.tilemap(mapConfig);
-        // const tileset:Phaser.Tilemaps.Tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
-        // this.tileMap.createLayer(0, tileset, 0, 0); 
+    createLayerMap() {
+        const tileset = this.tileMap.addTilesetImage(this.mapConfig.tileKey);
+        this.mapLayer = this.tileMap.createLayer(0, tileset, 0, 0); 
+        return this.mapLayer;
     }
 
 }
