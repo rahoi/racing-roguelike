@@ -33,6 +33,10 @@ export default class Player {
     brakingFactor: number
     maxReverseSpeed: number
 
+    // stall variables
+    stall: number
+    stallThreshold: number
+
     // environment attributes
     friction: number
     drag: number
@@ -74,21 +78,24 @@ export default class Player {
         // set initial velocity and steering angle
         this.velocity = new Vector(0,0)
         this.steerAngle = 0
+        this.stall = 0
+        this.stallThreshold = 1
     
         // set player attributes
-        this.wheelBase = 70             // distance between front and rear wheels
-        this.steerFactor = 15           // amount that front wheel turns
-        this.enginePower = 0.15          // forward acceleration force
-        this.brakingFactor = -0.05      // backwards acceleration force
+        this.wheelBase = 131            // distance between front and rear wheels
+        this.steerFactor = 35           // amount that front wheel turns
+        this.enginePower = 1.5          // forward acceleration force
+        this.brakingFactor = -0.7       // backwards acceleration force
         this.maxReverseSpeed = 20       // max reverse velocity
 
-        // set environment attributes: at speed , drag force overcomes friction force
+        /* set environment attributes: at speed 20, drag force overcomes friction force
+         * see https://www.desmos.com/calculator/e4ayu3xkip */
         this.friction = -0.02
         this.drag = -0.001
-        this.slipSpeed = 10
-        this.tractionFast = 0.00001
-        this.tractionSlow = 0.7
-        this.offRoadFactor = 5
+        this.slipSpeed = 17
+        this.tractionFast = 0.15
+        this.tractionSlow = 0.9
+        this.offRoadFactor = 6
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
@@ -122,7 +129,7 @@ export default class Player {
 
     applyFriction() {
         /* set minimum speed */
-        if (this.velocity.getMagnitude() < 0.02) {
+        if (this.velocity.getMagnitude() < 0.01) {
             this.velocity.set(0,0)
         }
 
@@ -183,9 +190,14 @@ export default class Player {
         if (d > 0) {
             let tmp = Vector.multiplyScalar(this.headingVector, this.velocity.getMagnitude())
             this.velocity = Vector.lerp(tmp, this.velocity, traction)
-        } else if (d < 0) {
+            this.stall = 0
+        } else if (d < 0 && this.stall === this.stallThreshold) {
             this.velocity = Vector.multiplyScalar(this.headingVector, Math.min(this.velocity.getMagnitude(), this.maxReverseSpeed))
             this.velocity = Vector.multiplyScalar(this.velocity, -1)
+        } else if (d < 0) {
+            this.velocity = Vector.multiplyScalar(this.velocity, 0)
+            this.acceleration = Vector.multiplyScalar(this.acceleration, 0)
+            this.stall++
         }
     }
 
@@ -195,27 +207,27 @@ export default class Player {
         this.pos = Vector.add(this.pos, this.velocity)
         
         /* check if player is out of bounds */
-        if (this.pos.getX() < this.wheelBase) {
+        if (this.pos.getX() < this.wheelBase / 2) {
             this.velocity.set(0,0)
-            this.pos.setX(this.wheelBase)
-        } else if (this.pos.getX() > this.mapWidth * this.tileDimension - this.wheelBase) {
+            this.pos.setX(this.wheelBase / 2)
+        } else if (this.pos.getX() > this.mapWidth * this.tileDimension - this.wheelBase / 2) {
             this.velocity.set(0,0)
-            this.pos.setX(this.mapWidth * this.tileDimension - this.wheelBase)
+            this.pos.setX(this.mapWidth * this.tileDimension - this.wheelBase / 2)
         }
 
-        if (this.pos.getY() > (-1) * this.wheelBase) {
+        if (this.pos.getY() > (-1) * this.wheelBase / 2) {
             this.velocity.set(0,0)
-            this.pos.setY((-1) * this.wheelBase)
-        } else if (this.pos.getY() < (-1) * (this.mapHeight * this.tileDimension - this.wheelBase)) {
+            this.pos.setY((-1) * this.wheelBase / 2)
+        } else if (this.pos.getY() < (-1) * (this.mapHeight * this.tileDimension - this.wheelBase / 2)) {
             this.velocity.set(0,0)
-            this.pos.setY((-1) * (this.mapHeight * this.tileDimension - this.wheelBase))
+            this.pos.setY((-1) * (this.mapHeight * this.tileDimension - this.wheelBase / 2))
         }
 
         /* logging added acceleration, velocity, and position */
-        // console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
-        // console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
-        // console.log("vel mag: " + this.velocity.getMagnitude())
-        // console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
+        //console.log("added acc: (" + this.acceleration.getX() + ", " + this.acceleration.getY() + ")")
+        //console.log("velocity: (" + this.velocity.getX() + ", " + this.velocity.getY() + ")")
+        //console.log("vel mag: " + this.velocity.getMagnitude())
+        //console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
     }
 
     getLocX() {

@@ -5,6 +5,7 @@ import TileMapConstruct from "./TileMapConstruct"
 import FowLayer from "./FowLayer"
 import Car from "./Car"
 import Bike from "./Bike"
+import Truck from "./Truck"
 import Checkpoints from "./Checkpoints"
 
 // import types
@@ -16,15 +17,14 @@ export default class GameScene extends Phaser.Scene {
     mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
 
-    fow: FowLayer;
+    fow: FowLayer;    
     vision: Phaser.GameObjects.Graphics;
     fowRadius: number;
-
     checkpointLayer: Phaser.GameObjects.Layer;
 
     image: string;
     playerVehicle: string;
-    player: Bike | Car;
+    player: Bike | Car | Truck;
     playerSprite: Phaser.GameObjects.Sprite;
     angleDiff: number;
     playerAngle: number;
@@ -151,6 +151,10 @@ export default class GameScene extends Phaser.Scene {
             }
             case 'bike': {
                 this.player = new Bike(this.mapGeneration, this.mapConfigData)
+                break;
+            }
+            case 'truck': {
+                this.player = new Truck(this.mapGeneration, this.mapConfigData)
                 break;
             }
         }

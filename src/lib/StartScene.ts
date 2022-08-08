@@ -5,6 +5,7 @@ export default class StartScene extends Phaser.Scene {
 
     carSprite: Phaser.GameObjects.Sprite;
     bikeSprite: Phaser.GameObjects.Sprite;
+    truckSprite: Phaser.GameObjects.Sprite;
     image: string;
     mapConfigData: ConfigData;
     vehicles: Phaser.GameObjects.Sprite[]; 
@@ -44,6 +45,7 @@ export default class StartScene extends Phaser.Scene {
     preload() {
         this.load.image('car', 'assets/Cars/car_blue_3.png')
         this.load.image('bike', 'assets/Motorcycles/motorcycle_yellow.png')
+        this.load.image('truck', 'assets/Cars/car_red_4.png')
         this.load.audio('startSound', './assets/video-game-land-sound.wav');
     }
 
@@ -86,14 +88,18 @@ export default class StartScene extends Phaser.Scene {
         this.carSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'car')
         this.carSprite.setScale(4)
-        this.bikeSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 1.5,
+        this.bikeSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 1.4,
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'bike')
         this.bikeSprite.setScale(4)
+        this.truckSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 3.5,
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'truck')
+        this.truckSprite.setScale(4)
        
         // add to array of vehicle classes
         this.vehicles = [];
         this.vehicles.push(this.carSprite)
         this.vehicles.push(this.bikeSprite)
+        this.vehicles.push(this.truckSprite)
 
         // select vehicle class
         this.vehicles.forEach( (vehicle) => {
@@ -116,6 +122,10 @@ export default class StartScene extends Phaser.Scene {
                     }
                     case 'bike': {
                         this.image = 'assets/Motorcycles/motorcycle_yellow.png';
+                        break;
+                    }
+                    case 'truck': {
+                        this.image = 'assets/Cars/car_red_4.png';
                         break;
                     }
                 }
@@ -145,9 +155,6 @@ export default class StartScene extends Phaser.Scene {
 		//         this.scene.start('GameScene')
         //     })
         // }, this);
-
-
-
     }
 
     private displaySound() {
