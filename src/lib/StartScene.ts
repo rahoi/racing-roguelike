@@ -10,7 +10,7 @@ export default class StartScene extends Phaser.Scene {
     vehicles: Phaser.GameObjects.Sprite[]; 
     selectedVehicle: string;
     timer: number;
-    numLevels: number;
+    currentLevel:number;
     bindingsText: Phaser.GameObjects.Text;
     gasKey: string;
     brakeKey: string;
@@ -22,8 +22,8 @@ export default class StartScene extends Phaser.Scene {
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
-        this.timer = 10; // timer for first level
-        this.numLevels = 1;
+        this.timer = 120; // number of seconds for first level
+        this.currentLevel = 1;
     }
 
     init(data: any) {
@@ -126,7 +126,7 @@ export default class StartScene extends Phaser.Scene {
                     id: this.selectedVehicle,
                     image: this.image,
                     timer: this.timer,
-                    numLevels: this.numLevels,
+                    currentLevel: this.currentLevel,
                     gasKey: this.gasKey,
                     brakeKey: this.brakeKey,
                     leftKey: this.leftKey,
