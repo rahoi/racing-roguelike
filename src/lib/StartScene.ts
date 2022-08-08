@@ -17,7 +17,7 @@ export default class StartScene extends Phaser.Scene {
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
-        this.timer = 60; // timer for first level
+        this.timer = 90; // timer for first level
         this.numLevels = 1;
     }
 

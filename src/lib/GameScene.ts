@@ -82,7 +82,10 @@ export default class GameScene extends Phaser.Scene {
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
     
         // add fog of war
-        this.generateFow();
+        this.fow = new FowLayer(this.mapConfigData);
+        this.fow.mapLayer(this, this.tileMap.tileMap);        
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+
        
         // every 1000ms (1s) call this.onEventTimer
         this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
@@ -114,7 +117,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.mainCamera();
         this.timerLabel(this.initTimer);
-        this.displayTimeBar(this.initTimer);
+        //this.displayTimeBar(this.initTimer);
     }
     
     update() {
@@ -154,12 +157,23 @@ export default class GameScene extends Phaser.Scene {
     // counts down timer using Phaser logic
     onEventTimer() {
         this.countdown -= 1; // one second
-        if (this.countdown < 10) {
-            this.timerText.setText('00:' + '0' + this.countdown);  
+        this.timerText.setText(this.formatTimer())
+    }
+
+    formatTimer() {
+        if(this.countdown > 59) {
+            var min = Math.trunc(this.countdown / 60);
+            var sec = this.countdown - (min * 60);
+            if (sec < 10) {
+                return '0' +  min + ':' + '0' + sec;
+            } else{
+                return '0' +  min + ':' + sec;
+            }
+        } else if (this.countdown < 10) {
+            return '00:0' + this.countdown
         } else {
-            this.timerText.setText('00:' + this.countdown);
+            return '00:' + this.countdown;
         }
-        
     }
 
     displayTimeBar(countdown: number) {
@@ -210,7 +224,7 @@ export default class GameScene extends Phaser.Scene {
         this.timerText = this.add.text(
             this.centerX, 
             3700, 
-            '00:' + this.countdown, 
+            this.formatTimer(), 
             {
                 fontStyle: "Bold", 
                 fontSize: "120px", 
@@ -226,14 +240,6 @@ export default class GameScene extends Phaser.Scene {
         camZoom.zoom = 2;
         camZoom.startFollow(this.playerSprite, true, 1, 1, this.playerSprite.x, this.playerSprite.y);
         camZoom.followOffset.set(300, 300);
-    }
-
-    private generateFow(){
-        this.fow = new FowLayer(this.mapConfigData);
-        this.fow.mapLayer(this, this.tileMap.tileMap);        
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-    }
-
-    
+    }    
 
 }
