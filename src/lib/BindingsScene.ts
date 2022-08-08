@@ -19,6 +19,7 @@ export default class BindingsScene extends Phaser.Scene {
     leftKey: string;
     rightKey: string;
     pressedKey: string;
+    StartSound: any;
     
     constructor(mapConfigData: ConfigData) {
         super("BindingsScene");

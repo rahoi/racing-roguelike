@@ -33,9 +33,13 @@ export default class GameScene extends Phaser.Scene {
     numLevels: number;
     collectedCheckpoints: number;
     totalCheckpoints: number;
+    centerX: number;
+    gameSound: Phaser.Sound.BaseSound;
+    winSound: Phaser.Sound.BaseSound;
+    clockObject: Phaser.GameObjects.Image;
 
     constructor(mapConfigData:ConfigData) {
-        super("GameScene");
+        super('GameScene');
         this.mapConfigData = mapConfigData;
 
         // resets checkpoints
@@ -64,12 +68,21 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        
+       
+        this.load.image('clock', './assets/icons8-timer-64.png');
+        this.load.audio('gameSound', './assets/race-track-sound.wav');
+        this.load.audio('winSound', './assets/congrats-sound.wav');
+
+        this.load.image("timecontainer", "./assets/timeContainer.png");
+        this.load.image("timebar", "./assets/timeBar.png");
     }
 
     create() {
         // var div = document.getElementById('gameContainer');
         // div.style.backgroundColor = '#bc8044';
+
+        //sound
+        this.displaySound();
 
         // generate race track
         this.mapGeneration = new GenerateMap(this.mapConfigData);
@@ -80,7 +93,10 @@ export default class GameScene extends Phaser.Scene {
         this.fow.mapLayer(this, this.tileMap.tileMap);        
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
 
-        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+       
+        // every 1000ms (1s) call this.onEventTimer
+        this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
+
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
         
@@ -107,6 +123,10 @@ export default class GameScene extends Phaser.Scene {
         } else if (this.player.getHeading() == 90 || this.player.getHeading() == 270) {
             this.playerSprite.angle = this.player.getHeading() - 90
         }
+
+        this.mainCamera();
+        this.timerLabel(this.initTimer)
+        //this.displayTimeBar(this.initTimer)
     }
     
     update() {
@@ -124,8 +144,9 @@ export default class GameScene extends Phaser.Scene {
         this.fow.calculateFow(this, this.player);
        
         // if timer goes to 0, switch to end scene
-        if (this.countdown < 0) {
+        if (this.countdown === 0) {
             this.scene.stop('GameScene');
+            this.gameSound.destroy();
             this.scene.start('EndScene', {numLevels: this.numLevels});
         }
         // if all checkpoints are collected before timer runs out, load up next level
@@ -145,6 +166,89 @@ export default class GameScene extends Phaser.Scene {
     // counts down timer using Phaser logic
     onEventTimer() {
         this.countdown -= 1; // one second
-        this.timerText.setText('Timer: ' + this.countdown);
+        this.timerText.setText(this.formatTimer())
     }
+
+    formatTimer() {
+        if(this.countdown > 59) {
+            var min = Math.trunc(this.countdown / 60);
+            var sec = this.countdown - (min * 60);
+            if (sec < 10) {
+                return '0' +  min + ':' + '0' + sec;
+            } else{
+                return '0' +  min + ':' + sec;
+            }
+        } else if (this.countdown < 10) {
+            return '00:0' + this.countdown
+        } else {
+            return '00:' + this.countdown;
+        }
+    }
+
+    displayTimeBar(countdown: number) {
+        this.countdown = countdown;
+        var totalTime = countdown;
+    
+        let timeContainer = this.add.sprite(this.centerX - 250, 3700, "timecontainer");
+        let timeBar = this.add.sprite(timeContainer.x + 46, timeContainer.y, "timebar");
+        
+        // a copy of the time bar as a mask
+        var timeMask = this.add.sprite(timeBar.x, timeBar.y, "timebar");
+        timeMask.visible = false;
+        timeBar.mask = new Phaser.Display.Masks.BitmapMask(this, timeMask);
+
+        this.time.addEvent({
+            delay: 1000,
+            callback: function(){
+                // dividing time bar width by the number of seconds gives us the amount
+                // of pixels we need to move the time bar each second
+                let stepWidth = timeMask.displayWidth / totalTime;
+                
+                timeMask.x -= stepWidth; // moving the mask
+            },
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    private displaySound() {
+        this.gameSound = this.sound.add('gameSound');
+        this.gameSound.play({
+            loop: true
+        });
+    }
+
+    private displayWinSound() {
+        this.winSound = this.sound.add('winSound');
+        this.winSound.play({
+            loop: false
+        });
+    }
+
+
+    private timerLabel(countdown: number) {
+        this.countdown = countdown;
+        this.clockObject = this.add.image(this.centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
+
+        this.timerText = this.add.text(
+            this.centerX, 
+            3700, 
+            this.formatTimer(), 
+            {
+                fontStyle: "Bold", 
+                fontSize: "120px", 
+                color: "#ffffff"
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0);
+    }
+
+    private mainCamera(){
+        var camZoom = this.cameras.main;        
+        camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
+        camZoom.zoom = 2;
+        camZoom.startFollow(this.playerSprite, true, 1, 1, this.playerSprite.x, this.playerSprite.y);
+        camZoom.followOffset.set(300, 300);
+    }    
+
 }
