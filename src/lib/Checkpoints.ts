@@ -38,7 +38,7 @@ export default class Checkpoints {
         this.image = 'assets/Checkpoints/explosion2.png';
         this.finishFlagImage = 'assets/Checkpoints/flagBlue.png';
 
-        this.numCheckpoints = 3;
+        this.numCheckpoints = 10;
         this.numLaps = 1;
 
         this.checkpointsArray = [];
@@ -122,22 +122,43 @@ export default class Checkpoints {
     // returns checkpoint location in pixels
     getCheckpointLoc() {
         let trackTile = this.mapArray[this.checkpointsArray[this.currCheckpointIndex][0]][this.checkpointsArray[this.currCheckpointIndex][1]];
+        let locOffset = this.#getPixelImageOffset();
 
-        let checkpointHeight:number = (this.checkpointsArray[this.currCheckpointIndex][0] * this.tileDimension) + this.tileDimension / 2;
-        let checkpointWidth:number = (this.checkpointsArray[this.currCheckpointIndex][1] * this.tileDimension) + this.tileDimension / 2;
+        let checkpointHeight:number = (this.checkpointsArray[this.currCheckpointIndex][0] * this.tileDimension) + locOffset[0];
+        let checkpointWidth:number = (this.checkpointsArray[this.currCheckpointIndex][1] * this.tileDimension) + locOffset[1];
 
         console.log('pixels', checkpointHeight, checkpointWidth)
 
         return [checkpointHeight, checkpointWidth];  
     }
 
-    // returns two element array of the amount to offset each checkpoint coordinate to center its image on the race track
+    // returns two element array of the amount to offset each checkpoint coordinate to center its image on the race track tile
     #getPixelImageOffset() {
+        let heightOffset:number = 0;
+        let widthOffset:number = 0;
+
         let trackTile = this.mapArray[this.checkpointsArray[this.currCheckpointIndex][0]][this.checkpointsArray[this.currCheckpointIndex][1]];
 
-        if (terrainArray.straight_up) {
-
+        if (terrainArray.straights.includes(trackTile) || terrainArray.finishes.includes(trackTile) || terrainArray.corners.includes(trackTile)) {
+            heightOffset = this.tileDimension / 2;
+            widthOffset = this.tileDimension / 2; 
+        } 
+        else {
+            if (terrainArray.diagonals.includes(trackTile)) {
+                // don't need to offset checkpoint if tile is diagonal SE
+                if (trackTile == terrainArray.diag_NW) {
+                    heightOffset = -(this.tileDimension / 2); 
+                    widthOffset = this.tileDimension / 2; 
+                }
+                else if (trackTile == terrainArray.diag_NE) {
+                    heightOffset = -(this.tileDimension / 2); 
+                }
+                else if (trackTile == terrainArray.diag_SW) {
+                    widthOffset = this.tileDimension / 2; 
+                }
+            }
         }
+        return [heightOffset, widthOffset];
     }
 
     // returns true if checkpoint is within fog of war radius of the player's vehicle

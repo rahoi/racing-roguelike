@@ -86,7 +86,7 @@ export default class GameScene extends Phaser.Scene {
         this.fowRadius = 4; // in tiles
         this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
         this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
+        // this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
 
         // add current lap to game screen
         this.lapText = this.add.text(450, 150, 'Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps(), {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
@@ -118,7 +118,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // add checkpoint image to scene
-        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
+        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint');
         console.log("checkpoint:", this.checkpoints.getCheckpointCoordinate());
 
         // create player sprite
@@ -137,15 +137,15 @@ export default class GameScene extends Phaser.Scene {
         this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
         
         // fow update
-        this.fow.calculateFow(this, this.player);
+        // this.fow.calculateFow(this, this.player);
 
         // set checkpoint visibility
-        if (this.checkpoints.isVisible(this.player, this.fowRadius)) {
-            this.checkpointImage.setVisible(true);
-        }
-        else {
-            this.checkpointImage.setVisible(false);
-        }
+        // if (this.checkpoints.isVisible(this.player, this.fowRadius)) {
+        //     this.checkpointImage.setVisible(true);
+        // }
+        // else {
+        //     this.checkpointImage.setVisible(false);
+        // }
 
         // check if player reached checkpoint, place the next checkpoint on the track
         if (this.checkpoints.updateCheckpoint(this.player)) {
@@ -160,7 +160,7 @@ export default class GameScene extends Phaser.Scene {
             }
 
             // change checkpoint location
-            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]).setVisible(false);
+            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0])//.setVisible(false);
             console.log("new checkpoint:", this.checkpoints.getCheckpointCoordinate());
         }
        
