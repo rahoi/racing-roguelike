@@ -145,13 +145,16 @@ export default class Checkpoints {
         } 
         else {
             if (terrainArray.diagonals.includes(trackTile)) {
-                // don't need to offset checkpoint if tile is diagonal SE
                 if (trackTile == terrainArray.diag_NW) {
-                    heightOffset = -(this.tileDimension / 2); 
+                    heightOffset = this.tileDimension / 1.5; 
                     widthOffset = this.tileDimension / 2; 
                 }
                 else if (trackTile == terrainArray.diag_NE) {
-                    heightOffset = -(this.tileDimension / 2); 
+                    heightOffset = this.tileDimension / 2; 
+                }
+                else if (trackTile == terrainArray.diag_SE) {
+                    heightOffset = this.tileDimension / 3.25 ; 
+                    widthOffset = this.tileDimension / 3.25;
                 }
                 else if (trackTile == terrainArray.diag_SW) {
                     widthOffset = this.tileDimension / 2; 
