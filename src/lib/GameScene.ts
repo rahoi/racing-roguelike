@@ -6,33 +6,52 @@ import FowLayer from "./FowLayer"
 import Car from "./Car"
 import Bike from "./Bike"
 import Truck from "./Truck"
+import Checkpoints from "./Checkpoints"
 
 // import types
 import type ConfigData from "./ConfigData"
+import type { gameSceneData } from "./gameSceneDataType"
 
 export default class GameScene extends Phaser.Scene {
-    image: string;
-    playerVehicle: string;
     mapConfigData: ConfigData;
     mapGeneration: GenerateMap;
     tileMap: TileMapConstruct;
-    fow: FowLayer;
+
+    fow: FowLayer;    
+    vision: Phaser.GameObjects.Graphics;
+    fowRadius: number;
+    checkpointLayer: Phaser.GameObjects.Layer;
+
+    image: string;
+    playerVehicle: string;
     player: Bike | Car | Truck;
     playerSprite: Phaser.GameObjects.Sprite;
-    vision: Phaser.GameObjects.Graphics;
+    angleDiff: number;
+    playerAngle: number;
+    
     gasKey: Phaser.Input.Keyboard.Key;
     brakeKey: Phaser.Input.Keyboard.Key;
     rightKey: Phaser.Input.Keyboard.Key;
     leftKey: Phaser.Input.Keyboard.Key;
+
     timerText: Phaser.GameObjects.Text;
     timerEvent: Phaser.Time.TimerEvent;
-    angleDiff: number;
-    playerAngle: number;
     initTimer: number;
     countdown: number;
+
+    currentLevel: number;
+
+    checkpoints: Checkpoints;
+    checkpointImage: Phaser.GameObjects.Image;
+
+    lapText: Phaser.GameObjects.Text;
+    levelText: Phaser.GameObjects.Text;
+    mycamera: Phaser.Cameras.Scene2D.Camera
+
     numLevels: number;
     collectedCheckpoints: number;
     totalCheckpoints: number;
+    
     centerX: number;
     gameSound: Phaser.Sound.BaseSound;
     winSound: Phaser.Sound.BaseSound;
@@ -41,21 +60,25 @@ export default class GameScene extends Phaser.Scene {
     constructor(mapConfigData:ConfigData) {
         super('GameScene');
         this.mapConfigData = mapConfigData;
-
-        // resets checkpoints
-        this.collectedCheckpoints = 0;
-        this.totalCheckpoints = 1;
-
     }
 
-    init(data: any) {
+    init(data: gameSceneData) {
         this.playerVehicle = data.id;
         console.log('player selected: ' + this.playerVehicle);
         this.image = data.image;
         console.log('vehicle: ' + this.image);
         this.initTimer = data.timer;
         this.countdown = data.timer;
-        this.numLevels = data.numLevels;
+        this.currentLevel = data.currentLevel;
+        this.mycamera = new Phaser.Cameras.Scene2D.Camera(0, 0, this.mapConfigData.mapWidth, this.mapConfigData.mapHeight);
+
+        // generate race track
+        this.mapGeneration = new GenerateMap(this.mapConfigData);
+        this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
+
+        // resets checkpoints
+        this.checkpoints = new Checkpoints(this.mapGeneration, this.mapConfigData);
+        this.numLevels = data.currentLevel;
 
         // add input keys
         this.gasKey = this.input.keyboard.addKey(data.gasKey);
@@ -65,37 +88,57 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
+        // load chackpoint and finish flag image
+        this.load.image('checkpoint', this.checkpoints.image);
+        this.load.image('finish flag', this.checkpoints.finishFlagImage);
+
+        // load player's vehicle image
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
        
+        // timer images
         this.load.image('clock', './assets/icons8-timer-64.png');
-        this.load.audio('gameSound', './assets/race-track-sound.wav');
-        this.load.audio('winSound', './assets/congrats-sound.wav');
-
         this.load.image("timecontainer", "./assets/timeContainer.png");
         this.load.image("timebar", "./assets/timeBar.png");
+
+        // sounds
+        this.load.audio('gameSound', './assets/race-track-sound.wav');
+        this.load.audio('winSound', './assets/congrats-sound.wav');
     }
 
     create() {
-        // var div = document.getElementById('gameContainer');
-        // div.style.backgroundColor = '#bc8044';
-
         //sound
         this.displaySound();
 
-        // generate race track
-        this.mapGeneration = new GenerateMap(this.mapConfigData);
-        this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
+        // location of center of screen width
+        this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
     
         // add fog of war
-        this.fow = new FowLayer(this.mapConfigData);
-        this.fow.mapLayer(this, this.tileMap.tileMap);        
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+        this.createFow();
+        
+        // add current lap to game screen
+        this.lapText = this.add.text(
+            this.centerX - 900, 
+            3700, 
+            'Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps(), 
+            {
+                // fontStyle: "Bold", 
+                fontSize: "120px", 
+                color: "#FFFFFF"
+            }
+        ).setOrigin(0.5).setScrollFactor(0);
 
-       
-        // every 1000ms (1s) call this.onEventTimer
-        this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
+        // add current level to game screen
+        this.levelText = this.add.text(
+            this.centerX - 900, 
+            3575, 
+            'Level: ' + this.currentLevel, 
+            {
+                // fontStyle: "Bold", 
+                fontSize: "120px", 
+                color: "#FFFFFF"}
+        ).setOrigin(0.5).setScrollFactor(0);
 
         // every 1000ms (1s) call this.onEventTimer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
@@ -115,6 +158,9 @@ export default class GameScene extends Phaser.Scene {
                 break;
             }
         }
+
+        // add checkpoint image to scene
+        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint');
 
         // create player sprite and set sprite angle
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
@@ -138,29 +184,55 @@ export default class GameScene extends Phaser.Scene {
         // draw the sprite
         this.playerSprite.setAngle(this.playerSprite.angle + this.angleDiff)
         this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
-
-        // this.car.onTrack()
+        
         // fow update
         this.fow.calculateFow(this, this.player);
+
+        // set checkpoint visibility
+        if (this.checkpoints.isVisible(this.player, this.fowRadius)) {
+            this.checkpointImage.setVisible(true);
+        }
+        else {
+            this.checkpointImage.setVisible(false);
+        }
+
+        // check if player reached checkpoint, place the next checkpoint on the track
+        if (this.checkpoints.updateCheckpoint(this.player)) {
+            // change checkpoint image to a flag for the last checkpoint
+            if (this.checkpoints.onLastCheckpoint()) {
+                this.checkpointImage.setTexture('finish flag');
+            }
+
+            // updates lap text if user completes a lap of the track
+            if (this.checkpoints.changeLap()) {
+                this.lapText.setText('Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps());
+            }
+
+            // change checkpoint location
+            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0])//.setVisible(false);
+            console.log("new checkpoint:", this.checkpoints.getCheckpointCoordinate());
+        }
        
         // if timer goes to 0, switch to end scene
         if (this.countdown === 0) {
             this.scene.stop('GameScene');
             this.gameSound.destroy();
-            this.scene.start('EndScene', {numLevels: this.numLevels});
+            this.scene.start('EndScene', {numLevels: (this.currentLevel - 1)});
         }
         // if all checkpoints are collected before timer runs out, load up next level
-        else if(this.collectedAllCheckpoints() == true) {
-            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.numLevels + 1});
+        else if(this.checkpoints.collectedAllCheckpoints() == true) {
+            this.gameSound.destroy();
+            this.scene.stop('GameScene');
+            this.scene.start('GameScene', {
+                id: this.playerVehicle, 
+                image: this.image, 
+                timer: this.initTimer, 
+                currentLevel: (this.currentLevel + 1), 
+                gasKey: this.gasKey, 
+                brakeKey: this.brakeKey,
+                leftKey: this.leftKey,
+                rightKey: this.rightKey});
         }
-    }
-
-    // checks if all checkpoints has been collected
-    collectedAllCheckpoints() {
-        if (this.collectedCheckpoints == this.totalCheckpoints) {
-            return true;
-        }
-        return false;
     }
 
     // counts down timer using Phaser logic
@@ -216,6 +288,13 @@ export default class GameScene extends Phaser.Scene {
         this.gameSound.play({
             loop: true
         });
+    }
+
+    createFow(){
+        this.fowRadius = 4; // in tiles
+        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
+        this.fow.mapLayer(this, this.tileMap.tileMap);
+        this.fow.cameraFow(this, this.tileMap.tileMap);
     }
 
     private displayWinSound() {

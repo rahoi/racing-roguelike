@@ -78,7 +78,7 @@ export default class Player {
         // set player attributes
         this.wheelBase = 70             // distance between front and rear wheels
         this.steerFactor = 15           // amount that front wheel turns
-        this.enginePower = 1.5          // forward acceleration force
+        this.enginePower = 0.15          // forward acceleration force
         this.brakingFactor = -0.05      // backwards acceleration force
         this.maxReverseSpeed = 20       // max reverse velocity
 
@@ -88,7 +88,7 @@ export default class Player {
         this.slipSpeed = 10
         this.tractionFast = 0.00001
         this.tractionSlow = 0.7
-        this.offRoadFactor = 3.5
+        this.offRoadFactor = 5
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
@@ -240,7 +240,7 @@ export default class Player {
     // }
 
     onTrack() {
-        let currTile = this.map.mapArray[Math.trunc((-1) * this.pos.getY() / 128)][Math.trunc(this.pos.getX() / 128)]
+        let currTile = this.map.mapArray[Math.trunc((-1) * this.pos.getY() / this.tileDimension)][Math.trunc(this.pos.getX() / this.tileDimension)]
         
         // logging car's position on the tilemap (not its pixel position)
         // console.log("x: ", Math.trunc(this.posX / 128), " y: ", Math.trunc(this.posY / 128))

@@ -5,7 +5,7 @@ export default class EndScene extends Phaser.Scene {
     mapConfigData: ConfigData;
     active:boolean = false;
     score:number;
-    numLevels:number;
+    numCompletedLevels:number;
     endSound: Phaser.Sound.BaseSound;
 
     constructor(mapConfigData: ConfigData) {
@@ -15,7 +15,7 @@ export default class EndScene extends Phaser.Scene {
 
     init(data:any) {
         console.log("end scene");
-        this.numLevels = data.numLevels;
+        this.numCompletedLevels = data.numLevels;
     }
 
     preload() {
@@ -36,7 +36,7 @@ export default class EndScene extends Phaser.Scene {
 
         this.add.text(x, y, "Game Over", {fontSize: "300px", color: "#FFFFFF"}).setOrigin(0.5)
 
-        this.add.text(x, y + 300, "Levels Completed: " + this.numLevels, {fontSize: "200px", color: "#FFFFFF"}).setOrigin(0.5)
+        this.add.text(x, y + 300, "Levels Completed: " + this.numCompletedLevels, {fontSize: "200px", color: "#FFFFFF"}).setOrigin(0.5)
 
         this.add.text(x, y + 600, "Click to race again", {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5)
 
