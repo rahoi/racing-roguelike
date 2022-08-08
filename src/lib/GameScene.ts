@@ -171,6 +171,7 @@ export default class GameScene extends Phaser.Scene {
         }
         // if all checkpoints are collected before timer runs out, load up next level
         else if(this.checkpoints.collectedAllCheckpoints() == true) {
+            this.scene.stop('GameScene');
             this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, currentLevel: (this.currentLevel + 1)});
         }
     }

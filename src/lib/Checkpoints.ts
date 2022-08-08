@@ -79,7 +79,6 @@ export default class Checkpoints {
         let playerTileHeight:number = Math.trunc((-1) * playerY / this.tileDimension);
 
         if (playerTileHeight == this.checkpointsArray[this.currCheckpointIndex][0] && playerTileWidth == this.checkpointsArray[this.currCheckpointIndex][1]) {
-            console.log("on checkpoint")
             return true;
         }
 
@@ -94,7 +93,6 @@ export default class Checkpoints {
         if (collision == true) {
             this.currCheckpointIndex++;
             this.checkpointsCollected++;
-            console.log("next checkpoint", this.getCheckpointCoordinate())
 
             // if collected all checkpoints on one lap, reset index to 0 and increase current lap
             if (this.currCheckpointIndex == this.numCheckpoints) {
@@ -108,7 +106,6 @@ export default class Checkpoints {
             }
             return true;
         }
-
         return false;
     }
 
@@ -191,7 +188,4 @@ export default class Checkpoints {
     getCheckpointArray() {
         return this.checkpointsArray;
     }
-
-    // place checkpoint sprite underneath the fow layers so it isnt shown under the gray?
-    // 
 }
