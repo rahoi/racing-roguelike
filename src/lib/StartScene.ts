@@ -17,11 +17,12 @@ export default class StartScene extends Phaser.Scene {
     leftKey: string;
     rightKey: string;
     //vehicles: Phaser.GameObjects.Group;
+    StartSound: Phaser.Sound.BaseSound;
 
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
-        this.timer = 60; // timer for first level
+        this.timer = 10; // timer for first level
         this.numLevels = 1;
     }
 
@@ -43,9 +44,14 @@ export default class StartScene extends Phaser.Scene {
     preload() {
         this.load.image('car', 'assets/Cars/car_blue_3.png')
         this.load.image('bike', 'assets/Motorcycles/motorcycle_yellow.png')
+        this.load.audio('startSound', './assets/video-game-land-sound.wav');
     }
 
     create() {
+
+        //sound 
+        this.displaySound();
+
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3,
@@ -67,6 +73,7 @@ export default class StartScene extends Phaser.Scene {
         this.bindingsText.on('pointerdown', () => {
             this.scale.updateBounds()
             this.scene.stop('StartScene');
+            this.StartSound.destroy();
             this.scene.start('BindingsScene', {
                 gasKey: this.gasKey,
                 brakeKey: this.brakeKey,
@@ -114,6 +121,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
+                this.StartSound.destroy();
                 this.scene.start('GameScene', {
                     id: this.selectedVehicle,
                     image: this.image,
@@ -137,5 +145,18 @@ export default class StartScene extends Phaser.Scene {
 		//         this.scene.start('GameScene')
         //     })
         // }, this);
+
+
+
     }
+
+    private displaySound() {
+        this.StartSound = this.sound.add('startSound');
+
+        this.StartSound.play({
+            loop: true
+            });
+        }
+    
+
 }
