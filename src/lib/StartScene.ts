@@ -155,9 +155,6 @@ export default class StartScene extends Phaser.Scene {
 		//         this.scene.start('GameScene')
         //     })
         // }, this);
-
-
-
     }
 
     private displaySound() {

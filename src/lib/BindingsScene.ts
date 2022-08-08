@@ -1,4 +1,4 @@
-import Phaser, { Plugins, Tilemaps, Tweens } from "phaser"
+import Phaser, { Tweens } from "phaser"
 import type ConfigData from "./ConfigData"
 
 export default class BindingsScene extends Phaser.Scene {
