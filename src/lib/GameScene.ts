@@ -46,6 +46,7 @@ export default class GameScene extends Phaser.Scene {
 
     lapText: Phaser.GameObjects.Text;
     levelText: Phaser.GameObjects.Text;
+    mycamera: Phaser.Cameras.Scene2D.Camera
 
     numLevels: number;
     collectedCheckpoints: number;
@@ -69,6 +70,7 @@ export default class GameScene extends Phaser.Scene {
         this.initTimer = data.timer;
         this.countdown = data.timer;
         this.currentLevel = data.currentLevel;
+        this.mycamera = new Phaser.Cameras.Scene2D.Camera(0, 0, this.mapConfigData.mapWidth, this.mapConfigData.mapHeight);
 
         // generate race track
         this.mapGeneration = new GenerateMap(this.mapConfigData);
@@ -113,11 +115,8 @@ export default class GameScene extends Phaser.Scene {
         this.centerX = this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2;
     
         // add fog of war
-        this.fowRadius = 4; // in tiles
-        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
-        this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
-
+        this.createFow();
+        
         // add current lap to game screen
         this.lapText = this.add.text(
             this.centerX - 900, 
@@ -213,12 +212,12 @@ export default class GameScene extends Phaser.Scene {
         // if timer goes to 0, switch to end scene
         if (this.countdown === 0) {
             this.scene.stop('GameScene');
-
             this.gameSound.destroy();
             this.scene.start('EndScene', {numLevels: (this.currentLevel - 1)});
         }
         // if all checkpoints are collected before timer runs out, load up next level
         else if(this.checkpoints.collectedAllCheckpoints() == true) {
+            this.gameSound.destroy();
             this.scene.stop('GameScene');
             this.scene.start('GameScene', {
                 id: this.playerVehicle, 
@@ -285,6 +284,13 @@ export default class GameScene extends Phaser.Scene {
         this.gameSound.play({
             loop: true
         });
+    }
+
+    createFow(){
+        this.fowRadius = 4; // in tiles
+        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
+        this.fow.mapLayer(this, this.tileMap.tileMap);
+        this.fow.cameraFow(this, this.tileMap.tileMap);
     }
 
     private displayWinSound() {
