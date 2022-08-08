@@ -38,8 +38,8 @@ export default class Checkpoints {
         this.image = 'assets/Checkpoints/explosion2.png';
         this.finishFlagImage = 'assets/Checkpoints/flagBlue.png';
 
-        this.numCheckpoints = 10;
-        this.numLaps = 1;
+        this.numCheckpoints = 3;
+        this.numLaps = 2;
 
         this.checkpointsArray = [];
         this.currCheckpointIndex = 0;
@@ -56,7 +56,7 @@ export default class Checkpoints {
     #generateCheckpoints() {
         let checkpointOffset = Math.trunc((this.innerTrackPts.length - 2) / this.numCheckpoints);
 
-        // add checkpoints equally spaced aloong inner track points
+        // add checkpoints equally spaced along inner track points
         for (let i = 1; i < this.numCheckpoints; i++) {
             this.checkpointsArray.push(this.innerTrackPts[checkpointOffset * i]);
         }
@@ -127,7 +127,7 @@ export default class Checkpoints {
         let checkpointHeight:number = (this.checkpointsArray[this.currCheckpointIndex][0] * this.tileDimension) + locOffset[0];
         let checkpointWidth:number = (this.checkpointsArray[this.currCheckpointIndex][1] * this.tileDimension) + locOffset[1];
 
-        console.log('pixels', checkpointHeight, checkpointWidth)
+        console.log(this.checkpointsArray[this.currCheckpointIndex])
 
         return [checkpointHeight, checkpointWidth];  
     }
