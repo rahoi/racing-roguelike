@@ -6,12 +6,7 @@ export default class TileMapConstruct {
     track: object;
     mapArray: number[][];
     tileMap: Phaser.Tilemaps.Tilemap;
-    mapLayer: Phaser.Tilemaps.TilemapLayer;
-    mapConfig: {
-        // data: scene.mapArray, 
-        data: number[][]; tileWidth: number; tileHeight: number; tileKey: string;
-    };
-    rt: Phaser.GameObjects.RenderTexture;
+    tileset:Phaser.Tilemaps.Tileset;
 
     constructor(scene:Phaser.Scene, map: GenerateMap, mapConfigData: ConfigData) {
         this.mapArray = map.mapArray;
@@ -46,7 +41,9 @@ export default class TileMapConstruct {
         // this.rt.alpha = 0.5
         
 
-        return this.mapLayer;
+        this.tileMap = scene.make.tilemap(mapConfig);
+        // this.tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
+        // this.tileMap.createLayer(0, this.tileset, 0, 0); 
     }
 
 }

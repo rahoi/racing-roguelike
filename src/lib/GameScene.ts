@@ -9,6 +9,7 @@ import Checkpoints from "./Checkpoints"
 
 // import types
 import type ConfigData from "./ConfigData"
+import type { gameSceneData } from "./GameSceneDataType"
 
 export default class GameScene extends Phaser.Scene {
     mapConfigData: ConfigData;
@@ -17,8 +18,9 @@ export default class GameScene extends Phaser.Scene {
 
     fow: FowLayer;
     vision: Phaser.GameObjects.Graphics;
-    rt: Phaser.GameObjects.RenderTexture;
-    mapLayer: Phaser.Tilemaps.TilemapLayer;
+    fowRadius: number;
+
+    checkpointLayer: Phaser.GameObjects.Layer;
 
     image: string;
     playerVehicle: string;
@@ -41,26 +43,16 @@ export default class GameScene extends Phaser.Scene {
 
     checkpoints: Checkpoints;
     checkpointImage: Phaser.GameObjects.Image;
-    collectedCheckpoints: number;
-    totalCheckpoints: number;
-    currentCheckpoint: number[];
 
     lapText: Phaser.GameObjects.Text;
-    currentLap: number;
-    totalLaps: number;
-    fowCam: Phaser.Cameras.Scene2D.Camera
-    testing: Phaser.GameObjects.Sprite
-    layer: Phaser.GameObjects.Layer
-    myMap: Phaser.Tilemaps.TilemapLayer
-    groupA: Phaser.GameObjects.Group
-    
+    levelText: Phaser.GameObjects.Text;
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
         this.mapConfigData = mapConfigData;
     }
 
-    init(data: any) {
+    init(data: gameSceneData) {
         this.playerVehicle = data.id;
         console.log('player selected: ' + this.playerVehicle);
         this.image = data.image;
@@ -76,6 +68,7 @@ export default class GameScene extends Phaser.Scene {
 
         // resets checkpoints
         this.checkpoints = new Checkpoints(this.mapGeneration, this.mapConfigData);
+<<<<<<< HEAD
 
         this.totalCheckpoints = this.checkpoints.getTotalNumCheckpoints();
         this.collectedCheckpoints = 3;
@@ -83,11 +76,22 @@ export default class GameScene extends Phaser.Scene {
 
         this.totalLaps = this.checkpoints.getTotalNumLaps();
         this.currentLap = 1;
+||||||| 85113fe
+
+        this.totalCheckpoints = this.checkpoints.getTotalNumCheckpoints();
+        this.collectedCheckpoints = 0;
+        this.currentCheckpoint = this.checkpoints.getCheckpoint();
+
+        this.totalLaps = this.checkpoints.getTotalNumLaps();
+        this.currentLap = 1;
+=======
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
     }
 
     preload() {
-        // load chackpoint image
+        // load chackpoint and finish flag image
         this.load.image('checkpoint', this.checkpoints.image);
+        this.load.image('finish flag', this.checkpoints.finishFlagImage);
 
         // load player's vehicle image
         this.load.image(this.playerVehicle, this.image)
@@ -118,10 +122,18 @@ export default class GameScene extends Phaser.Scene {
         this.add.image(200, 200, 'testing').addToDisplayList;
 
         // add fog of war
+<<<<<<< HEAD
         this.fow = new FowLayer(this.mapConfigData);
         //const mySprite = this.make.sprite()//dd.sprite(200, 200, 'testing'); //.setDepth(20);
         
+||||||| 85113fe
+        this.fow = new FowLayer(this.mapConfigData);
+=======
+        this.fowRadius = 4; // in tiles
+        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
         this.fow.mapLayer(this, this.tileMap.tileMap);
+<<<<<<< HEAD
         
         this.add.image(200, 200, 'testing').setDepth(20);
         
@@ -155,6 +167,11 @@ export default class GameScene extends Phaser.Scene {
         
 
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+||||||| 85113fe
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
+=======
+        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
 
         //this.add.image(800, 800, 'testing').setAlpha(0.5).setDepth(20);
 
@@ -164,7 +181,10 @@ export default class GameScene extends Phaser.Scene {
 
 
         // add current lap to game screen
-        this.lapText = this.add.text(450, 150, 'Lap: ' + this.currentLap + '/' + this.totalLaps, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        this.lapText = this.add.text(450, 150, 'Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps(), {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+
+        // add current level to game screen
+        this.levelText = this.add.text(450, 250, 'Level: ' + this.currentLevel, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
 
         // add timer 
         this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5).setDepth(20);
@@ -189,6 +209,17 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
+<<<<<<< HEAD
+||||||| 85113fe
+        // add checkpoint image
+        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
+
+=======
+        // add checkpoint image to scene
+        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
+        console.log("checkpoint:", this.checkpoints.getCheckpointCoordinate());
+
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
         // create player sprite
         this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle).setDepth(110)
         this.playerSprite.angle = 90
@@ -203,27 +234,52 @@ export default class GameScene extends Phaser.Scene {
         // draw the sprite
         this.playerSprite.setAngle(this.playerSprite.angle + this.angleDiff)
         this.playerSprite.setPosition(this.player.getLocX(), (-1) * this.player.getLocY());
+        
+        // fow update
+        this.fow.calculateFow(this, this.player);
+
+        // set checkpoint visibility
+        if (this.checkpoints.isVisible(this.player, this.fowRadius)) {
+            this.checkpointImage.setVisible(true);
+        }
+        else {
+            this.checkpointImage.setVisible(false);
+        }
 
         // check if player reached checkpoint, place the next checkpoint on the track
         if (this.checkpoints.updateCheckpoint(this.player)) {
-            this.collectedCheckpoints++;
-            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]);
+            // change checkpoint image to a flag for the last checkpoint
+            if (this.checkpoints.onLastCheckpoint()) {
+                this.checkpointImage.setTexture('finish flag');
+            }
 
-            console.log(this.currentCheckpoint);
-            console.log(this.checkpoints.getCheckpointLoc())
-            console.log("curr checkpoint:", this.collectedCheckpoints)
-            console.log("total checkpoints", this.totalCheckpoints)
+            // updates lap text if user completes a lap of the track
+            if (this.checkpoints.changeLap()) {
+                this.lapText.setText('Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps());
+            }
+
+            // change checkpoint location
+            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]).setVisible(false);
+            console.log("new checkpoint:", this.checkpoints.getCheckpointCoordinate());
         }
+<<<<<<< HEAD
         
         // fow update
         this.fow.calculateFow(this, this.player, this.checkpointImage);
+||||||| 85113fe
+        
+        // fow update
+        this.fow.calculateFow(this, this.player);
+=======
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
        
         // if timer goes to 0, switch to end scene
         if (this.countdown < 0) {
             this.scene.stop('GameScene');
-            this.scene.start('EndScene', {numLevels: this.currentLevel});
+            this.scene.start('EndScene', {numLevels: (this.currentLevel - 1)});
         }
         // if all checkpoints are collected before timer runs out, load up next level
+<<<<<<< HEAD
         else if(this.collectedAllCheckpoints() == true) {
             this.scene.start('GameScene', {
                 id: this.playerVehicle, 
@@ -237,8 +293,22 @@ export default class GameScene extends Phaser.Scene {
     collectedAllCheckpoints() {
         if (this.collectedCheckpoints == this.totalCheckpoints) {
             return true;
+||||||| 85113fe
+        else if(this.collectedAllCheckpoints() == true) {
+            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.currentLevel + 1});
         }
-        return false;
+    }
+
+    // checks if all checkpoints has been collected
+    collectedAllCheckpoints() {
+        if (this.collectedCheckpoints == this.totalCheckpoints) {
+            return true;
+=======
+        else if(this.checkpoints.collectedAllCheckpoints() == true) {
+            this.scene.stop('GameScene');
+            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, currentLevel: (this.currentLevel + 1)});
+>>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
+        }
     }
 
     // counts down timer using Phaser logic
