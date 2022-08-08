@@ -38,8 +38,8 @@ export default class Checkpoints {
         this.image = 'assets/Checkpoints/explosion2.png';
         this.finishFlagImage = 'assets/Checkpoints/flagBlue.png';
 
-        this.numCheckpoints = 2;
-        this.numLaps = 2;
+        this.numCheckpoints = 3;
+        this.numLaps = 1;
 
         this.checkpointsArray = [];
         this.currCheckpointIndex = 0;
@@ -143,6 +143,22 @@ export default class Checkpoints {
         }
     }
 
+    // returns true if checkpoint is within fog of war radius of the player's vehicle
+    isVisible(player:Car | Bike, fowRadius:number) {
+        let xMin:number = Math.trunc(player.getLocX() / this.mapConfigData.tileDimension) - (fowRadius / 2);
+        let xMax:number = Math.trunc(player.getLocX() / this.mapConfigData.tileDimension) + (fowRadius / 2);
+        let yMin:number = -Math.trunc(player.getLocY() / this.mapConfigData.tileDimension) - (fowRadius / 2);
+        let yMax:number = -Math.trunc(player.getLocY() / this.mapConfigData.tileDimension) + (fowRadius / 2);
+
+        if ((this.getCheckpointCoordinate()[1] >= xMin) &&  (this.getCheckpointCoordinate()[1] <= xMax) 
+        && (this.getCheckpointCoordinate()[0] >= yMin) && (this.getCheckpointCoordinate()[0] <= yMax)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     // checks if all checkpoints has been collected
     collectedAllCheckpoints() {
         if (this.checkpointsCollected == this.totalCheckpoints) {
@@ -170,6 +186,10 @@ export default class Checkpoints {
 
     getCurrentLap() {
         return this.currLap;
+    }
+
+    getCheckpointArray() {
+        return this.checkpointsArray;
     }
 
     // place checkpoint sprite underneath the fow layers so it isnt shown under the gray?

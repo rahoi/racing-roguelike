@@ -23,8 +23,8 @@ export default class TileMapConstruct {
         }
 
         this.tileMap = scene.make.tilemap(mapConfig);
-        this.tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
-        // this.tileMap.createLayer(0, tileset, 0, 0); 
+        // this.tileset = this.tileMap.addTilesetImage(mapConfigData.tileKey);
+        // this.tileMap.createLayer(0, this.tileset, 0, 0); 
     }
 
 }
