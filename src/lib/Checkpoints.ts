@@ -38,7 +38,7 @@ export default class Checkpoints {
         this.image = 'assets/Checkpoints/explosion2.png';
         this.finishFlagImage = 'assets/Checkpoints/flagBlue.png';
 
-        this.numCheckpoints = 3;
+        this.numCheckpoints = 1;
         this.numLaps = 1;
 
         this.checkpointsArray = [];

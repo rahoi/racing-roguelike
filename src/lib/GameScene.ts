@@ -46,6 +46,7 @@ export default class GameScene extends Phaser.Scene {
 
     lapText: Phaser.GameObjects.Text;
     levelText: Phaser.GameObjects.Text;
+    mycamera: Phaser.Cameras.Scene2D.Camera
 
     constructor(mapConfigData:ConfigData) {
         super("GameScene");
@@ -60,32 +61,14 @@ export default class GameScene extends Phaser.Scene {
         this.initTimer = data.timer;
         this.countdown = data.timer;
         this.currentLevel = data.currentLevel;
+        this.mycamera = new Phaser.Cameras.Scene2D.Camera(0, 0, this.mapConfigData.mapWidth, this.mapConfigData.mapHeight);
 
         // generate race track
         this.mapGeneration = new GenerateMap(this.mapConfigData);
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
-       
 
         // resets checkpoints
         this.checkpoints = new Checkpoints(this.mapGeneration, this.mapConfigData);
-<<<<<<< HEAD
-
-        this.totalCheckpoints = this.checkpoints.getTotalNumCheckpoints();
-        this.collectedCheckpoints = 3;
-        this.currentCheckpoint = this.checkpoints.getCheckpoint();
-
-        this.totalLaps = this.checkpoints.getTotalNumLaps();
-        this.currentLap = 1;
-||||||| 85113fe
-
-        this.totalCheckpoints = this.checkpoints.getTotalNumCheckpoints();
-        this.collectedCheckpoints = 0;
-        this.currentCheckpoint = this.checkpoints.getCheckpoint();
-
-        this.totalLaps = this.checkpoints.getTotalNumLaps();
-        this.currentLap = 1;
-=======
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
     }
 
     preload() {
@@ -97,89 +80,13 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        this.load.spritesheet('blackTile', './assets/black.png',  {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension} );
-
-        this.load.image('testing', './assets/svelte.png')
-
+        
     }
 
     create() {
-       
-
-        this.fow = new FowLayer(this.mapConfigData);
-        
-        this.fow.mapLayer(this, this.tileMap.tileMap);
-
-        this.myMap = this.tileMap.createLayerMap();
-
-        
-       
-        /*
-        
-        this.layer = this.add.layer(this.add.image(1000, 1000, 'testing')).setDepth(200); 
-        this.make.layer(this.layer, true);
-
-        this.add.image(200, 200, 'testing').addToDisplayList;
-
         // add fog of war
-<<<<<<< HEAD
-        this.fow = new FowLayer(this.mapConfigData);
-        //const mySprite = this.make.sprite()//dd.sprite(200, 200, 'testing'); //.setDepth(20);
+        this.createFow();
         
-||||||| 85113fe
-        this.fow = new FowLayer(this.mapConfigData);
-=======
-        this.fowRadius = 4; // in tiles
-        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
-        this.fow.mapLayer(this, this.tileMap.tileMap);
-<<<<<<< HEAD
-        
-        this.add.image(200, 200, 'testing').setDepth(20);
-        
-        this.add.image(400, 400, 'testing').setDepth(20);
-        this.myMap = this.tileMap.createLayerMap(); //new TileMapConstruct(this, this.mapGeneration, this.mapConfigData);  //WARNING: if I call this inside init, it doesn't work!
-
-        var graphics = this.add.graphics();
-        graphics.addToUpdateList;
-
-        //this.rt = this.make.renderTexture(this.myMap, true);
-
-        //this.rt.draw(this.myMap, 200, 0);//.setDepth(500);
-        //const mySprite = new Phaser.GameObjects.Sprite(this, 400, 800)
-
-        //this.rt.draw(mySprite, 200, 900).setDepth(200)
-
-        //this.rt.alpha = 0.5
-        */
-        
-        
-        //this.myMap //.alpha = 0.1;
-
-        //this.add.image(600, 600, 'testing').setDepth(20) //setAlpha(0.2);
-        // this.layer.add(this.testing)
-
-        // this.layer = this.add.layer(this.add.image(1000, 1000, 'testing')); 
-        // this.layer.setDepth(20)
-        
-
-        //var rt = this.mapLayer.renderTexture(0, 0, 800, 600);
-        
-
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-||||||| 85113fe
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
-=======
-        this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras); 
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
-
-        //this.add.image(800, 800, 'testing').setAlpha(0.5).setDepth(20);
-
-
-        // add checkpoint image
-        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
-
-
         // add current lap to game screen
         this.lapText = this.add.text(450, 150, 'Lap: ' + this.checkpoints.getCurrentLap() + '/' + this.checkpoints.getTotalNumLaps(), {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
 
@@ -187,7 +94,7 @@ export default class GameScene extends Phaser.Scene {
         this.levelText = this.add.text(450, 250, 'Level: ' + this.currentLevel, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
 
         // add timer 
-        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5).setDepth(20);
+        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
         // every 1000ms (1s) call this.onEventTimer to update the timer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
@@ -209,19 +116,12 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-<<<<<<< HEAD
-||||||| 85113fe
-        // add checkpoint image
-        this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
-
-=======
         // add checkpoint image to scene
         this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint').setScale(1.5);
         console.log("checkpoint:", this.checkpoints.getCheckpointCoordinate());
 
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
         // create player sprite
-        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle).setDepth(110)
+        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle)
         this.playerSprite.angle = 90
     }
     
@@ -262,16 +162,6 @@ export default class GameScene extends Phaser.Scene {
             this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]).setVisible(false);
             console.log("new checkpoint:", this.checkpoints.getCheckpointCoordinate());
         }
-<<<<<<< HEAD
-        
-        // fow update
-        this.fow.calculateFow(this, this.player, this.checkpointImage);
-||||||| 85113fe
-        
-        // fow update
-        this.fow.calculateFow(this, this.player);
-=======
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
        
         // if timer goes to 0, switch to end scene
         if (this.countdown < 0) {
@@ -279,35 +169,9 @@ export default class GameScene extends Phaser.Scene {
             this.scene.start('EndScene', {numLevels: (this.currentLevel - 1)});
         }
         // if all checkpoints are collected before timer runs out, load up next level
-<<<<<<< HEAD
-        else if(this.collectedAllCheckpoints() == true) {
-            this.scene.start('GameScene', {
-                id: this.playerVehicle, 
-                image: this.image, 
-                timer: this.initTimer, 
-                numLevels: this.currentLevel + 1});
-        }
-    }
-
-    // checks if all checkpoints has been collected
-    collectedAllCheckpoints() {
-        if (this.collectedCheckpoints == this.totalCheckpoints) {
-            return true;
-||||||| 85113fe
-        else if(this.collectedAllCheckpoints() == true) {
-            this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, numLevels: this.currentLevel + 1});
-        }
-    }
-
-    // checks if all checkpoints has been collected
-    collectedAllCheckpoints() {
-        if (this.collectedCheckpoints == this.totalCheckpoints) {
-            return true;
-=======
         else if(this.checkpoints.collectedAllCheckpoints() == true) {
             this.scene.stop('GameScene');
             this.scene.start('GameScene', {id: this.playerVehicle, image: this.image, timer: this.initTimer, currentLevel: (this.currentLevel + 1)});
->>>>>>> 828469589767a164beab1ad02ab24903c36f2a4c
         }
     }
 
@@ -315,5 +179,12 @@ export default class GameScene extends Phaser.Scene {
     onEventTimer() {
         this.countdown -= 1; // one second
         this.timerText.setText('Timer: ' + this.countdown);
+    }
+
+    createFow(){
+        this.fowRadius = 4; // in tiles
+        this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
+        this.fow.mapLayer(this, this.tileMap.tileMap);
+        this.fow.cameraFow(this, this.tileMap.tileMap);
     }
 }
