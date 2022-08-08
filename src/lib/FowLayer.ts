@@ -39,8 +39,21 @@ export default class FowLayer{
             width: this.mapHeight * this.tileDimension,  
             height: this.mapHeight * this.tileDimension 
         }
+        
         const tileset = this.map.addTilesetImage(this.tileKey)
-        this.roadLayer = this.map.createLayer(0, tileset, 0, 0).setDepth(30)
+        this.roadLayer = this.map.createLayer(0, tileset, 0, 0)
+        //this.roadLayer.setDepth(100);
+        //this.roadLayer.disableInteractive();
+        
+        
+        /*
+
+        const tileset = this.map.addTilesetImage('blackTile');
+        this.roadLayer = this.map.createBlankLayer('fowF', tileset, 0, 0);
+        this.roadLayer.fill(0, 0, 0, textureConfig.width, textureConfig.height);
+        //this.roadLayer.setAlpha(0.8)
+        this.roadLayer.setDepth(30);
+        */
         
 	}
 
@@ -67,6 +80,8 @@ export default class FowLayer{
 				 	continue;
 				}
                 tile.tint = 0x000000;  //black color
+                tile.visible = true;
+
 			}
 		}	
 	}
@@ -100,6 +115,7 @@ export default class FowLayer{
         let setVisibility = (x:number, y:number): void => {
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
+                tile.visible = true;
                 checkpointImage.setVisible(false);
                 return;
             }
@@ -109,10 +125,12 @@ export default class FowLayer{
             if (d < radius - 1) {
                 this.isTileSeen[x][y] = true;
                 tile.tint = 0xffffff;  //white color
+                tile.visible = false;
 
                 checkpointImage.setVisible(true);
             } else if (this.isTileSeen[x][y] === true && d > radius/2) {
                 tile.tint = 0x3e3e3e;  //gray color
+                tile.visible = true;
 
                 checkpointImage.setVisible(false);
             }

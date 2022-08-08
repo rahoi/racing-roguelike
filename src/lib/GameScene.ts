@@ -52,6 +52,7 @@ export default class GameScene extends Phaser.Scene {
     testing: Phaser.GameObjects.Sprite
     layer: Phaser.GameObjects.Layer
     myMap: Phaser.Tilemaps.TilemapLayer
+    groupA: Phaser.GameObjects.Group
     
 
     constructor(mapConfigData:ConfigData) {
@@ -92,29 +93,62 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(this.playerVehicle, this.image)
         // this.load.image(mapData.tileKey, mapData.tilesetImageSheet);
         this.load.spritesheet(this.mapConfigData.tileKey, this.mapConfigData.tilesetImageSheet, {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension})
-        
+        this.load.spritesheet('blackTile', './assets/black.png',  {frameWidth: this.mapConfigData.tileDimension, frameHeight: this.mapConfigData.tileDimension} );
+
         this.load.image('testing', './assets/svelte.png')
 
     }
 
     create() {
+       
+
+        this.fow = new FowLayer(this.mapConfigData);
+        
+        this.fow.mapLayer(this, this.tileMap.tileMap);
+
+        this.myMap = this.tileMap.createLayerMap();
 
         
+       
+        /*
+        
+        this.layer = this.add.layer(this.add.image(1000, 1000, 'testing')).setDepth(200); 
+        this.make.layer(this.layer, true);
+
+        this.add.image(200, 200, 'testing').addToDisplayList;
+
         // add fog of war
         this.fow = new FowLayer(this.mapConfigData);
-
-        this.add.image(200, 200, 'testing').setDepth(20);
+        //const mySprite = this.make.sprite()//dd.sprite(200, 200, 'testing'); //.setDepth(20);
+        
         this.fow.mapLayer(this, this.tileMap.tileMap);
+        
+        this.add.image(200, 200, 'testing').setDepth(20);
         
         this.add.image(400, 400, 'testing').setDepth(20);
         this.myMap = this.tileMap.createLayerMap(); //new TileMapConstruct(this, this.mapGeneration, this.mapConfigData);  //WARNING: if I call this inside init, it doesn't work!
 
+        var graphics = this.add.graphics();
+        graphics.addToUpdateList;
+
+        //this.rt = this.make.renderTexture(this.myMap, true);
+
+        //this.rt.draw(this.myMap, 200, 0);//.setDepth(500);
+        //const mySprite = new Phaser.GameObjects.Sprite(this, 400, 800)
+
+        //this.rt.draw(mySprite, 200, 900).setDepth(200)
+
+        //this.rt.alpha = 0.5
+        */
         
-        this.add.image(600, 600, 'testing').setDepth(20);
+        
+        //this.myMap //.alpha = 0.1;
+
+        //this.add.image(600, 600, 'testing').setDepth(20) //setAlpha(0.2);
         // this.layer.add(this.testing)
 
-       // this.layer = this.add.layer(this.add.sprite(1000, 1000, 'testing')).setDepth(20); 
-
+        // this.layer = this.add.layer(this.add.image(1000, 1000, 'testing')); 
+        // this.layer.setDepth(20)
         
 
         //var rt = this.mapLayer.renderTexture(0, 0, 800, 600);
@@ -122,7 +156,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.fow.cameraFow(this, this.tileMap.tileMap, this.cameras);
 
-        this.add.image(800, 800, 'testing').setDepth(20);
+        //this.add.image(800, 800, 'testing').setAlpha(0.5).setDepth(20);
 
 
         // add checkpoint image
@@ -133,7 +167,7 @@ export default class GameScene extends Phaser.Scene {
         this.lapText = this.add.text(450, 150, 'Lap: ' + this.currentLap + '/' + this.totalLaps, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
 
         // add timer 
-        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5);
+        this.timerText = this.add.text(500, 50, 'Timer: ' + this.countdown, {fontSize: "120px", color: "#FFFFFF"}).setOrigin(0.5).setDepth(20);
         // every 1000ms (1s) call this.onEventTimer to update the timer
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
 
@@ -156,7 +190,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // create player sprite
-        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle).setDepth(40)
+        this.playerSprite = this.add.sprite(this.player.getLocX(), this.player.getLocY(), this.playerVehicle).setDepth(110)
         this.playerSprite.angle = 90
     }
     
