@@ -209,7 +209,7 @@ export default class GameScene extends Phaser.Scene {
             }
 
             // change checkpoint location
-            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0])//.setVisible(false);
+            this.checkpointImage.setPosition(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0]).setVisible(false);
             console.log("new checkpoint:", this.checkpoints.getCheckpointCoordinate());
         }
        
