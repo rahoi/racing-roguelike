@@ -5,8 +5,7 @@
     "useDefineForClassFields": true,
     "module": "esnext",
     "moduleResolution": "Node",
-    // "outDir": "tsc-output/", // doesnt seem to be working...
-    "--downlevelIteration": true,
+    "downlevelIteration": true,
     "esModuleInterop":  true,
     "resolveJsonModule": true,
     "baseUrl": ".",
@@ -32,7 +31,6 @@
   "types": [
     "Phaser"
   ],
-  //"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "declarations.d.ts"], 
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "declarations.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
