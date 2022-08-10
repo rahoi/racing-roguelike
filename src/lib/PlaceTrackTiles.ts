@@ -1,6 +1,10 @@
 import type {coordinate} from "./coordinateType"
 import terrainArray from "./TerrainArray"
 
+/**
+ * PlaceTiles places road/terrain tiles in the map array for the Tilemap from the inner track array, 
+ * finds points on the outer track, and then fills in those outer track points with tiles
+ */
 export default class PlaceTiles {
     mapArray:number[][];
     trackCoordinates:number[][];    // to store all points on the race track, both inner and outer
@@ -24,6 +28,16 @@ export default class PlaceTiles {
 
     isClockwise:boolean;
 
+    /**
+     * stores data for filling the Tilemap map array and generating the outer track points
+     * 
+     * @param innerTrack array of inner track points
+     * @param mapHeight height of map in tiles
+     * @param mapWidth width of map in tiles
+     * @param isClockwise whether the track runs clockwise
+     * @param innerStartIndex index of the start line in the inner track points array
+     * @param startTile the value of the start tile (from the spritesheet)
+     */
     constructor(innerTrack:number[][], mapHeight:number, mapWidth:number, isClockwise:boolean, innerStartIndex:number, startTile:number) {
         this.trackCoordinates = [];
         this.innerTrack = innerTrack;
@@ -42,7 +56,11 @@ export default class PlaceTiles {
         this.innerStartTile = startTile;
     }
 
-    // main function to find the outer track points from the inner track tiles and place tiles on the game tile map
+    /**
+     * fills the map array with terrain/road tiles and generates the outer track points
+     * 
+     * @returns array of tiles for the Tilemap to draw the road/map
+     */
     fillTrackTiles() {
         // fill entire map with dirt/glass tiles
         let mapArray = [];
@@ -76,27 +94,63 @@ export default class PlaceTiles {
         return mapArray;
     }
 
+    /**
+     * returns the Map with track coordinates as keys and type coordinate as values
+     * 
+     * @returns Map of each track points neighbors
+     */
     getNeighborMap() {
         return this.neighborMap;
     }
 
+    /**
+     * returns an array of all points in the race track
+     * 
+     * @returns array of track points
+     */
     getAllTrackPts() {
         return this.trackCoordinates;
     }
 
+    /**
+     * returns an array of the points that are on the outer rim of the race track
+     * (as some outer track points are not along the outside edge of the track)
+     * 
+     * @returns array of points on the outer rim
+     */
     getOuterRim() {
         return this.outerRim;
     }
 
+    /**
+     * returns the coordinate of the start line that is in the outer track array
+     * 
+     * @returns the coordinate of start line on the outer track
+     */
     getOuterStartLineCoord() {
         return this.outerStartLinePt;
     }
 
+    /**
+     * returns the value of the start line tile on the outer track array (from the spritesheet)
+     * 
+     * @returns the tile at the start line on the outer track
+     */
     getOuterStartTile() {
         return this.outerStartTile;
     }
 
     // ----------------------------------Priavte helper functions----------------------------------
+
+    /**
+     * fills an array for the map, later used to create the Phaser Tilemap for each level, with grass tiles,
+     * and adds a dirt border around the outer border of the map
+     * 
+     * @param mapArray array of the map for the Phaser Tilemap
+     * @param mapHeight height of the map in tiles
+     * @param mapWidth width of the map in tiles
+     * @returns the map array filled with grass tiles
+     */
     #fillGrassTiles(mapArray:number[][], mapHeight:number, mapWidth:number) {
         for (let i = 0; i < mapHeight; i++) {
             let temp:number[] = [];
@@ -141,9 +195,18 @@ export default class PlaceTiles {
         }
 
         return mapArray;
-
     }
 
+    /**
+     * places tiles corresponding to the inner track on map array
+     * 
+     * @param mapArray array of the map for the Phaser Tilemap
+     * @param isClockwise whether the track runs clockwise
+     * @param innerTrack array of the inner track points
+     * @param startIndex index of the start line on the inner track
+     * @param startTile values of the start line tile
+     * @returns the map array with inner track tiles filled in
+     */
     #placeInnerTiles(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], startIndex:number, startTile:number) {
         let prevIndex:number;
         let currIndex:number;
@@ -175,6 +238,17 @@ export default class PlaceTiles {
         return mapArray;
     }
 
+    /**
+     * determines the tile value (from the spritesheet) that the current tile should be,
+     * based on the location of the tiles surrounding it
+     * 
+     * @param mapArray array of the map for the Phaser Tilemap
+     * @param isClockwise whether the track runs clockwise
+     * @param prev previous coordinate in the track
+     * @param curr current coordinate/point to determine tile value
+     * @param next next coordinate in the track
+     * @returns the value of the tile corresponding to the coordinate on the track
+     */
     #findTile(mapArray:number[][], isClockwise:boolean, prev:number[], curr:number[], next:number[]) {
         let tile:number;
         let prev_array:number[] = [];
@@ -234,6 +308,18 @@ export default class PlaceTiles {
         return tile;
     }
 
+    /**
+     * creates arrays that contain all race track points (trackCoordinates), the outer track points (outerTrack), 
+     * and the points along the outer edge of the outer track (outerRim)
+     * 
+     * @param mapArray array of the map for the Phaser Tilemap
+     * @param isClockwise whether the track runs clockwise
+     * @param innerTrack array of inner track points
+     * @param innerTrackString array of inner track points as strings
+     * @param outerTrack array of outer track points
+     * @param outerTrackString array of outer track points as strings
+     * @returns trackCoordinates: all points in the race track, outerTrack: all points in the outer portion of the race track, outerRim: points along the outer edge of the outer track points
+     */
     #findOuterTrackPtsFromInner(mapArray:number[][], isClockwise:boolean, innerTrack:number[][], innerTrackString:string[], outerTrack:number[][], outerTrackString:string[]) {
         let trackCoordinates:number[][] = []; // creating array of all track coordinates
         let innerCoord:number[];
@@ -288,7 +374,6 @@ export default class PlaceTiles {
             }
             // if inner tile is corner
             else if (terrainArray.corners.includes(innerTile)) {
-                // console.log("corner")
                 if (innerTile == terrainArray.corner_NW) {
                     // since inner corner tiles will result in more than one outer tile if the inner corner creates a convex shape
 
@@ -372,6 +457,13 @@ export default class PlaceTiles {
         return {trackCoordinates, outerTrack, outerTrackString};
     }
 
+    /**
+     * returns a map where the keys are all points in the race track and the values are of the type coordinates,
+     * which holds the orthogonal neighbors of the track point
+     * 
+     * @param trackCoordinates array of all race track points
+     * @returns Map of all track points and the corresponding type coordinates object
+     */
     #findTrackNeighbors(trackCoordinates:number[][]) {
         let neighborMap:Map<string, coordinate> = new Map;
         for (let i = 0; i < trackCoordinates.length - 1; i++) {
@@ -423,6 +515,12 @@ export default class PlaceTiles {
         return neighborMap;
     }
 
+    /**
+     * finds the orthogonal neighbors of the given coordinate
+     * 
+     * @param coordinate a coordinate on the track
+     * @returns array of the orthogonal neighbors of the coordinate
+     */
     #findNeighbors(coordinate:number[]) {
         let neighbors:number[][] = [];
 
@@ -436,6 +534,19 @@ export default class PlaceTiles {
         return neighbors;
     }
 
+    /**
+     * places tiles into the map array for points on the outer track
+     * 
+     * @param mapArray array of the map for the Phaser Tilemap
+     * @param outerTrack array of outer track points
+     * @param outerTrackString array of outer track points as strings
+     * @param neighborMap Map of coordinates and their orthogonal neighbors
+     * @param isClockwise whether the track runs clockwise
+     * @param innerTrack array of inner track points
+     * @param innerStartIndex array of inner track points as strings
+     * @param innerStartTile value of inner track start lines tile 
+     * @returns mapArray: array filled in with outer track tiles, outerRim: array of points along the outer edge of the track, outerStartTile: tile at the outer track start line, outerStartPt: outer start line coordinate
+     */
     #placeOuterTiles(mapArray:number[][], outerTrack:number[][], outerTrackString:string[], neighborMap:Map<string, coordinate>, isClockwise:boolean, innerTrack:number[][], innerStartIndex:number, innerStartTile:number) {
         let outerRim:number[][] = JSON.parse(JSON.stringify(outerTrack));   // holds track pts on the outer rim of the race track
         let outerRimString:string[] = [];
@@ -490,7 +601,6 @@ export default class PlaceTiles {
             currIndex =  (i + innerStartIndex) % (outerRim.length - 1);
             nextIndex = (i + 1 + innerStartIndex) % (outerRim.length - 1);
 
-            // console.log(outerRim[i])
             prev = outerRim[prevIndex];
             curr = outerRim[currIndex];
             next = outerRim[nextIndex];
@@ -502,6 +612,14 @@ export default class PlaceTiles {
         return {mapArray, outerRim, outerStartTile, outerStartPt};
     }
 
+    /**
+     * determines whether the coordinate on the outer track should be a blank road tile
+     * 
+     * @param outerCoordKey coordinate on the outer track as a string
+     * @param outerTrackString array of outer track points as strings
+     * @param neighborMap Map of coordinates and their orthogonal neighbors
+     * @returns true if the tile should be a blank road tile
+     */
     #determineIfBlank(outerCoordKey:string, outerTrackString:string[], neighborMap:Map<string, coordinate>) {
         let coordinate:coordinate | undefined = neighborMap.get(outerCoordKey);
         let numOuterNeighbors = 0;
@@ -520,6 +638,7 @@ export default class PlaceTiles {
             let rightCoordString = JSON.stringify(coordinate.rightHorz);
             let neighborRight:coordinate | undefined = neighborMap.get(rightCoordString);
 
+            // counts number of neighbors on the outer track
             if (outerTrackString.includes(upCoordString)) {
                 numOuterNeighbors++;
             }
@@ -534,6 +653,7 @@ export default class PlaceTiles {
             }
         }
 
+        // tile should be blank if there is only one neighbor on the outer track
         return (numOuterNeighbors == 1);
     }
 }

@@ -1,3 +1,8 @@
+/**
+ * TerrainArray stores information regarding the different road and terrain tiles' locations 
+ * in the spritesheet at '/assets/road_spritesheet.png'
+ */
+
 type terrainArrayData = {
     roadTileArray:number[],
     terrainTileArray:number[],
