@@ -341,7 +341,7 @@ export default class GameScene extends Phaser.Scene {
         this.fowRadius = 4; // in tiles
         this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
         this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap);
+        this.fow.createFirstLayer(this, this.tileMap.tileMap);
     }
 
     /**
