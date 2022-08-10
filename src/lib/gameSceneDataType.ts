@@ -1,3 +1,8 @@
+/**
+ * gameSceneDataType exports the custom type, gameSceneData, 
+ * which contains information to be sent to GameScene
+ */
+
 export type gameSceneData = {
     id: string,
     image: string, 
