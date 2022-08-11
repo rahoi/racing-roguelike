@@ -13,7 +13,7 @@ export default class Car extends Player {
         // set player attributes
         this.wheelBase = 131            // distance between front and rear wheels
         this.steerFactor = 30           // amount that front wheel turns
-        this.enginePower = 0.001        // forward acceleration force
+        this.enginePower = 0.0012        // forward acceleration force
         this.brakingFactor = -0.00045   // backwards acceleration force
         this.maxReverseSpeed = 1        // max reverse velocity
 
@@ -22,7 +22,7 @@ export default class Car extends Player {
         this.friction = -0.0005
         this.drag = -0.001
         this.slipSpeed = 0.5
-        this.tractionFast = 0.1
+        this.tractionFast = 0.11
         this.tractionSlow = 0.7
         this.offRoadFactor = 10
     }
