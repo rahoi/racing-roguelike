@@ -11,7 +11,7 @@ export default class Car extends Player {
         super(map, mapConfigData);        
     }
 
-    updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean) {
-        super.updateLoc(gas, brake, left, right)
+    updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean, dt: any) {
+        super.updateLoc(gas, brake, left, right, dt)
     }
 }
