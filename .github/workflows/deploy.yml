@@ -3,8 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      # - main
-      - deployment
+      - main
 
 jobs:
   build:
@@ -36,7 +35,7 @@ jobs:
     name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/deployment'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Download artifact
