@@ -1,20 +1,20 @@
 # Racing Roguelike
 
-![Racing Roguelike](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png "Racing Roguelike")
+![Racing Roguelike](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/racing-roguelike.png "Racing Roguelike")
 
 ## About
 Racing Roguelike is a union between two popular gaming genres, racing games and roguelike games. At the start of the game, the player can select which vehicle they'd like to race in and also change the key binds to manuever the vehicle. In each level, the player races against a timer to traverse through a prodecurally generated race track and collect all the checkpoints on the map. If the timer ever reaches 0 before the player can collect all of the checkpoints, the game is over!
 
 ## Development Team
-The Racing Roguelike development team has been guided by their sponsor, Jon Rahoi [jonrahoi](https://github.com/jonrahoi), and consists of:
+The Racing Roguelike development team has been guided by their sponsor, Jon Rahoi ([jonrahoi](https://github.com/jonrahoi)), and consists of:
 
-- Cynthia Carnero [CynthiaCR](https://github.com/CynthiaCR)
-- Ellen Chan [nahcnelle](https://github.com/nahcnelle)
-- Ashley Radford [ashleyradford](https://github.com/ashleyradford)
+- Cynthia Carnero ([CynthiaCR](https://github.com/CynthiaCR))
+- Ellen Chan ([nahcnelle](https://github.com/nahcnelle))
+- Ashley Radford ([ashleyradford](https://github.com/ashleyradford))
 
 ## Play the Game
 
-To play the current version of Racing Roguelike, click [here](https://www.google.com/)!
+To play the current version of Racing Roguelike, click [here](https://rahoi.github.io/racing-roguelike/)!
 
 ## Development Dependencies/Technologies
 - Node.js
@@ -65,14 +65,14 @@ To contribute to Racing Roguelike or branch off and continue the project,
 
 
 ### Architectural Diagram
-![Architectural Diagram](../public/assets/architectural-diagram.png)
+![Architectural Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png)
 
 ### Completed Features
 Below are major features of the game that have been implemented and are working in the current version of Racing Roguelike:
 
-- [Procedurally Generated Race Track](../docs/track-generation.md)
+- [Procedurally Generated Race Track](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
 - Vehicle Movement
-- [Checkpoints](../docs/checkpoints.md)
+- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - Fog of War
 - Different Vehicle Classes
 - Timer
