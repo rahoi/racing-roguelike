@@ -21,22 +21,22 @@ To play the current version of Racing Roguelike, click [here](https://rahoi.gith
     - [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
     - Version 16.15.1
 - Svelte
-    -[https://svelte.dev/](https://svelte.dev/)
+    - [https://svelte.dev/](https://svelte.dev/)
     - Version 3.44.0
 - Vite
-    -[https://vitejs.dev/](https://vitejs.dev/)
+    - [https://vitejs.dev/](https://vitejs.dev/)
     - Version 2.9.9
 - Phaser 
-    -[https://phaser.io/download/stable](https://phaser.io/download/stable)
+    - [https://phaser.io/download/stable](https://phaser.io/download/stable)
     - Version 3.55.2 “Ichika” 
 - catmull-rom-interpolator
-    -[https://github.com/rciszek/catmull-rom-interpolator](https://github.com/rciszek/catmull-rom-interpolator)
+    - [https://github.com/rciszek/catmull-rom-interpolator](https://github.com/rciszek/catmull-rom-interpolator)
     - Version 1.0.1
 - hull.js
-    -[https://github.com/AndriiHeonia/hull](https://github.com/AndriiHeonia/hull)
+    - [https://github.com/AndriiHeonia/hull](https://github.com/AndriiHeonia/hull)
     - Version 1.0.2
 - MRPAS
-    -[https://bitbucket.org/umbraprojekt/mrpas/src/master/](https://bitbucket.org/umbraprojekt/mrpas/src/master/)
+    - [https://bitbucket.org/umbraprojekt/mrpas/src/master/](https://bitbucket.org/umbraprojekt/mrpas/src/master/)
     - 2.0.0
 
 ## Development Environment
@@ -62,7 +62,8 @@ To contribute to Racing Roguelike or branch off and continue the project,
     `npm run build`
 
 ### Scripts and Usage
-
+- [deploy.yml](https://github.com/rahoi/racing-roguelike/blob/main/.github/workflows/deploy.yml)
+    - starts a GitHub Action to build the project, then deploy to GitHub pages
 
 ### Architectural Diagram
 ![Architectural Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png)
