@@ -95,7 +95,7 @@ export default class Player {
         this.slipSpeed = 0.5
         this.tractionFast = 0.1
         this.tractionSlow = 0.7
-        this.offRoadFactor = 9
+        this.offRoadFactor = 10
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean, dt: any) {
@@ -129,7 +129,7 @@ export default class Player {
 
     applyFriction() {
         /* set minimum speed */
-        if (this.velocity.getMagnitude() < 0.007) {
+        if (this.velocity.getMagnitude() < 0.001) {
             this.velocity.set(0,0)
         }
 
