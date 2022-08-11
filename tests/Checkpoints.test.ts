@@ -28,6 +28,9 @@ let player:Player = new Player(mapGeneration, mapConfigData)
 // create new Checkpoints object and generate checkpoints along the race track
 let checkpoints:Checkpoints = new Checkpoints(mapGeneration, mapConfigData);
 
+
+// ----------------------------------Tests----------------------------------
+
 // testing number of checkpoints generated
 test('number of checkpoints on the race track', () => {
     expect(checkpoints.numCheckpoints).toBe(checkpoints.checkpointsArray.length);
@@ -38,7 +41,7 @@ test('number of total checkpoints for the level', () => {
     expect(checkpoints.totalCheckpoints).toBe(checkpoints.numCheckpoints * checkpoints.numLaps);
 });
 
-// checking checkpoint visibility when player is on it
+// check checkpoint visibility when player is on it
 test('checkpoint visibility', () => {
     let radius:number = 4;
 
@@ -50,7 +53,7 @@ test('checkpoint visibility', () => {
     expect(checkpoints.isVisible(player, radius)).toBe(true);
 });
 
-// checking updating the checkpoint if the player collides with it (ie: is on the same coordinate)
+// check updating the checkpoint if the player collides with it (ie: is on the same coordinate)
 test('checkpoint updating', () => {
     let radius:number = 4;
 
@@ -60,4 +63,14 @@ test('checkpoint updating', () => {
     player.pos = new Vector(playerX, playerY);
 
     expect(checkpoints.updateCheckpoint(player)).toBe(true);
+});
+
+
+// check checkpoint image location
+test('checkpoint image location', () => {
+    let imageHeight:number = Math.trunc(checkpoints.getCheckpointLoc()[0] / tileDimension)
+    let imageWidth:number = Math.trunc(checkpoints.getCheckpointLoc()[1] / tileDimension)
+
+    expect(imageHeight).toBe(checkpoints.getCheckpointCoordinate()[0]);
+    expect(imageWidth).toBe(checkpoints.getCheckpointCoordinate()[1]);
 });

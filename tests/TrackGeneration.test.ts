@@ -21,6 +21,9 @@ let mapConfigData:ConfigData = new ConfigData(backgroundColor, tileDimension, ti
 let track:TrackGeneration = new TrackGeneration(mapConfigData);
 track.createMapArray();
  
+
+// ----------------------------------Tests----------------------------------
+
 // testing track length
 test('inner race track is longer than min length and shorter than max length', () => {
    let trackLen:number = track.innerTrack.length;
