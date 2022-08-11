@@ -204,10 +204,10 @@ export default class GameScene extends Phaser.Scene {
     /**
      * updates the Scene
      */
-    update() {
+    update(timestep, dt) {
         // move the player object
         this.playerAngle = this.player.getHeading()
-        this.player.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown)
+        this.player.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown, dt)
         this.angleDiff = this.playerAngle - this.player.getHeading()
 
         // draw the sprite
