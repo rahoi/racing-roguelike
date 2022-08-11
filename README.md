@@ -68,13 +68,17 @@ To contribute to Racing Roguelike or branch off and continue the project,
 ### Architectural Diagram
 ![Architectural Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png)
 
+### Scene Flowchart
+![Scene Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/scene-diagram.png)
+
 ### Completed Features
 Below are major features of the game that have been implemented and are working in the current version of Racing Roguelike:
 
 - [Procedurally Generated Race Track](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - Vehicle Movement
-- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
+- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - [Fog of War](https://github.com/rahoi/racing-roguelike/blob/main/docs/fow-of-war.md)
+- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
 - Different Vehicle Classes
 - [Timer](https://github.com/rahoi/racing-roguelike/blob/main/docs/timer.md)
 

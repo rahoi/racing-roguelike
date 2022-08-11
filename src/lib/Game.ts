@@ -46,7 +46,11 @@ const config: Phaser.Types.Core.GameConfig =
         arcade: {
             debug: true
         }
-    }
+    },
+    fps: {
+        target: 60,
+        forceSetTimeOut: true
+    },
 }
 
 // creates a new Phaser Game
