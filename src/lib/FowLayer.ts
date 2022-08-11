@@ -1,8 +1,6 @@
 import { Mrpas } from "mrpas";
-import type Bike from "./Bike";
-import type Car from "./Car";
 import type ConfigData from "./ConfigData";
-import type Truck from "./Truck";
+import type Player from "./Player";
 
 const n = 40; // size of the Map height and Width
 const blackColor = 0x000000;  //black color
@@ -17,7 +15,7 @@ const whiteColor = 0xffffff;  //white color
 export default class FowLayer{
 	map: Phaser.Tilemaps.Tilemap;
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
-	player: Bike | Car;
+	player: Player;
     tileDimension: number;
     mapHeight: number;
     mapWidth: number;
@@ -100,7 +98,7 @@ export default class FowLayer{
      * @param scene phaser scene where the fow will be displayed
      * @param player player object that can be a car, bike or truck object
      */
-    calculateFow(scene: Phaser.Scene, player: Car | Bike | Truck) {       
+    calculateFow(scene: Phaser.Scene, player: Player) {       
         this.scene = scene;
         this.player = player;
     

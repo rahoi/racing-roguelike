@@ -1,7 +1,6 @@
 import type GenerateMap from "./GenerateMap"
 import type ConfigData from "./ConfigData"
-import type Bike from "./Bike";
-import type Car from "./Car";
+import type Player from "./Player"
 import terrainArray from "./TerrainArray"
 
 /**
@@ -72,7 +71,7 @@ export default class Checkpoints {
      * @param player the Player object
      * @returns true checkpoint is updated
      */
-    updateCheckpoint(player: Car | Bike) {
+    updateCheckpoint(player: Player) {
         let collision:boolean = this.#checkPlayerCollision(player);
 
         if (collision == true) {
@@ -137,7 +136,7 @@ export default class Checkpoints {
      * @param fowRadius the radius of fog of war
      * @returns true if checkpoint is within fog of war radius of the player's vehicle
      */
-    isVisible(player:Car | Bike, fowRadius:number) {
+    isVisible(player:Player, fowRadius:number) {
         let xMin:number = Math.trunc(player.getLocX() / this.mapConfigData.tileDimension) - (fowRadius / 2);
         let xMax:number = Math.trunc(player.getLocX() / this.mapConfigData.tileDimension) + (fowRadius / 2);
         let yMin:number = -Math.trunc(player.getLocY() / this.mapConfigData.tileDimension) - (fowRadius / 2);
@@ -247,7 +246,7 @@ export default class Checkpoints {
      * @param player the Player object
      * @returns true if the player's sprite collided with the current checkpoint
      */
-    #checkPlayerCollision(player: Car | Bike) {
+    #checkPlayerCollision(player:Player) {
         let playerX = player.getLocX();
         let playerY = player.getLocY();
 
