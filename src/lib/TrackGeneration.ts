@@ -1,9 +1,12 @@
 import type {coordinate} from "./coordinateType"
 import type ConfigData from "./ConfigData"
-import terrainArray from "./TerrainArray"
 import PlaceTrackTiles from "./PlaceTrackTiles"
 import GenerateInnerTrack from "./GenerateInnerTrack"
 
+/**
+ * TrackGeneration generates a two tile wide race track, creates the map array containing information for the Tilemap, 
+ * checks that the track is within the Tilemap bounds and does not double back on itself, and stores information regarding the track itself.
+ */
 export default class TrackGeneration {
     mapArray:number[][];    // stores all tile values for tile map
     innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
@@ -24,7 +27,7 @@ export default class TrackGeneration {
     placeTrackTiles:PlaceTrackTiles;
     generateInnerTrack:GenerateInnerTrack;
 
-    // constants for generating track
+    // constants for generating track (can be changed in the constructor)
     numPts:number;  // number of random points to generate for initial track generation
 
     mapHeight:number;
@@ -49,14 +52,20 @@ export default class TrackGeneration {
     minTrackLength:number;  // minimum track length
     maxTrackLength:number;  // maximum track length
 
+    /**
+     * this constructor stores information used to generate race tracks in class properties (some of which can be changed),
+     * and creates a new GenerateInnerTrack object, later used to create an array of inner track points
+     * 
+     * @param mapConfigData ConfigData object containing info regarding Phaser game configuration
+     */
     constructor(mapConfigData:ConfigData) {
         this.mapArray = [];
-        // this.firstInnerPt = [];
-
-        this.numPts = 20;
 
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
+
+        // constant values below used to generate race track (values can be adjusted as desired)
+        this.numPts = 20;
 
         this.margin = 0.18;  // buffer around screen border
         this.borderWidth = Math.trunc(this.mapWidth * this.margin);
@@ -78,9 +87,13 @@ export default class TrackGeneration {
         this.minTrackLength = 150;
         this.maxTrackLength = 250;
 
+        // creates GenerateInnerTrack object
         this.generateInnerTrack = new GenerateInnerTrack(this.numPts, this.margin, this.ptAdjustScale, this.concavityVal, this.convexityDifficulty, this.convexityDisp, this.trackAngle, this.splineAlpha, this.splinePtsBtHull, this.minTrackLength, this.maxTrackLength, mapConfigData);
     }
 
+    /**
+     * 
+     */
     createMapArray() {
         this.innerTrack = this.generateInnerTrack.generateInnnerRaceTrack();
 
@@ -103,9 +116,10 @@ export default class TrackGeneration {
             this.innerStartTile = this.generateInnerTrack.getStartTile();
             this.playerStartPt = this.generateInnerTrack.getPlayerStart();
 
-            // fill in mapArray with grass tiles, then inner track with road tiles
+            // fill in mapArray with grass tiles, then inner track with road tiles, and finds the outer track points
             this.placeTrackTiles = new PlaceTrackTiles(this.innerTrack, this.mapHeight, this.mapWidth, this.isClockwise, this.innerStartLineIndex, this.innerStartTile);
 
+            // stores information about the track in class properties
             this.mapArray = this.placeTrackTiles.fillTrackTiles();
             this.neighborMap = this.placeTrackTiles.getNeighborMap();
             this.allTrackPoints = this.placeTrackTiles.getAllTrackPts();
@@ -126,17 +140,26 @@ export default class TrackGeneration {
                 this.mapArray = [];
                 this.innerTrack = [];
                 this.createMapArray();
-            } else{
-                console.log("track length: ", this.innerTrack.length);
-                console.log("1st track point: ", this.innerTrack[0]);
-                console.log("start line: ", this.innerStartLinePt);
-                console.log("player start: ", this.playerStartPt);
-            }
-            
+            } 
+            // logs track information for devs
+            // else {
+            //     console.log("track length: ", this.innerTrack.length);
+            //     console.log("1st track point: ", this.innerTrack[0]);
+            //     console.log("start line: ", this.innerStartLinePt);
+            //     console.log("player start: ", this.playerStartPt);
+            // }
         }
     }
 
-    // check if inner track goes beyond map height and map width buffer
+    /**
+     * checks if inner track goes beyond map height and map width buffer
+     * 
+     * @param innerTrack array containing inner race track points
+     * @param innerBoundsSize buffer size around edge of map that the inner track should not go beyond
+     * @param mapHeight height of the Tilemap
+     * @param mapWidth width of the Tilemap
+     * @returns true if the inner track extends too far to the edges of the map
+     */
     #checkInnerTrackBounds(innerTrack:number[][], innerBoundsSize:number, mapHeight:number, mapWidth:number) {
         let outOfBounds:boolean = false;
         for (let i = 0; i < innerTrack.length; i++) {
@@ -151,8 +174,13 @@ export default class TrackGeneration {
         return outOfBounds;
     }
 
-    // checks if track contains narrow, long offshoots,
-    // where two adjacent points both only have two neighbors from the rest of the track points
+    /**
+     * checks if track contains narrow, long offshoots, 
+     * where two adjacent points both only have two neighbors from the rest of the track points
+     * 
+     * @param neighborMap Map object with track points as keys and type coordinate objects as values
+     * @returns true if there are any narrow offshoots on the map
+     */
     #checkNarrowOffshoots(neighborMap:Map<string, coordinate>) {
         for (let key of neighborMap.keys()) {
             let neighbor:coordinate | undefined = neighborMap.get(key);
@@ -180,14 +208,20 @@ export default class TrackGeneration {
         }
     }
 
-    // checks if the points in the track double back on themselves
-    #checkDoublingBack(trackCoordinates:number[][]) {
-        for (let i = 0; i < trackCoordinates.length - 1; i++) {
+    /**
+     * checks if the points in the outer rim of the track double back on themselves, 
+     * where a single point on the Tilemap are on the track more than once
+     * 
+     * @param outerRim the array containing points on the outer rim of the track
+     * @returns true if the track doubles back in itself
+     */
+    #checkDoublingBack(outerRim:number[][]) {
+        for (let i = 0; i < outerRim.length - 1; i++) {
             let currIndex = i;
             let nextIndex = i + 1;
 
-            let heightDiff = Math.abs(trackCoordinates[nextIndex][0] - trackCoordinates[currIndex][0]);
-            let widthDiff = Math.abs(trackCoordinates[nextIndex][1] - trackCoordinates[currIndex][1]);
+            let heightDiff = Math.abs(outerRim[nextIndex][0] - outerRim[currIndex][0]);
+            let widthDiff = Math.abs(outerRim[nextIndex][1] - outerRim[currIndex][1]);
 
             // dupicate points were already removed from the track arrays so if the sum of differences between their coordinates
             // is greater than 1, the track doubles back on itself

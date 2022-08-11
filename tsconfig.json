@@ -19,11 +19,6 @@
     "checkJs": true,
     "isolatedModules": true
   },
-
-  // "allowSyntheticDefaultImports": true,
-  // "ts-node": {
-  //   "esm": true
-  // },
   "typeRoots": [
     "node_modules/@types",
     "node_module/phaser/types"
