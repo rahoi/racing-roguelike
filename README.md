@@ -68,6 +68,9 @@ To contribute to Racing Roguelike or branch off and continue the project,
 ### Architectural Diagram
 ![Architectural Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png)
 
+### Scene Flowchart
+![Scene Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/scene-diagram.png)
+
 ### Completed Features
 Below are major features of the game that have been implemented and are working in the current version of Racing Roguelike:
 
