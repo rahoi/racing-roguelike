@@ -34,7 +34,7 @@ let minTrackLength = 150;
 let maxTrackLength = 250;
 
 // creates GenerateInnerTrack object
-let generateInnerTrack = new GenerateInnerTrack(numPts, margin, ptAdjustScale, concavityVal, convexityDifficulty, convexityDisp, trackAngle, splineAlpha, splinePtsBtHull, minTrackLength, maxTrackLength, mapConfigData);
+let generateInnerTrack:GenerateInnerTrack = new GenerateInnerTrack(numPts, margin, ptAdjustScale, concavityVal, convexityDifficulty, convexityDisp, trackAngle, splineAlpha, splinePtsBtHull, minTrackLength, maxTrackLength, mapConfigData);
 let innerTrack:number[][] = generateInnerTrack.generate();
 
 // ----------------------------------Tests----------------------------------
