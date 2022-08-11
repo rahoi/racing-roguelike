@@ -84,7 +84,7 @@ export default class Player {
         // set player attributes
         this.wheelBase = 131            // distance between front and rear wheels
         this.steerFactor = 30           // amount that front wheel turns
-        this.enginePower = 0.00095          // forward acceleration force
+        this.enginePower = 0.0015          // forward acceleration force
         this.brakingFactor = -0.00045       // backwards acceleration force
         this.maxReverseSpeed = 1       // max reverse velocity
 
