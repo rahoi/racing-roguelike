@@ -76,10 +76,11 @@ Below are major features of the game that have been implemented and are working 
 
 - [Procedurally Generated Race Track](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - Vehicle Movement
+- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
+- [Fog of War](https://github.com/rahoi/racing-roguelike/blob/main/docs/fow-of-war.md)
 - [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
-- Fog of War
 - Different Vehicle Classes
-- Timer
+- [Timer](https://github.com/rahoi/racing-roguelike/blob/main/docs/timer.md)
 
 ### TODO/Future Planned Features
 Below are some features that have not been implemented, but are the next steps to pursue:
