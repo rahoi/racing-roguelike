@@ -4,18 +4,8 @@
 </script>
 
 <main>
-    <!-- <div class="banner">
-        <img src={logo} alt="Racing Roguelike Logo" />
-    </div> -->
     <img src={logo} alt="Racing Roguelike Logo" />
-    <!-- <script>new Phaser.Game(config)</script> -->
-
 </main>
-
-<!-- <div id='gameContainer'>
-    <script>import game from './lib/Game';</script>
-    <script type="module" src="/lib/Game"></script>
-</div> -->
   
 <style>
 :root {
@@ -35,11 +25,7 @@ img {
     margin: 0 auto;
     max-height: 100%;
     max-width: 100%;
-    /* height: 100%; */
-    /* width: 100%; */
+
 }
 
-/* div#game {
-    max-height: 100%;
-} */
 </style>
