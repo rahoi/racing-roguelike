@@ -3,14 +3,14 @@ import Phaser from "phaser"
 import GenerateMap from "./GenerateMap"
 import TileMapConstruct from "./TileMapConstruct"
 import FowLayer from "./FowLayer"
-import Car from "./Car"
-import Bike from "./Bike"
-import Truck from "./Truck"
+import PlayerFactory from "./PlayerFactory"
 import Checkpoints from "./Checkpoints"
 
 // import types
 import type ConfigData from "./ConfigData"
+import type Player from "./Player"
 import type { gameSceneData } from "./gameSceneDataType"
+
 
 /**
  * GameScene creates the Phaser Scene for each level of the game, draws the Tilemap, creates the fog of war,
@@ -30,7 +30,7 @@ export default class GameScene extends Phaser.Scene {
 
     image: string;
     playerVehicle: string;
-    player: Bike | Car | Truck;
+    player: Player;
     playerSprite: Phaser.GameObjects.Sprite;
     angleDiff: number;
     playerAngle: number;
@@ -167,20 +167,8 @@ export default class GameScene extends Phaser.Scene {
         this.timerEvent = this.time.addEvent({ delay: 1000, callback: this.onEventTimer, callbackScope: this, loop: true });
         
         // create player object
-        switch (this.playerVehicle) {
-            case 'car': {
-                this.player = new Car(this.mapGeneration, this.mapConfigData)
-                break;
-            }
-            case 'bike': {
-                this.player = new Bike(this.mapGeneration, this.mapConfigData)
-                break;
-            }
-            case 'truck': {
-                this.player = new Truck(this.mapGeneration, this.mapConfigData)
-                break;
-            }
-        }
+        let playerSelection = new PlayerFactory(this.mapGeneration, this.mapConfigData)
+        this.player = playerSelection.createPlayer(this.playerVehicle)
 
         // add checkpoint image to scene
         this.checkpointImage = this.add.image(this.checkpoints.getCheckpointLoc()[1], this.checkpoints.getCheckpointLoc()[0], 'checkpoint');

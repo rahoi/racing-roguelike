@@ -49,8 +49,6 @@ export default class Player {
         // relation between car's x and y position and the mapArray is counter intuitive
         // posX is the x position on a cartesian plane (ie: the columns in mapArray)
         // posY is the y position on a cartesian plane (ie: the rows in mapArray)
-        // this.posX = 220,
-        // this.posY = 320,
         this.map = map;
         this.tileDimension = mapConfigData.tileDimension;
         this.mapHeight = mapConfigData.mapHeight;
@@ -80,22 +78,22 @@ export default class Player {
         this.steerAngle = 0
         this.stall = 0
         this.stallThreshold = 1
-    
-        // set player attributes
-        this.wheelBase = 131            // distance between front and rear wheels
-        this.steerFactor = 30           // amount that front wheel turns
-        this.enginePower = 0.0015          // forward acceleration force
-        this.brakingFactor = -0.00045       // backwards acceleration force
-        this.maxReverseSpeed = 1       // max reverse velocity
+    }
 
-        /* set environment attributes: at speed 0.5 px/ms, drag force overcomes friction force
-         * see https://www.desmos.com/calculator/e4ayu3xkip */
-        this.friction = -0.0005
-        this.drag = -0.001
-        this.slipSpeed = 0.5
-        this.tractionFast = 0.1
-        this.tractionSlow = 0.7
-        this.offRoadFactor = 10
+    getLoc() {
+        return this.pos;
+    }
+
+    getLocX() {
+        return this.pos.getX();
+    }
+
+    getLocY() {
+        return this.pos.getY();
+    }
+
+    getHeading() {
+        return this.heading;
     }
 
     updateLoc(gas: boolean, brake: boolean, left: boolean, right: boolean, dt: any) {
@@ -129,7 +127,7 @@ export default class Player {
 
     applyFriction() {
         /* set minimum speed */
-        if (this.velocity.getMagnitude() < 0.001) {
+        if (this.velocity.getMagnitude() < 0.0005) {
             this.velocity.set(0,0)
         }
 
@@ -234,27 +232,6 @@ export default class Player {
         //console.log("vel mag: " + velDt.getMagnitude())
         //console.log("pos: (" + this.pos.getX() + ", " + this.pos.getY() + ")")
     }
-
-    getLocX() {
-        return this.pos.getX();
-    }
-
-    getLocY() {
-        return this.pos.getY();
-    }
-
-    getHeading() {
-        return this.heading;
-    }
-
-    // playerMask(scene: Phaser.Scene) {
-    //     const mask = scene.make.image({
-    //         x: this.pos.getX(),
-    //         y: this.pos.getY(),
-    //         key: 'mask',
-    //         add: true
-    //     });
-    // }
 
     onTrack() {
         let currTile = this.map.mapArray[Math.trunc((-1) * this.pos.getY() / this.tileDimension)][Math.trunc(this.pos.getX() / this.tileDimension)]
