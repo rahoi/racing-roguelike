@@ -5,7 +5,7 @@ import terrainArray from "./TerrainArray"
  * PlaceTiles places road/terrain tiles in the map array for the Tilemap from the inner track array, 
  * finds points on the outer track, and then fills in those outer track points with tiles
  */
-export default class PlaceTiles {
+export default class PlaceTrackTiles {
     mapArray:number[][];
     trackCoordinates:number[][];    // to store all points on the race track, both inner and outer
     innerTrack:number[][];
