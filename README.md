@@ -1,42 +1,42 @@
 # Racing Roguelike
 
-![Racing Roguelike](../public/assets/racing-roguelike.png "Racing Roguelike")
+![Racing Roguelike](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/racing-roguelike.png "Racing Roguelike")
 
 ## About
 Racing Roguelike is a union between two popular gaming genres, racing games and roguelike games. At the start of the game, the player can select which vehicle they'd like to race in and also change the key binds to manuever the vehicle. In each level, the player races against a timer to traverse through a prodecurally generated race track and collect all the checkpoints on the map. If the timer ever reaches 0 before the player can collect all of the checkpoints, the game is over!
 
 ## Development Team
-The Racing Roguelike development team has been guided by their sponsor, Jon Rahoi [jonrahoi](https://github.com/jonrahoi), and consists of:
+The Racing Roguelike development team has been guided by their sponsor, Jon Rahoi ([jonrahoi](https://github.com/jonrahoi)), and consists of:
 
-- Cynthia Carnero [CynthiaCR](https://github.com/CynthiaCR)
-- Ellen Chan [nahcnelle](https://github.com/nahcnelle)
-- Ashley Radford [ashleyradford](https://github.com/ashleyradford)
+- Cynthia Carnero ([CynthiaCR](https://github.com/CynthiaCR))
+- Ellen Chan ([nahcnelle](https://github.com/nahcnelle))
+- Ashley Radford ([ashleyradford](https://github.com/ashleyradford))
 
 ## Play the Game
 
-To play the current version of Racing Roguelike, click [here](https://www.google.com/)!
+To play the current version of Racing Roguelike, click [here](https://rahoi.github.io/racing-roguelike/)!
 
 ## Development Dependencies/Technologies
 - Node.js
     - [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
     - Version 16.15.1
 - Svelte
-    -[https://svelte.dev/](https://svelte.dev/)
+    - [https://svelte.dev/](https://svelte.dev/)
     - Version 3.44.0
 - Vite
-    -[https://vitejs.dev/](https://vitejs.dev/)
+    - [https://vitejs.dev/](https://vitejs.dev/)
     - Version 2.9.9
 - Phaser 
-    -[https://phaser.io/download/stable](https://phaser.io/download/stable)
+    - [https://phaser.io/download/stable](https://phaser.io/download/stable)
     - Version 3.55.2 “Ichika” 
 - catmull-rom-interpolator
-    -[https://github.com/rciszek/catmull-rom-interpolator](https://github.com/rciszek/catmull-rom-interpolator)
+    - [https://github.com/rciszek/catmull-rom-interpolator](https://github.com/rciszek/catmull-rom-interpolator)
     - Version 1.0.1
 - hull.js
-    -[https://github.com/AndriiHeonia/hull](https://github.com/AndriiHeonia/hull)
+    - [https://github.com/AndriiHeonia/hull](https://github.com/AndriiHeonia/hull)
     - Version 1.0.2
 - MRPAS
-    -[https://bitbucket.org/umbraprojekt/mrpas/src/master/](https://bitbucket.org/umbraprojekt/mrpas/src/master/)
+    - [https://bitbucket.org/umbraprojekt/mrpas/src/master/](https://bitbucket.org/umbraprojekt/mrpas/src/master/)
     - 2.0.0
 
 ## Development Environment
@@ -62,17 +62,18 @@ To contribute to Racing Roguelike or branch off and continue the project,
     `npm run build`
 
 ### Scripts and Usage
-
+- [deploy.yml](https://github.com/rahoi/racing-roguelike/blob/main/.github/workflows/deploy.yml)
+    - starts a GitHub Action to build the project, then deploy to GitHub pages
 
 ### Architectural Diagram
-![Architectural Diagram](../public/assets/architectural-diagram.png)
+![Architectural Diagram](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png)
 
 ### Completed Features
 Below are major features of the game that have been implemented and are working in the current version of Racing Roguelike:
 
-- [Procedurally Generated Race Track](../docs/track-generation.md)
+- [Procedurally Generated Race Track](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
 - Vehicle Movement
-- [Checkpoints](../docs/checkpoints.md)
+- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - Fog of War
 - Different Vehicle Classes
 - Timer
