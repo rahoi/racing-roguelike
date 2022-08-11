@@ -5,7 +5,10 @@ import terrainArray from "./TerrainArray"
 import hull from "hull.js"
 import catmulRomInterpolation from "catmull-rom-interpolator"
 
-
+/**
+ * GenerateInnerTrack generates an array of the inner race track, determines its start/finsh line and player start location, 
+ * and whether the track runs clockwise or counter clockwise
+ */
 export default class GenerateInnerTrack {
     innerTrack:number[][];  // array of inner track points, innerTrack[i][0] corresponds to the height on the Phaser game screen, innerTrack[i][1] corresponds to the width
     startLinePt:number[];    // coordinate of start line
@@ -40,6 +43,22 @@ export default class GenerateInnerTrack {
     minTrackLength:number;  // minimum track length
     maxTrackLength:number;  // maximum track length
 
+    /**
+     * stores information that is sent in and needed to generate the inner track points as class properties
+     * 
+     * @param numPts number of points to randomly generate in first step of track generation
+     * @param margin buffer round the outer edge of the Tilemap that track points should not be placed past
+     * @param ptAdjustScale factor to adjust points if they are beyond the margin
+     * @param concavityVal value to use when finding convex hull, (1 to inf)
+     * @param convexityDifficulty value to use when adjusting the track's convexity, closer to 0 makes the track more "difficult"
+     * @param convexityDisp value of max displacement when adjusting the track's convexity
+     * @param trackAngle minimun angle between track points when fixing track angles
+     * @param splineAlpha alpha value to use in interpolating spline points to determine track "smoothness", (0 to 1(exclusive))
+     * @param splinePtsBtHull number of points to add between track points when interpolating spline points
+     * @param minTrackLength desired minimum track length
+     * @param maxTrackLength  desired maximum track length
+     * @param mapConfigData ConfigData object containing info about the Phaser game
+     */
     constructor(numPts:number, margin:number, ptAdjustScale:number, concavityVal:number, convexityDifficulty:number, convexityDisp:number, trackAngle:number, 
         splineAlpha:number, splinePtsBtHull:number, minTrackLength:number, maxTrackLength:number, mapConfigData:ConfigData) {
         this.numPts = numPts;
@@ -68,7 +87,11 @@ export default class GenerateInnerTrack {
         this.maxTrackLength = maxTrackLength;
     }
 
-    // main function to generate the inner race track points 
+    /**
+     * generates an array of points for the inner portion of the race track
+     * 
+     * @returns the array of the inner points
+     */
     generateInnnerRaceTrack() {
         // generate random points
         let randomPoints:number[][] = this.#generateRandomPoints(this.numPts, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth);
@@ -102,9 +125,12 @@ export default class GenerateInnerTrack {
         // fills in the missing points in the inner track array
         let innerTrack:number[][] = this.#fillInTrack(splinePts);
 
+        // creates a new array of inner points if the current one is shorter than the minimum desired track length 
         if (innerTrack.length < this.minTrackLength) {
             this.generateInnnerRaceTrack();
-        } else {
+        }
+        // finds orientation, start line and plsyer start points, and offsets the inner track array so its first point is the player's start point 
+        else {
             this.isClockwise = this.#findIfClockwiseTrack(innerTrack);
 
             this.startIndexBeforeOffset = this.#findStartIndexBeforeOffset(innerTrack);
@@ -120,28 +146,62 @@ export default class GenerateInnerTrack {
         return innerTrack;
     }
 
+    /**
+     * returns the orientation of the race track
+     * 
+     * @returns true if the track runs clockwise
+     */
     getIsClockwise() {
         return this.isClockwise;
     }
 
-    // after offsetting inner track, start line is at index 1
+    /**
+     * returns the index of the start/finish line in the inner track array
+     * 
+     * @returns 1 after offsetting inner track so that the start line is at index 1
+     */
     getStartLineIndex() {
         return 1;
     }
 
+    /**
+     * returns the start line Tilemap coordinate
+     * 
+     * @returns the coordinate/point of the start line
+     */
     getStartLineCoord() {
         return this.startLinePt;
     }
 
+    /**
+     * returns the type of tile at the start line
+     * 
+     * @returns the value of the start line tile (from the spritesheet)
+     */
     getStartTile() {
         return this.innerStartTile;
     }
 
+    /**
+     * returns the player's start Tilemap coordinate
+     * 
+     * @returns the player's start coordinate
+     */
     getPlayerStart() {
         return this.playerStartPt;
     }
 
     // ----------------------------------Priavte helper functions----------------------------------
+    /**
+     * creates an array of random points
+     * 
+     * @param numPts number of points to generate
+     * @param mapHeight height of Tilemap in tiles
+     * @param mapWidth width of Tilemap in tiles
+     * @param borderHeight height of buffer border
+     * @param borderWidth width of buffer border
+     * @returns the array of random points
+     */
     #generateRandomPoints(numPts:number, mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number) {
         // generating random points
         let points:number[][] = [];
@@ -157,18 +217,36 @@ export default class GenerateInnerTrack {
         return points;
     }
 
-    #findConvexHull(trackCoordinates:number[][], concavityVal:number) {
+    /**
+     * creates an array of points that contain the hull of the randomly generated points
+     * 
+     * @param randomPts array of random points 
+     * @param concavityVal value from 1 to inf, 1: hull more closely hugs points, inf: convex hull
+     * @returns array of points in the hull
+     */
+    #findConvexHull(randomPts:number[][], concavityVal:number) {
         // calculating convex hull points
         let convexHull:object[] = [];
 
-        convexHull = hull(trackCoordinates, concavityVal);
+        convexHull = hull(randomPts, concavityVal);
         convexHull.pop();
 
         return convexHull as number[][];
     }
 
+    /**
+     * moves points apart from each other that are too close
+     * 
+     * @param trackCoordinates array of track points
+     * @param distVal desired distance value points should be apart from each other
+     * @param mapHeight height of Tilemap in tiles
+     * @param mapWidth width of Tilemap in tiles
+     * @param borderHeight height of buffer border
+     * @param borderWidth width of buffer border
+     * @param ptAdjustScale factor to adjust points if they extend beyond map border
+     * @returns 
+     */
     #movePtsApart(trackCoordinates:number[][], distVal:number, mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number, ptAdjustScale:number) {  
-        // let distVal:number = 10; 
         let maxDist:number = distVal ** 2;
         let distBtPts:number;
 
@@ -176,7 +254,6 @@ export default class GenerateInnerTrack {
             for (let j = i + 1; j < trackCoordinates.length; ++j) {
                 distBtPts = ((trackCoordinates[j][0] - trackCoordinates[i][0]) ** 2) + ((trackCoordinates[j][1] - trackCoordinates[i][1]) ** 2);
 
-                // console.log("dist",distSq)
                 if (distBtPts < maxDist) {
                     let dx = trackCoordinates[j][0] - trackCoordinates[i][0];
                     let dy = trackCoordinates[j][1] - trackCoordinates[i][1];
@@ -200,7 +277,17 @@ export default class GenerateInnerTrack {
         return trackCoordinates;
     }
 
-    // ptAdjustScale: value to scale the difference between min/max height/width and the coordinate height/width
+    /**
+     * checks that the coordinate given is within the margin/buffer of the map
+     * 
+     * @param coordinate a point on the track
+     * @param mapHeight height of Tilemap in tiles
+     * @param mapWidth width of Tilemap in tiles
+     * @param borderHeight height of buffer border
+     * @param borderWidth width of buffer border
+     * @param ptAdjustScale factor to adjust points if they extend beyond map border
+     * @returns the coordinate, possibly adjusted to be within the border
+     */
     #checkPtWithinBorder(coordinate:number[], mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number, ptAdjustScale:number) {
         let minHeight:number = borderHeight;
         let minWidth:number = borderWidth;
@@ -219,6 +306,18 @@ export default class GenerateInnerTrack {
         return coordinate;
     }
 
+    /**
+     * adjusts the convexity of the track by adding new points between each current point 
+     * and offsetting it by a random displacement
+     * 
+     * @param trackCoordinates array of track points
+     * @param mapHeight height of Tilemap in tiles
+     * @param mapWidth width of Tilemap in tiles
+     * @param borderHeight height of buffer border
+     * @param borderWidth width of buffer border
+     * @param ptAdjustScale factor to adjust points if they extend beyond map border
+     * @returns 
+     */
     #adjustConvexity(trackCoordinates:number[][], mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number, ptAdjustScale:number) {
         let adjustedPoints:number[][] = [];  
         let displacement:number[] = [];  
@@ -226,17 +325,20 @@ export default class GenerateInnerTrack {
 
         for(let i = 0; i < trackCoordinates.length; i++) {  
             let dispLen:number = (Math.random() ** this.convexityDifficulty) * this.convexityDisp;
-            // displacement = [0, 1];
+
+            // generates random values between 0 and 1 to displace the coorinate by
             displacement = [Math.random(), Math.random()];
 
+            // rotates the coordinate and multiplies by the displacement
             let rotation = (Math.random() * 360) * Math.PI / 180
             displacement = this.#rotatePt(displacement, rotation);
             displacement[0] *= dispLen
             displacement[1] *= dispLen
 
+            // adds a new point between each track point
             adjustedPoints[i * 2] = trackCoordinates[i];  
             adjustedPoints[i * 2 + 1] = trackCoordinates[i];  
-      
+
             let nextPt:number[];
             nextPt = i < trackCoordinates.length - 1 ? trackCoordinates[i + 1] : trackCoordinates[0];
 
@@ -253,6 +355,13 @@ export default class GenerateInnerTrack {
         return adjustedPoints;
     }
 
+    /**
+     * rotates the point given by the radians given
+     * 
+     * @param point a coordinate point from the track
+     * @param radians amount to rotate the point in radians
+     * @returns returns the new, rotated point
+     */
     #rotatePt(point:number[], radians:number) {
         let cos = Math.cos(radians);
 		let sin = Math.sin(radians);
@@ -266,7 +375,18 @@ export default class GenerateInnerTrack {
         return point;
     }
 
-    // desiredAngle in degrees
+    /**
+     * adjusts points on the track so that edges of the track aren't too close together
+     * 
+     * @param trackCoordinates array of track points
+     * @param desiredAngle desired minimum angle between points in degrees
+     * @param mapHeight height of Tilemap in tiles
+     * @param mapWidth width of Tilemap in tiles
+     * @param borderHeight height of buffer border
+     * @param borderWidth width of buffer border
+     * @param ptAdjustScale factor to adjust points if they extend beyond map border
+     * @returns 
+     */
     #fixTrackAngles(trackCoordinates:number[][], desiredAngle:number, mapHeight:number, mapWidth:number, borderHeight:number, borderWidth:number, ptAdjustScale:number) {
         for(let i = 0; i < trackCoordinates.length; i++) {  
             let prev:number = (i - 1 < 0) ? trackCoordinates.length - 1 : i - 1;  
@@ -296,9 +416,7 @@ export default class GenerateInnerTrack {
             let nA = desiredAngle * Math.sign(angle) * Math.PI / 180;  
             let diff = nA - angle;  // in radians
 
-            // let newNextPt:number[] = this.rotatePt(points[next], diff);
-            // points[next][0] = points[i][0] + newX;  
-            // points[next][1] = points[i][1] + newY;  
+            // rotates points
             let cos = Math.cos(diff);  
             let sin = Math.sin(diff);  
             let newX = nextX * cos - nextY * sin;  
@@ -308,13 +426,20 @@ export default class GenerateInnerTrack {
             trackCoordinates[next][0] = trackCoordinates[i][0] + newX;  
             trackCoordinates[next][1] = trackCoordinates[i][1] + newY;  
 
-            // if less than 0
             trackCoordinates[next] = this.#checkPtWithinBorder(trackCoordinates[next], mapHeight, mapWidth, borderHeight, borderWidth, ptAdjustScale);
         }
 
         return trackCoordinates;
     }
 
+    /**
+     * interpolates the array of track points to smoothen out the track
+     * 
+     * @param trackCoordinates array of track points
+     * @param splineAlpha alpha value to use in interpolation (0 to 1(exclusive))
+     * @param splinePtsBtHull number of points to add between each track point
+     * @returns array of the interpolated, smoothed out track
+     */
     #findSpline(trackCoordinates:number[][], splineAlpha:number, splinePtsBtHull:number) {
         // calculating catmull rom spline points
         let splinePts:number[][] = [];
@@ -334,6 +459,12 @@ export default class GenerateInnerTrack {
         return splinePts;
     }
 
+    /**
+     * fills in missing points on the array of track points to make a continuous loop
+     * 
+     * @param trackCoordinates array of track points
+     * @returns new array of points that fully fill in the race track
+     */
     #fillInTrack(trackCoordinates:number[][]) {
         // filling in polygon
         // let trackCoordinates:number[][] = splinePts;
@@ -352,14 +483,14 @@ export default class GenerateInnerTrack {
                 continue;
             }
 
+            // difference between two coordinate point values
             let xDiff:number = Math.abs(prevPt[0] - trackCoordinates[i][0]);
             let yDiff:number = Math.abs(prevPt[1] - trackCoordinates[i][1]);
             let tempPt:number[] = prevPt;
 
-            if (xDiff != 0) { 
+            // adds new points to the track array if two consecutive points are not next to each other
+            if (xDiff != 0) { // missing points along the height
                 // if curr height smaller
-                // console.log("xdiff")
-                // console.log(prevPt, trackCoordinates[i])
                 tempPt = (prevPt[0] > trackCoordinates[i][0]) ? [prevPt[0] - 1, prevPt[1]] : [prevPt[0] + 1, prevPt[1]];
 
                 if (tempPt == trackCoordinates[prevPrevInd]) {
@@ -371,8 +502,7 @@ export default class GenerateInnerTrack {
                 xDiff = Math.abs(prevPt[0] - trackCoordinates[i][0]);
                 yDiff = Math.abs(prevPt[1] - trackCoordinates[i][1]);
             }
-            else if (yDiff != 0) {
-                // console.log("ydiff")
+            else if (yDiff != 0) {  // missing points along the width
                 tempPt = (prevPt[1] > trackCoordinates[i][1]) ? [prevPt[0], prevPt[1] - 1] : tempPt = [prevPt[0], prevPt[1] + 1]; // if curr width smaller
                 trackCoordinates.splice(i, 0, tempPt);
 
@@ -382,12 +512,18 @@ export default class GenerateInnerTrack {
             prevPt = trackCoordinates[i];
         }
 
+        // removes loops from the track
         let track = this.#removeLoops(trackCoordinates);
-        // let track = this.removeSnaking(tempTrack);
 
         return track;
     }
 
+    /**
+     * remove sections of the track that loop onto itself
+     * 
+     * @param trackCoordinates array of track points
+     * @returns array of track points sans loops
+     */
     #removeLoops(trackCoordinates:number[][]) {
         let coordinateMap = new Map<string, number[]>();
         let originialTrackLength = trackCoordinates.length;
@@ -470,6 +606,12 @@ export default class GenerateInnerTrack {
         return trackCoordinates;
     }
 
+    /**
+     * determines that orientation the track runs
+     * 
+     * @param trackCoordinates array of track points
+     * @returns true if the track runs clockwise
+     */
     #findIfClockwiseTrack(trackCoordinates:number[][]) {
         // area created by enclosed race track loop
         let trackArea:number = this.#findTrackArea(trackCoordinates);
@@ -479,6 +621,13 @@ export default class GenerateInnerTrack {
         return isClockwise;
     }
 
+    /**
+     * finds the index of the start line from the array of track points,
+     * want the start to be along a straight away that has enough room to place the start line and the player sprite
+     * 
+     * @param trackCoordinates array of track points
+     * @returns index of start line coordinate in track points array
+     */
     #findStartIndexBeforeOffset(trackCoordinates:number[][]) {
         let startFound:boolean = false;
         // let index:number = 2; // starts at the index before start line's min desired index, ie: min value for player's start index
@@ -488,18 +637,11 @@ export default class GenerateInnerTrack {
         for (let i = 0; i < trackCoordinates.length - 2; i++) {
             let coords:number[][] = [];
 
+            // creates array of 6 consecutive points
             for (let j = 0; j < startStraightTiles; j++) {
                 let index:number = (i + j) % (trackCoordinates.length - 2);
                 coords.push(trackCoordinates[index]);
             }
-            // let index1:number = i % (trackCoordinates.length - 2);
-            // let index2:number = (i + 1) % (trackCoordinates.length - 2);
-            // let index3:number = (i + 2) % (trackCoordinates.length - 2);
-            // let index4:number = (i + 3) % (trackCoordinates.length - 2);
-            // let index5:number = (i + 4) % (trackCoordinates.length - 2);
-            // let index6:number = (i + 5) % (trackCoordinates.length - 2);
-
-            // coords = [trackCoordinates[index1], trackCoordinates[index2], trackCoordinates[index3], trackCoordinates[index4], trackCoordinates[index5], trackCoordinates[index6]];
 
             // want min 6 tile straight away for startof track
             if (coords[0][0] < coords[1][0] && coords[1][0] < coords[2][0] && coords[2][0] < coords[3][0] && coords[3][0] < coords[4][0] && coords[4][0] < coords[5][0]) { 
@@ -518,18 +660,31 @@ export default class GenerateInnerTrack {
             if (startFound) {
                 startIndex = i + 2;
                 break;
-                // this.startLine = trackCoordinates[index];
             }
         }
 
         return startIndex;
     }
 
-    //
+    /**
+     * returns the location/coordinate of the start line on the Tilemap
+     * 
+     * @param trackCoordinates array of track points
+     * @param startIndexBeforeOffset index of start line before offsetting the inner track array
+     * @returns the coordinate of the start line
+     */
     #findStartLineCoord(trackCoordinates:number[][], startIndexBeforeOffset:number) {
         return trackCoordinates[startIndexBeforeOffset];
     }
 
+    /**
+     * returns the tile at the start lines
+     * 
+     * @param trackCoordinates array of track points
+     * @param startIndex index of the start line
+     * @param isClockwise whether the track runs clockwise
+     * @returns the value of the tile at the start line coordinate (from the terrain spritesheet)
+     */
     #findStartTile(trackCoordinates:number[][], startIndex:number, isClockwise:boolean) {
         let startTile:number = -1;
 
@@ -549,11 +704,23 @@ export default class GenerateInnerTrack {
         return startTile;
     }
 
+    /**
+     * returns the location of the player's start
+     * 
+     * @param trackCoordinates array of track points
+     * @param startIndex index of the start line
+     * @returns the coordinate of the player's start location
+     */
     #findPlayerStart(trackCoordinates:number[][], startIndexBeforeOffset:number) {
         return trackCoordinates[startIndexBeforeOffset - 1];
     }
 
-    // if calculated area using shoelace formula is negative, track is clockwise
+    /**
+     * calculates the area of the race track loop using the shoelace formula
+     * 
+     * @param trackCoordinates array of track points
+     * @returns area of the track loop, will be negative if the track runs clockwises, positive if the track runs counter clockwise
+     */
     #findTrackArea(trackCoordinates:number[][]) {
         let area:number = 0;
         let curr:number[];
@@ -569,9 +736,14 @@ export default class GenerateInnerTrack {
         return area;
     }
 
-    // offsets inner track so start line tile is at index 1, and player start tile is index 0
+    /**
+     * offsets inner track so start line tile is at index 1, and player start tile is index 0
+     * 
+     * @param innerTrack array of inner track points
+     * @param startIndexBeforeOffset index of start line before offsetting the inner track array
+     * @returns new array of offset track points
+     */
     #offsetInnerTrack(innerTrack:number[][], startIndexBeforeOffset:number) {
-        // let newInnerTrack:number[][] = [...innerTrack.slice(startIndexBeforeOffset - 1), ...innerTrack.slice(0, startIndexBeforeOffset - 1)];
         let newInnerTrack:number[][] = [...innerTrack.slice(startIndexBeforeOffset - 1, innerTrack.length - 1), ...innerTrack.slice(0, startIndexBeforeOffset - 1), innerTrack[startIndexBeforeOffset - 1]];
 
         return newInnerTrack;

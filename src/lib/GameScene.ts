@@ -12,6 +12,12 @@ import Checkpoints from "./Checkpoints"
 import type ConfigData from "./ConfigData"
 import type { gameSceneData } from "./gameSceneDataType"
 
+/**
+ * GameScene creates the Phaser Scene for each level of the game, draws the Tilemap, creates the fog of war,
+ * draws the player's sprite, places checkpoints on the map, and updates the scene. 
+ * GameScene starts up another GameScene if all checkpoints have been collected before the timer runs out, 
+ * or calls EndScene if not.
+ */
 export default class GameScene extends Phaser.Scene {
     mapConfigData: ConfigData;
     mapGeneration: GenerateMap;
@@ -57,11 +63,20 @@ export default class GameScene extends Phaser.Scene {
     winSound: Phaser.Sound.BaseSound;
     clockObject: Phaser.GameObjects.Image;
 
+    /**
+     * 
+     * @param mapConfigData ConfigData object containing data about the Phaser game
+     */
     constructor(mapConfigData:ConfigData) {
         super('GameScene');
         this.mapConfigData = mapConfigData;
     }
 
+    /**
+     * initializes properties for the Scene
+     * 
+     * @param data gameSceneData sent in from the previous Scene
+     */
     init(data: gameSceneData) {
         this.playerVehicle = data.id;
         console.log('player selected: ' + this.playerVehicle);
@@ -72,8 +87,10 @@ export default class GameScene extends Phaser.Scene {
         this.currentLevel = data.currentLevel;
         this.mycamera = new Phaser.Cameras.Scene2D.Camera(0, 0, this.mapConfigData.mapWidth, this.mapConfigData.mapHeight);
 
-        // generate race track
+        // generate race track data
         this.mapGeneration = new GenerateMap(this.mapConfigData);
+
+        // geberate Tilemap
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
 
         // resets checkpoints
@@ -87,6 +104,9 @@ export default class GameScene extends Phaser.Scene {
         this.leftKey = this.input.keyboard.addKey(data.leftKey);
     }
 
+    /**
+     * preloads images for the Scene
+     */
     preload() {
         // load chackpoint and finish flag image
         this.load.image('checkpoint', this.checkpoints.image);
@@ -107,6 +127,9 @@ export default class GameScene extends Phaser.Scene {
         this.load.audio('winSound', './assets/congrats-sound.wav');
     }
 
+    /**
+     * creates the Scene
+     */
     create() {
         //sound
         this.displaySound();
@@ -170,11 +193,17 @@ export default class GameScene extends Phaser.Scene {
             this.playerSprite.angle = this.player.getHeading() - 90
         }
 
+        // creates the camera view to follow the player's vehicle
         this.mainCamera();
+
+        // sets up the countdown timer
         this.timerLabel(this.initTimer)
         //this.displayTimeBar(this.initTimer)
     }
     
+    /**
+     * updates the Scene
+     */
     update(timestep, dt) {
         // move the player object
         this.playerAngle = this.player.getHeading()
@@ -235,12 +264,19 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    // counts down timer using Phaser logic
+    /**
+     * counts down timer using Phaser logic
+     */
     onEventTimer() {
         this.countdown -= 1; // one second
         this.timerText.setText(this.formatTimer())
     }
 
+    /**
+     * formats the timer text in mm:ss
+     * 
+     * @returns the formatted timer text
+     */
     formatTimer() {
         if(this.countdown > 59) {
             var min = Math.trunc(this.countdown / 60);
@@ -257,6 +293,11 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * displays a timer bar than decreases as time counts down
+     * 
+     * @param countdown number of seconds left for the level
+     */
     displayTimeBar(countdown: number) {
         this.countdown = countdown;
         var totalTime = countdown;
@@ -283,6 +324,9 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+    /**
+     * adds the music for the Scene
+     */
     private displaySound() {
         this.gameSound = this.sound.add('gameSound');
         this.gameSound.play({
@@ -290,13 +334,19 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+    /**
+     * creates a new FowLayer, which creates the road Tilemap layer and fow layer
+     */
     createFow(){
         this.fowRadius = 4; // in tiles
         this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
         this.fow.mapLayer(this, this.tileMap.tileMap);
-        this.fow.cameraFow(this, this.tileMap.tileMap);
+        this.fow.createFirstLayer(this, this.tileMap.tileMap);
     }
 
+    /**
+     * plays a win sound
+     */
     private displayWinSound() {
         this.winSound = this.sound.add('winSound');
         this.winSound.play({
@@ -304,7 +354,11 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-
+    /**
+     * adds the timer text to the Scene
+     * 
+     * @param countdown  number of seconds left for the level
+     */
     private timerLabel(countdown: number) {
         this.countdown = countdown;
         this.clockObject = this.add.image(this.centerX - 250, 3700, 'clock').setDisplaySize(100, 100).setScrollFactor(0);
@@ -322,6 +376,9 @@ export default class GameScene extends Phaser.Scene {
             .setScrollFactor(0);
     }
 
+    /**
+     * creates a Phaser Camera object and sets it to follow the player's sprite
+     */
     private mainCamera(){
         var camZoom = this.cameras.main;        
         camZoom.setBounds(0, 0, this.mapConfigData.mapWidth * this.mapConfigData.tileDimension, this.mapConfigData.mapHeight * this.mapConfigData.tileDimension);
