@@ -205,10 +205,6 @@ export default class GameScene extends Phaser.Scene {
      * updates the Scene
      */
     update(timestep, dt) {
-
-        console.log("timestep: " + timestep)
-        console.log("delta: " + dt)
-
         // move the player object
         this.playerAngle = this.player.getHeading()
         this.player.updateLoc(this.gasKey.isDown, this.brakeKey.isDown, this.leftKey.isDown, this.rightKey.isDown, dt)
