@@ -1,6 +1,6 @@
 # Racing Roguelike
 
-![Racing Roguelike](../public/assets/racing-roguelike.png "Racing Roguelike")
+![Racing Roguelike](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/architectural-diagram.png "Racing Roguelike")
 
 ## About
 Racing Roguelike is a union between two popular gaming genres, racing games and roguelike games. At the start of the game, the player can select which vehicle they'd like to race in and also change the key binds to manuever the vehicle. In each level, the player races against a timer to traverse through a prodecurally generated race track and collect all the checkpoints on the map. If the timer ever reaches 0 before the player can collect all of the checkpoints, the game is over!
