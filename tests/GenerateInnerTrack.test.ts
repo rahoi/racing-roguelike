@@ -1,5 +1,5 @@
 import ConfigData from "../src/lib/ConfigData"
-import GenerateInnerTrack from "../src/lib/GenerateInnerTrack";
+import GenerateInnerTrack from "../src/lib/GenerateInnerTrack"
 import terrainArray from "../src/lib/TerrainArray"
 import {describe, expect, test} from '@jest/globals'
  
@@ -7,7 +7,7 @@ import {describe, expect, test} from '@jest/globals'
 * Tests for GenerateInnerTrack.ts
 */
  
-// populate ConfigData object to use to create a new TrackGeneration object
+// populate ConfigData object to use to create a new GenerateInnerTrack object
 const tileDimension = 128;
 const tileMapHeight = 40;
 const tileMapWidth = 40;
@@ -20,9 +20,6 @@ let mapConfigData:ConfigData = new ConfigData(backgroundColor, tileDimension, ti
 // constant values used to generate race track and sent into GenerateInnerTrack
 let numPts = 20;
 let margin = 0.18;  // buffer around screen border
-// let borderWidth = Math.trunc(tileMapWidth * margin);
-// let borderHeight = Math.trunc(tileMapHeight * margin);
-// let innerBoundsSize = 3 // 2 tile buffer for the edges of the map, and 1 tile buffer for the outer track
 let ptAdjustScale = 0.325;
 let concavityVal = 80;
 let convexityDifficulty = 0.25;
