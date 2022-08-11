@@ -1,0 +1,7 @@
+# Timer
+
+The goal of the player is to collect all the checkpoints during a given time. We stablish that a timer of two minutes is adecuated for the player to finish the racetrack. However, this timer can be modified and personalized depending of each level of the racetrack. The criteria that we follow to determine the time was based on the player. In other words, we want to guarantee that the player has enough time to collect all the checkpoints. And, At the same time, the timer is not too long, so the player finds the game too easy. During the two minutes, the player will be able to collect all the checkpoints and finish the level to continue to a new level. The player's permadeath is one of the characteristics of this game. Indeed, if the timer runs out, the player will have to start over.
+
+## Timer Implementation
+
+The implementation of the timer was reached using the timer of the game engine Phaser. In other words, the timer is associated with the game scene. Therefore, each time a game scene starts, the timer will start as well. While the player moves around on the racetrack, there is a camera associated with the position of the player. However, this camera only follows the player, so other components of the game keep static.   
