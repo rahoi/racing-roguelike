@@ -55,7 +55,7 @@ export default class StartScene extends Phaser.Scene {
 
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.9,
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 4,
                 'Select a vehicle to start!', {fontSize: '250px'}).setOrigin(0.5, 0.5)
 
         // key bindings text
