@@ -15,7 +15,7 @@ const tileDimension = 128;
 const tileMapHeight = 40;
 const tileMapWidth = 40;
 const backgroundColor = '#193e04';  //'#bc8044'; 
-const tilesetImageSheet = '/assets/road_spritesheet.png';
+const tilesetImageSheet = 'assets/road_spritesheet.png';
 const tileKey = 'tiles';
 
 // creates a ConfigData object to be sent to each Phaser scene

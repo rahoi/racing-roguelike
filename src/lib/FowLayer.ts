@@ -1,17 +1,23 @@
-//import { Bounds } from "matter";
 import { Mrpas } from "mrpas";
 import type Bike from "./Bike";
 import type Car from "./Car";
 import type ConfigData from "./ConfigData";
-//import type Player from "./Player";
+import type Truck from "./Truck";
 
-const n = 100; // size of the array
+const n = 40; // size of the Map height and Width
+const blackColor = 0x000000;  //black color
+const grayColor = 0x3e3e3e;   //gray color
+const whiteColor = 0xffffff;  //white color
+
+/**
+ * It generates three states of the fog of war (also known as field of view) feature. 
+ * And, it uses a javaScript library called Mrpas (https://www.npmjs.com/package/mrpas)
+ */
 
 export default class FowLayer{
 	map: Phaser.Tilemaps.Tilemap;
 	roadLayer: Phaser.Tilemaps.TilemapLayer;
 	player: Bike | Car;
-	camera: Phaser.Cameras.Scene2D.Camera;
     tileDimension: number;
     mapHeight: number;
     mapWidth: number;
@@ -20,8 +26,12 @@ export default class FowLayer{
     fow: Mrpas;
     isTileSeen: boolean[][];
     fowRadius: number;
-    textureConfig: { width: number; height: number; };
-    
+
+    /**
+    * Initialize the map dimensions and receive the fow radius as a parameter
+    * @param mapConfigData data about the Phaser game
+    * @param fowRadius radius of the visibility of the player (unit tiles not pixels)
+    */
 	constructor(mapConfigData: ConfigData, fowRadius: number) {
         this.tileDimension = mapConfigData.tileDimension;
         this.mapHeight = mapConfigData.mapHeight;
@@ -29,25 +39,29 @@ export default class FowLayer{
         this.tileKey = mapConfigData.tileKey;
 
         this.isTileSeen = new Array(n).fill(false).map(() => new Array(n).fill(false));
-
         this.fowRadius = fowRadius;
         this.createFow();
 	}
 
+    /**
+     * create the layer of the map
+     * @param scene phaser scene where the map layer will be displayed
+     * @param map tilemap object that will content the tilemap layer
+     */
 	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
         this.scene = scene;
         this.map = map;
        
-        var textureConfig = { 
-            width: this.mapHeight * this.tileDimension,  
-            height: this.mapHeight * this.tileDimension 
-        }
-
         const tileset = this.map.addTilesetImage(this.tileKey)
         this.roadLayer = this.map.createLayer(0, tileset, 0, 0)	
 	}
 
-    cameraFow(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
+    /**
+     * create the first layer of the fow by coloring the map (complete black)
+     * @param scene phaser scene where the first layer (dark mode) will be displayed
+     * @param map tilemap object 
+     */
+    createFirstLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap) {
 		this.scene = scene;
 		this.map = map;
 		
@@ -56,16 +70,19 @@ export default class FowLayer{
 				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
 					continue;
 				}
-
 				const tile = this.roadLayer.getTileAt(x, y);
 				if (!tile) {
 				 	continue;
 				}
-                tile.tint = 0x000000;  //black color
+                tile.tint = blackColor;
 			}
 		}
 	}
 
+    /**
+     * Instantiate a Mrpas object by passing it the map dimensions 
+     * and a callback for determining map cell transparency
+     */
     private createFow () {
         //determine if a tile can be seen through (floor can't block the vision)
         let isTransparent = (x:number, y:number) => {
@@ -75,15 +92,24 @@ export default class FowLayer{
         this.fow = new Mrpas(this.mapWidth, this.mapHeight, isTransparent);
     }
 
-    calculateFow(scene: Phaser.Scene, player: Car | Bike) {       
+    /**
+     * Compute the field of view by calling the compute() method (from Mrpas library) 
+     * and passing it the origin coordinates, FOV calculation radius and two callbacks: 
+     * - one for determining whether a tile has been marked as visible, and 
+     * - the other for marking the tiles as visible
+     * @param scene phaser scene where the fow will be displayed
+     * @param player player object that can be a car, bike or truck object
+     */
+    calculateFow(scene: Phaser.Scene, player: Car | Bike | Truck) {       
         this.scene = scene;
         this.player = player;
     
-         var px = this.map.worldToTileX(this.player.getLocX());
-         var py = this.map.worldToTileY((-1) * this.player.getLocY());
+        //x and y coordinates of the player
+         var px = this.map.worldToTileX(Math.abs(this.player.getLocX()));
+         var py = this.map.worldToTileY(Math.abs(this.player.getLocY()));
 
+        //callback function for determining whether a tile has been marked as visible
         let isVisible = (x:number, y:number): boolean => {
-            console.log('calling isVisible');
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
                 return false;  
@@ -91,6 +117,7 @@ export default class FowLayer{
             return true;
         }
 
+        //callback function for marking a tile as visible
         let setVisibility = (x:number, y:number): void => {
             const tile = this.roadLayer.getTileAt(x, y)
             if (!tile) {
@@ -99,18 +126,21 @@ export default class FowLayer{
             var d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
                 new Phaser.Math.Vector2(px, py)));
 
-            if (d < this.fowRadius - 1) {
+            // fowRadius - 1 because it removes the irregular corners of
+            // the current visibility
+            if (d < this.fowRadius -1 ) {
                 this.isTileSeen[x][y] = true;
-                tile.tint = 0xffffff;  //white color
-            } else if (this.isTileSeen[x][y] === true && d > this.fowRadius/2) {
-                tile.tint = 0x3e3e3e;  //gray color
+                tile.tint = whiteColor;
+            // fowRadius / 2, so the visibility keeps a square shape
+            } else if (this.isTileSeen[x][y] === true && d > this.fowRadius / 2 ) {
+                tile.tint = grayColor;
             }
         }
-
+        
         this.fow.compute(
             px,
             py,
-            Infinity, 
+            this.fowRadius,
             isVisible,
             setVisibility);
     }
