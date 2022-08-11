@@ -50,18 +50,17 @@ export default class StartScene extends Phaser.Scene {
     }
 
     create() {
-
         //sound 
         this.displaySound();
 
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3,
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.5,
                 'Select a vehicle to start!', {fontSize: '250px'}).setOrigin(0.5, 0.5)
 
         // key bindings text
         this.bindingsText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.1,
+                                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.6,
                                 'Key Binding Options', {fontSize: '155px'}).setOrigin(0.5, 0.5)
         this.bindingsText.setInteractive()
         this.bindingsText.on('pointerover', () => {
@@ -86,13 +85,13 @@ export default class StartScene extends Phaser.Scene {
         
         // add vehicle class sprites
         this.carSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'car')
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.8, 'car')
         this.carSprite.setScale(4)
         this.bikeSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 1.4,
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'bike')
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.8, 'bike')
         this.bikeSprite.setScale(4)
         this.truckSprite = this.add.sprite(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 3.5,
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.5, 'truck')
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 1.8, 'truck')
         this.truckSprite.setScale(4)
        
         // add to array of vehicle classes
@@ -145,6 +144,30 @@ export default class StartScene extends Phaser.Scene {
             })
         })
 
+        // class attributes text
+        this.add.text(200, 3375, 'acceleration:', {fontSize: '90px'})
+        this.add.text(200, 3625, 'steering:', {fontSize: '90px'})
+        this.add.text(200, 3875, 'traction:', {fontSize: '90px'})
+        this.add.text(200, 4125, 'off road:', {fontSize: '90px'})
+
+        // truck bars
+        this.makeBar(1180, 3400, 0x2ecc71, 300) // acceleration
+        this.makeBar(1180, 3650, 0x2ecc71, 200) // steering
+        this.makeBar(1180, 3900, 0x2ecc71, 280) // traction
+        this.makeBar(1180, 4150, 0x2ecc71, 240) // off road
+
+        // car bars
+        this.makeBar(2280, 3400, 0x2ecc71, 200) // acceleration
+        this.makeBar(2280, 3650, 0x2ecc71, 220) // steering
+        this.makeBar(2280, 3900, 0x2ecc71, 250) // traction
+        this.makeBar(2280, 4150, 0x2ecc71, 200) // off road
+
+        // bike bars
+        this.makeBar(3380, 3400, 0x2ecc71, 220) // acceleration
+        this.makeBar(3380, 3650, 0x2ecc71, 270) // steering
+        this.makeBar(3380, 3900, 0x2ecc71, 220) // traction
+        this.makeBar(3380, 4150, 0x2ecc71, 280) // off road
+
         // this.vehicles = this.add.group();
         // this.vehicles.add(this.carSprite)
         // Phaser.Actions.Call(this.vehicles.getChildren(), function(item) {
@@ -159,11 +182,23 @@ export default class StartScene extends Phaser.Scene {
 
     private displaySound() {
         this.StartSound = this.sound.add('startSound');
-
         this.StartSound.play({
             loop: true
             });
         }
     
-
+    private makeBar(x: number, y: number, color: any, percentage: number) {
+        // draw the bar
+        let bar = this.add.graphics();
+        // color the bar
+        bar.fillStyle(color, 1);
+        // fill the bar with a rectangle
+        bar.fillRect(0, 0, 200, 50);
+        // position the bar
+        bar.x = x;
+        bar.y = y;
+        // scale the bar and return
+        bar.scaleX = percentage / 100;
+        return bar;
+    }
 }
