@@ -85,5 +85,3 @@ Below are some features that have not been implemented, but are the next steps t
 - Enemies/Obstacles
 - Global Leaderboard
 
-### Credits
-Below are the 
