@@ -90,12 +90,12 @@ test('start line is at index 1', () => {
 });
 
 // check player start coordinate is at index 0 of inner track array
-test('start line is at index 1', () => {
+test('player start is at index 0', () => {
     expect(generateInnerTrack.getPlayerStart()).toBe(innerTrack[0]);
 });
 
 // check start line tile is a finish tile from terrainArray
-test('start line is at index 1', () => {
+test('start line tile is a finish tile', () => {
     let finishTile:boolean = terrainArray.finishes.includes(generateInnerTrack.getStartTile());
 
     expect(finishTile).toBe(true);

@@ -81,7 +81,7 @@ test('check inner start line coordinate', () => {
     expect(track.innerStartLinePt).toBe(track.innerTrack[1]);
 });
 
-// check inner start line tile
+// check inner start line tile is a finish tile from terrainArray
 test('check inner start line tile', () => {
     let finishTile:boolean = false;
 
@@ -110,7 +110,7 @@ test('check outer start line coordinate', () => {
     expect(nextTo).toBe(true);
 });
 
-// check outer start line tile
+// check outer start line tile is a finish tile from terrainArray
 test('check outer start line tile', () => {
     let finishTile:boolean = false;
 
