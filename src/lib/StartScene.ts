@@ -55,12 +55,12 @@ export default class StartScene extends Phaser.Scene {
 
         // title screen text
         this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.5,
+                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 3.9,
                 'Select a vehicle to start!', {fontSize: '250px'}).setOrigin(0.5, 0.5)
 
         // key bindings text
         this.bindingsText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
-                                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.6,
+                                this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.7,
                                 'Key Binding Options', {fontSize: '155px'}).setOrigin(0.5, 0.5)
         this.bindingsText.setInteractive()
         this.bindingsText.on('pointerover', () => {
@@ -145,28 +145,28 @@ export default class StartScene extends Phaser.Scene {
         })
 
         // class attributes text
-        this.add.text(200, 3375, 'acceleration:', {fontSize: '90px'})
-        this.add.text(200, 3625, 'steering:', {fontSize: '90px'})
-        this.add.text(200, 3875, 'traction:', {fontSize: '90px'})
-        this.add.text(200, 4125, 'off road:', {fontSize: '90px'})
+        this.add.text(200, 3525, 'acceleration:', {fontSize: '90px'})
+        this.add.text(200, 3775, 'steering:', {fontSize: '90px'})
+        this.add.text(200, 4025, 'traction:', {fontSize: '90px'})
+        this.add.text(200, 4275, 'off road:', {fontSize: '90px'})
 
         // truck bars
-        this.makeBar(1180, 3400, 0x2ecc71, 300) // acceleration
-        this.makeBar(1180, 3650, 0x2ecc71, 200) // steering
-        this.makeBar(1180, 3900, 0x2ecc71, 280) // traction
-        this.makeBar(1180, 4150, 0x2ecc71, 240) // off road
+        this.makeBar(1180, 3550, 0x2ecc71, 300) // acceleration
+        this.makeBar(1180, 3800, 0x2ecc71, 200) // steering
+        this.makeBar(1180, 4075, 0x2ecc71, 280) // traction
+        this.makeBar(1180, 4325, 0x2ecc71, 240) // off road
 
         // car bars
-        this.makeBar(2280, 3400, 0x2ecc71, 200) // acceleration
-        this.makeBar(2280, 3650, 0x2ecc71, 220) // steering
-        this.makeBar(2280, 3900, 0x2ecc71, 250) // traction
-        this.makeBar(2280, 4150, 0x2ecc71, 200) // off road
+        this.makeBar(2280, 3550, 0x2ecc71, 200) // acceleration
+        this.makeBar(2280, 3800, 0x2ecc71, 220) // steering
+        this.makeBar(2280, 4075, 0x2ecc71, 250) // traction
+        this.makeBar(2280, 4325, 0x2ecc71, 200) // off road
 
         // bike bars
-        this.makeBar(3380, 3400, 0x2ecc71, 220) // acceleration
-        this.makeBar(3380, 3650, 0x2ecc71, 270) // steering
-        this.makeBar(3380, 3900, 0x2ecc71, 220) // traction
-        this.makeBar(3380, 4150, 0x2ecc71, 280) // off road
+        this.makeBar(3380, 3550, 0x2ecc71, 220) // acceleration
+        this.makeBar(3380, 3800, 0x2ecc71, 270) // steering
+        this.makeBar(3380, 4075, 0x2ecc71, 220) // traction
+        this.makeBar(3380, 4325, 0x2ecc71, 280) // off road
 
         // this.vehicles = this.add.group();
         // this.vehicles.add(this.carSprite)
