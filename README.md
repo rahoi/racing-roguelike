@@ -89,3 +89,9 @@ Below are some features that have not been implemented, but are the next steps t
 - Enemies/Obstacles
 - Global Leaderboard
 
+### Credits
+Special thanks to
+
+[Kenney](https://www.kenney.nl/assets/racing-pack) for the awesome assets for the vehicles and map
+[Freesound](https://freesound.org/) for the incredible sound
+[Icons8](https://icons8.com/icons/set/timer) for a beautiful timer icon
