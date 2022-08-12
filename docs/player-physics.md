@@ -1,10 +1,10 @@
 # Player Physics
 
 Player movement is defined in the [Player](https://github.com/rahoi/racing-roguelike/blob/main/src/lib/Player.ts) class and can be summarized by the following steps:
-1. [Get user input](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#getting-user-input)
-2. [Apply forces](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#applying-forces)
-3. [Calculate Steering](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#calculating-steering)
-4. [Set new position](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#setting-new-position)
+1. [Get user input](https://github.com/rahoi/racing-roguelike/blob/main/docs/player-physics.md#1-getting-user-input)
+2. [Apply forces](https://github.com/rahoi/racing-roguelike/blob/main/docs/player-physics.md#2-applying-forces)
+3. [Calculate Steering](https://github.com/rahoi/racing-roguelike/blob/main/docs/player-physics.md#3-calculating-steering)
+4. [Set new position](https://github.com/rahoi/racing-roguelike/blob/main/docs/player-physics.md#4-setting-new-position)
 
 ## 1. Getting User Input
 ```typescript
@@ -86,6 +86,6 @@ Finally, set the position based on this velocity.
 > velocity = velocity + acceleration * dt </br>
 > pos = pos + velocity
 
-Check if player is out of bounds, and if so, set velocity to 0 and position the vehicle at the boundary.
+If player is out of bounds, set velocity to 0 and player position at the boundary.
 
 [^1]: Steering algorithm is modeled after a Godot recipe described at [kidscancode.org](https://kidscancode.org/godot_recipes/2d/car_steering/).
