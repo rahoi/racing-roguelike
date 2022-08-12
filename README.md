@@ -20,9 +20,12 @@ To play the current version of Racing Roguelike, click [here](https://rahoi.gith
 - Node.js
     - [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
     - Version 16.15.1
+- Jest
+    - [https://jestjs.io/](https://jestjs.io/)
+    - Version 28.0.7
 - Svelte
     - [https://svelte.dev/](https://svelte.dev/)
-    - Version 3.44.0
+    - Version 3.49.0
 - Vite
     - [https://vitejs.dev/](https://vitejs.dev/)
     - Version 2.9.9
@@ -45,21 +48,25 @@ To play the current version of Racing Roguelike, click [here](https://rahoi.gith
     - Version 1.63.2
 - TypeScript 
     - [https://www.typescriptlang.org/download](https://www.typescriptlang.org/download)
-    - Version 4.5.4
+    - Version 4.7.4
 
 ## Getting Started
 To contribute to Racing Roguelike or branch off and continue the project,
 
 1. Clone the repo
 2. Install dependencies
-    `npm i`
+    - `npm i`
 3. Start the local development server
-    `npm run dev`
+    - `npm run dev`
 4. Make changes to the repo
 5. View changes on the local server
-    [http://localhost:3000/](http://localhost:3000/) (if Port 3000 is not already in use)
-6. Bundle files for deployment
-    `npm run build`
+    - [http://localhost:3000/](http://localhost:3000/) (if port 3000 is not already in use)
+6. Add tests to the [tests](https://github.com/rahoi/racing-roguelike/tree/main/tests) folder
+7. Run tests and verify test results
+    - `npm test`
+8. For building and deployment:
+    - If pushing to the main branch on this repo, [deploy.yml](https://github.com/rahoi/racing-roguelike/blob/main/.github/workflows/deploy.yml) will automatically start a GitHub Action to build and deploy the updated project to [this](https://rahoi.github.io/racing-roguelike/) GitHub Pages site
+    - If branching off and continuing the project on your own, you'll have to either set up GitHub Pages for your own repo, or delete [deploy.yml](https://github.com/rahoi/racing-roguelike/blob/main/.github/workflows/deploy.yml) and run `npm run build` to build for deployment and deploy onto a site of your choosing
 
 ### Scripts and Usage
 - [deploy.yml](https://github.com/rahoi/racing-roguelike/blob/main/.github/workflows/deploy.yml)

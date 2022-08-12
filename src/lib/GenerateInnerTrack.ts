@@ -87,12 +87,19 @@ export default class GenerateInnerTrack {
         this.maxTrackLength = maxTrackLength;
     }
 
+    /**
+     * calls #generateInnnerRaceTrack() to generate an array of inner race track points 
+     * and ensures the length of the array is between minimum and maximum track length
+     * 
+     * @returns the array of the inner track points
+     */
     generate() {
-        let innerTrack:number[][] = this.generateInnnerRaceTrack();
+        // generates an array of inner track points
+        let innerTrack:number[][] = this.#generateInnnerRaceTrack();
 
         // creates a new array of inner points if the current one is shorter than the minimum desired track length
         while (innerTrack.length < this.minTrackLength || innerTrack.length > this.maxTrackLength) {
-            innerTrack = this.generateInnnerRaceTrack();
+            innerTrack = this.#generateInnnerRaceTrack();
         }
 
         // finds orientation, start line and plsyer start points, and offsets the inner track array so its first point is the player's start point 
@@ -107,48 +114,6 @@ export default class GenerateInnerTrack {
         innerTrack = this.#offsetInnerTrack(innerTrack, this.startIndexBeforeOffset);
         this.innerTrack = innerTrack;
 
-        return innerTrack;
-    }
-
-    /**
-     * generates an array of points for the inner portion of the race track
-     * 
-     * @returns the array of the inner points
-     */
-    generateInnnerRaceTrack() {
-        // generate random points
-        let randomPoints:number[][] = this.#generateRandomPoints(this.numPts, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth);
-
-        // finding the convex hull of the generated points
-        let convexHull:number[][] = this.#findConvexHull(randomPoints, this.concavityVal);
-
-        // push points in the inner track array, so we can stabilize the points distances 
-        let numPtMoves:number = 3;
-        let distVal:number = 7;
-        for(let i = 0; i < numPtMoves; i++) {  
-            convexHull = this.#movePtsApart(convexHull, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
-        } 
-
-        // adjust convexity of track by adding points between current track points
-        let adjustedConvexPts:number[][] = this.#adjustConvexity(convexHull, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale)
-        for(let i = 0; i < numPtMoves; i++) {  
-            adjustedConvexPts = this.#movePtsApart(adjustedConvexPts, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
-        }
-
-        // fix the angles between points closer to this.trackAngle
-        let fixedAnglePts:number[][] = adjustedConvexPts;
-        for(let i = 0; i < numPtMoves; i++) {
-            fixedAnglePts = this.#fixTrackAngles(adjustedConvexPts, this.trackAngle, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale); 
-            fixedAnglePts = this.#movePtsApart(fixedAnglePts, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
-        }  
-
-        // smoothens out the inner track array using catmull rom interpolation
-        let splinePts:number[][] = this.#findSpline(fixedAnglePts, this.splineAlpha, this.splinePtsBtHull);
-
-        // fills in the missing points in the inner track array
-        let innerTrack:number[][] = this.#fillInTrack(splinePts);
-
-        this.innerTrack = innerTrack;
         return innerTrack;
     }
 
@@ -198,6 +163,49 @@ export default class GenerateInnerTrack {
     }
 
     // ----------------------------------Priavte helper functions----------------------------------
+
+    /**
+     * generates an array of points for the inner portion of the race track
+     * 
+     * @returns the array of the inner points
+     */
+     #generateInnnerRaceTrack() {
+        // generate random points
+        let randomPoints:number[][] = this.#generateRandomPoints(this.numPts, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth);
+
+        // finding the convex hull of the generated points
+        let convexHull:number[][] = this.#findConvexHull(randomPoints, this.concavityVal);
+
+        // push points in the inner track array, so we can stabilize the points distances 
+        let numPtMoves:number = 3;
+        let distVal:number = 7;
+        for(let i = 0; i < numPtMoves; i++) {  
+            convexHull = this.#movePtsApart(convexHull, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
+        } 
+
+        // adjust convexity of track by adding points between current track points
+        let adjustedConvexPts:number[][] = this.#adjustConvexity(convexHull, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale)
+        for(let i = 0; i < numPtMoves; i++) {  
+            adjustedConvexPts = this.#movePtsApart(adjustedConvexPts, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
+        }
+
+        // fix the angles between points closer to this.trackAngle
+        let fixedAnglePts:number[][] = adjustedConvexPts;
+        for(let i = 0; i < numPtMoves; i++) {
+            fixedAnglePts = this.#fixTrackAngles(adjustedConvexPts, this.trackAngle, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale); 
+            fixedAnglePts = this.#movePtsApart(fixedAnglePts, distVal, this.mapHeight, this.mapWidth, this.borderHeight, this.borderWidth, this.ptAdjustScale);  
+        }  
+
+        // smoothens out the inner track array using catmull rom interpolation
+        let splinePts:number[][] = this.#findSpline(fixedAnglePts, this.splineAlpha, this.splinePtsBtHull);
+
+        // fills in the missing points in the inner track array
+        let innerTrack:number[][] = this.#fillInTrack(splinePts);
+
+        this.innerTrack = innerTrack;
+        return innerTrack;
+    }
+
     /**
      * creates an array of random points
      * 
