@@ -95,6 +95,10 @@ export default class Player {
      * Player's pixel coordinates
      * @returns position vector
      */
+    setLoc(x: number, y: number) {
+        this.pos.set(x, y)
+    }
+
     getLoc() {
         return this.pos;
     }
@@ -160,7 +164,7 @@ export default class Player {
         /* set up velocity dependents */
         this.applyFriction()
         this.calculateSteering(dt)
-        this.setPos(dt)
+        this.setNewPos(dt)
     }
 
     /**
@@ -263,8 +267,8 @@ export default class Player {
      * 
      * @param dt ms since last game step (update() loop)
      */
-    setPos(dt: any) {
-        /* set acc and vel based on dt, but preserve in frame velocity
+    setNewPos(dt: any) {
+        /* set acc and vel based on dt, but preserve frame velocity
          * velocity = velocity + acceleration * dt */
         this.acceleration = Vector.multiplyScalar(this.acceleration, dt)
         this.velocity = Vector.add(this.velocity, this.acceleration)
