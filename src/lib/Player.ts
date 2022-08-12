@@ -80,6 +80,10 @@ export default class Player {
         this.stallThreshold = 1
     }
 
+    setLoc(x: number, y: number) {
+        this.pos.set(x, y)
+    }
+
     getLoc() {
         return this.pos;
     }
@@ -122,7 +126,7 @@ export default class Player {
         /* set up velocity dependents */
         this.applyFriction()
         this.calculateSteering(dt)
-        this.setPos(dt)
+        this.setNewPos(dt)
     }
 
     applyFriction() {
@@ -160,11 +164,11 @@ export default class Player {
         this.frontWheel = Vector.multiplyScalar(this.frontWheel, this.wheelBase / 2)
         this.frontWheel = Vector.add(this.pos, this.frontWheel)
    
-        /* move back wheel: backWheel += velocity */
+        /* move back wheel: backWheel += velocity * dt */
         let velDt = Vector.multiplyScalar(this.velocity, dt)
         this.backWheel = Vector.add(this.backWheel, velDt)
 
-        /* move front wheel: frontWheel += velocity.rotate(steeringAngle) */
+        /* move front wheel: frontWheel += velocity.rotate(steeringAngle) * dt */
         let velRotated = velDt.rotate(this.steerAngle)
         this.frontWheel = Vector.add(this.frontWheel, velRotated)
        
@@ -200,7 +204,7 @@ export default class Player {
         }
     }
 
-    setPos(dt: any) {
+    setNewPos(dt: any) {
         /* set acc and velocity based on dt */
         this.acceleration = Vector.multiplyScalar(this.acceleration, dt)
         this.velocity = Vector.add(this.velocity, this.acceleration)
