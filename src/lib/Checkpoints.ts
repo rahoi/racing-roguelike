@@ -123,7 +123,7 @@ export default class Checkpoints {
         let checkpointHeight:number = (this.checkpointsArray[this.currCheckpointIndex][0] * this.tileDimension) + locOffset[0];
         let checkpointWidth:number = (this.checkpointsArray[this.currCheckpointIndex][1] * this.tileDimension) + locOffset[1];
 
-        console.log(this.checkpointsArray[this.currCheckpointIndex])
+        // console.log(this.checkpointsArray[this.currCheckpointIndex])
 
         return [checkpointHeight, checkpointWidth];  
     }
@@ -234,10 +234,10 @@ export default class Checkpoints {
         // add finish line to end of checkpoints
         this.checkpointsArray.push(this.finishPt);
 
-        for (let i = 0; i < this.numCheckpoints; i++) {
-            console.log(this.checkpointsArray[i]);
-            console.log(this.mapArray[this.checkpointsArray[i][0]][this.checkpointsArray[i][1]]);
-        }
+        // for (let i = 0; i < this.numCheckpoints; i++) {
+        //     console.log(this.checkpointsArray[i]);
+        //     console.log(this.mapArray[this.checkpointsArray[i][0]][this.checkpointsArray[i][1]]);
+        // }
     }
 
     /**
