@@ -64,6 +64,7 @@ export default class GameScene extends Phaser.Scene {
     clockObject: Phaser.GameObjects.Image;
 
     /**
+     * Initilizes config data
      * 
      * @param mapConfigData ConfigData object containing data about the Phaser game
      */
@@ -73,7 +74,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * initializes properties for the Scene
+     * Initializes properties for the Scene
      * 
      * @param data gameSceneData sent in from the previous Scene
      */
@@ -105,7 +106,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * preloads images for the Scene
+     * Preloads images for the Scene
      */
     preload() {
         // load chackpoint and finish flag image
@@ -128,7 +129,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * creates the Scene
+     * Creates the Scene
      */
     create() {
         //sound
@@ -190,7 +191,7 @@ export default class GameScene extends Phaser.Scene {
     }
     
     /**
-     * updates the Scene
+     * Updates the Scene
      */
     update(timestep, dt) {
         // move the player object
@@ -253,7 +254,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * counts down timer using Phaser logic
+     * Counts down timer using Phaser logic
      */
     onEventTimer() {
         this.countdown -= 1; // one second
@@ -261,7 +262,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * formats the timer text in mm:ss
+     * Formats the timer text in mm:ss
      * 
      * @returns the formatted timer text
      */
@@ -282,7 +283,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * displays a timer bar than decreases as time counts down
+     * Displays a timer bar than decreases as time counts down
      * 
      * @param countdown number of seconds left for the level
      */
@@ -313,7 +314,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * adds the music for the Scene
+     * Adds the music for the Scene
      */
     private displaySound() {
         this.gameSound = this.sound.add('gameSound');
@@ -323,7 +324,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * creates a new FowLayer, which creates the road Tilemap layer and fow layer
+     * Creates a new FowLayer, which creates the road Tilemap layer and fow layer
      */
     createFow(){
         this.fowRadius = 4; // in tiles
@@ -333,7 +334,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * plays a win sound
+     * Plays a win sound
      */
     private displayWinSound() {
         this.winSound = this.sound.add('winSound');
@@ -343,7 +344,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * adds the timer text to the Scene
+     * Adds the timer text to the Scene
      * 
      * @param countdown  number of seconds left for the level
      */
@@ -365,7 +366,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * creates a Phaser Camera object and sets it to follow the player's sprite
+     * Creates a Phaser Camera object and sets it to follow the player's sprite
      */
     private mainCamera(){
         var camZoom = this.cameras.main;        
@@ -374,5 +375,4 @@ export default class GameScene extends Phaser.Scene {
         camZoom.startFollow(this.playerSprite, true, 1, 1, this.playerSprite.x, this.playerSprite.y);
         camZoom.followOffset.set(300, 300);
     }    
-
 }

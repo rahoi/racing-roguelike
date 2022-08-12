@@ -1,6 +1,11 @@
 import Phaser from "phaser"
 import type ConfigData from "./ConfigData"
 
+/**
+ * EndScene creates the Phaser end scene for when the game is over. It displays the number
+ * of levels completed and allows the player to click to race again where EndScene will
+ * start up StartScene again.
+ */
 export default class EndScene extends Phaser.Scene {
     mapConfigData: ConfigData;
     active:boolean = false;
@@ -8,20 +13,34 @@ export default class EndScene extends Phaser.Scene {
     numCompletedLevels:number;
     endSound: Phaser.Sound.BaseSound;
 
+    /**
+     * Initiliazes config data
+     * @param mapConfigData ConfigData object containing Phaser config data
+     */
     constructor(mapConfigData: ConfigData) {
         super("EndScene");
         this.mapConfigData = mapConfigData;
     }
 
+    /**
+     * Initiliazes the numebr of levels completed
+     * @param data number of levels completed from GameScene
+     */
     init(data:any) {
         console.log("end scene");
         this.numCompletedLevels = data.numLevels;
     }
 
+    /**
+     * Loads audio assets
+     */
     preload() {
         this.load.audio('endSound', './assets/game-over-sound.wav');
     }
 
+    /**
+     * Creates ending scene text
+     */
     create() {
         //sound
         this.displaySound();
@@ -53,6 +72,9 @@ export default class EndScene extends Phaser.Scene {
 
     }
 
+    /**
+     * Displays sound
+     */
     private displaySound() {
         this.endSound = this.sound.add('endSound');
 
@@ -60,5 +82,4 @@ export default class EndScene extends Phaser.Scene {
             loop: false
         });
     }
-
 }

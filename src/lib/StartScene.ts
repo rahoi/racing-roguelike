@@ -1,25 +1,34 @@
 import Phaser from "phaser"
 import type ConfigData from "./ConfigData"
 
+/**
+ * StartScene creates the initial Phaser Scene, loads in all the sprite images, sets up character
+ * selection, and creates an overview of the characters' class attributes. If user selects on a
+ * character, StartScene will start up GameScene. If user selects on key bindings text, StartScene
+ * will start up BindingsScene.
+ */
 export default class StartScene extends Phaser.Scene {
-
+    mapConfigData: ConfigData;
+    startSound: Phaser.Sound.BaseSound;
+    bindingsText: Phaser.GameObjects.Text;
     carSprite: Phaser.GameObjects.Sprite;
     bikeSprite: Phaser.GameObjects.Sprite;
     truckSprite: Phaser.GameObjects.Sprite;
-    image: string;
-    mapConfigData: ConfigData;
-    vehicles: Phaser.GameObjects.Sprite[]; 
+    vehicles: Phaser.GameObjects.Sprite[];
+    image: string; 
     selectedVehicle: string;
     timer: number;
     currentLevel:number;
-    bindingsText: Phaser.GameObjects.Text;
     gasKey: string;
     brakeKey: string;
     leftKey: string;
     rightKey: string;
     //vehicles: Phaser.GameObjects.Group;
-    StartSound: Phaser.Sound.BaseSound;
 
+    /**
+     * Initiliazes the time and currentLevel for GameScene
+     * @param mapConfigData ConfigData object containing Phaser config data
+     */
     constructor(mapConfigData: ConfigData) {
         super("StartScene");
         this.mapConfigData = mapConfigData;
@@ -27,6 +36,10 @@ export default class StartScene extends Phaser.Scene {
         this.currentLevel = 1;
     }
 
+    /**
+     * Initiliazes the keybindings
+     * @param data keyBinding data from BindingsScene
+     */
     init(data: any) {
         // set default keybinds and update if needed
         if (typeof data.gasKey === 'undefined') { this.gasKey = 'SPACE' } 
@@ -42,6 +55,9 @@ export default class StartScene extends Phaser.Scene {
         else { this.rightKey = data.rightKey }
     }
 
+    /**
+     * Loads character assets
+     */
     preload() {
         this.load.image('car', 'assets/Cars/car_blue_3.png')
         this.load.image('bike', 'assets/Motorcycles/motorcycle_yellow.png')
@@ -49,6 +65,9 @@ export default class StartScene extends Phaser.Scene {
         this.load.audio('startSound', './assets/video-game-land-sound.wav');
     }
 
+    /**
+     * Creates interactive text, sprite images, and character bars
+     */
     create() {
         //sound 
         this.displaySound();
@@ -62,6 +81,8 @@ export default class StartScene extends Phaser.Scene {
         this.bindingsText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2, 
                                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension / 2.7,
                                 'Key Binding Options', {fontSize: '155px'}).setOrigin(0.5, 0.5)
+        
+        // make key bindings text interactive
         this.bindingsText.setInteractive()
         this.bindingsText.on('pointerover', () => {
             this.scale.updateBounds()
@@ -74,7 +95,7 @@ export default class StartScene extends Phaser.Scene {
         this.bindingsText.on('pointerdown', () => {
             this.scale.updateBounds()
             this.scene.stop('StartScene');
-            this.StartSound.destroy();
+            this.startSound.destroy();
             this.scene.start('BindingsScene', {
                 gasKey: this.gasKey,
                 brakeKey: this.brakeKey,
@@ -130,7 +151,7 @@ export default class StartScene extends Phaser.Scene {
                 }
                 console.log('player selected: ' + this.selectedVehicle);
                 this.scene.stop('StartScene');
-                this.StartSound.destroy();
+                this.startSound.destroy();
                 this.scene.start('GameScene', {
                     id: this.selectedVehicle,
                     image: this.image,
@@ -180,13 +201,24 @@ export default class StartScene extends Phaser.Scene {
         // }, this);
     }
 
+    /**
+     * Displays sound
+     */
     private displaySound() {
-        this.StartSound = this.sound.add('startSound');
-        this.StartSound.play({
+        this.startSound = this.sound.add('startSound');
+        this.startSound.play({
             loop: true
-            });
-        }
+        });
+    }
     
+    /**
+     * Creates a filled in rectangular bar
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param color hex color
+     * @param percentage size of bar
+     * @returns phaser graphics object
+     */
     private makeBar(x: number, y: number, color: any, percentage: number) {
         // draw the bar
         let bar = this.add.graphics();
