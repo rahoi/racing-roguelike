@@ -195,7 +195,7 @@ export default class Player {
      * Calculates the player's new direction vector and sets the heading angle and velocity
      * to this new direction:
      * 
-     * 1) Set up initial wheel positions
+     * 1) Find wheel positions
      * 2) Move the wheels forward
      * 3) Find the new direction vector
      * 4) Set the new velocity and heading
