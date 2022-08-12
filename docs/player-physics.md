@@ -1,10 +1,10 @@
 # Player Physics
 
 Player movement is defined in the [Player](https://github.com/rahoi/racing-roguelike/blob/main/src/lib/Player.ts) class and can be summarized by the following steps:
-1. [Get user input](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#getting-user-input)
-2. [Apply forces](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#applying-forces)
-3. [Calculate Steering](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#calculating-steering)
-4. [Set new position](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#setting-new-position)
+1. [Get user input](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#getting-user-input)
+2. [Apply forces](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#applying-forces)
+3. [Calculate Steering](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#calculating-steering)
+4. [Set new position](https://github.com/rahoi/racing-roguelike/edit/main/docs/player-physics.md#setting-new-position)
 
 ## 1. Getting User Input
 ```typescript
