@@ -65,7 +65,7 @@ export default class Player {
         this.mapHeight = mapConfigData.mapHeight;
         this.mapWidth = mapConfigData.mapWidth;
 
-        // car placement
+        // car placement -- note: must multiply y coordinates by -1 for proper phaser coordinates
         this.pos = new Vector(map.playerStartPt[1] * this.tileDimension + this.tileDimension / 2,
                         (-1) * (map.playerStartPt[0] * this.tileDimension + this.tileDimension / 2))
 
