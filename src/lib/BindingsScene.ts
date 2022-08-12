@@ -1,8 +1,12 @@
-import Phaser, { Tweens } from "phaser"
+import Phaser, {Tweens} from "phaser"
 import type ConfigData from "./ConfigData"
 
+/**
+ * BindingsScene creates the Phaser Scene for the bindings selection. Here, the player can
+ * change the four keybinds as desired. When finsihed, the BindingsScene will start back
+ * up the StartScene.
+ */
 export default class BindingsScene extends Phaser.Scene {
-
     mapConfigData: ConfigData;
     doneText: Phaser.GameObjects.Text;
     duplicateText: Phaser.GameObjects.Text;
@@ -21,11 +25,19 @@ export default class BindingsScene extends Phaser.Scene {
     pressedKey: string;
     StartSound: any;
     
+    /**
+     * Initiliazes config data
+     * @param mapConfigData ConfigData object containing Phaser config data
+     */
     constructor(mapConfigData: ConfigData) {
         super("BindingsScene");
         this.mapConfigData = mapConfigData;
     }
 
+    /**
+     * Initiliazes the keybindings
+     * @param data keyBinding data from StartScene
+     */
     init(data: any) {
         // set keys
         this.gasKey = data.gasKey
@@ -34,6 +46,9 @@ export default class BindingsScene extends Phaser.Scene {
         this.rightKey = data.rightKey
     }
 
+    /**
+     * Creates interactive text where user can switch keybinds as needed
+     */
     create() {
         // create text objects
         this.duplicateText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension / 2,
@@ -220,13 +235,13 @@ export default class BindingsScene extends Phaser.Scene {
                 // set empty key while we wait for user input (if any)
                 this.pressedKey = '_' 
                 key.setText(this.pressedKey)
-                
+
                 // call pickBind() function
                 pickBind()
             })
         })
 
-        // back to start scene
+        // create and make Done text interactive
         this.doneText = this.add.text(this.mapConfigData.mapWidth * this.mapConfigData.tileDimension - 480,
                 this.mapConfigData.mapHeight * this.mapConfigData.tileDimension - 300,
                 'Done', {fontSize: '180px'}).setOrigin(0.5, 0.5)
@@ -261,7 +276,12 @@ export default class BindingsScene extends Phaser.Scene {
             }
         })
 
-        // helper function: checks for duplicate keys
+        /**
+         * Helper function to check for duplicate keys
+         * @param newKey desired new text key
+         * @param oldBindsArr array of current keys
+         * @returns 
+         */
         function alreadyExists(newKey: string, oldBindsArr: Phaser.GameObjects.Text[]) {
             let res = false
             oldBindsArr.forEach( (oldTextObj: Phaser.GameObjects.Text) => {
@@ -272,7 +292,11 @@ export default class BindingsScene extends Phaser.Scene {
             return res;
         }
 
-        // helper function: checks if all keys have a bind
+        /**
+         * Helper function to check if key has a bind
+         * @param key text key
+         * @returns true if key has valid bind, false otherwise
+         */
         function hasValidKey(key: Phaser.GameObjects.Text) {
             return (key.text != '_')
         }
