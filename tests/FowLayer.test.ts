@@ -62,6 +62,6 @@ test('check visibility when player is on it', () => {
 
 
 // check valid radius of the fog of war
-test('check is the fog of war is valid', () => {
+test('check if the radius of the fog of war is valid', () => {
     expect(fowLayer.isValidRadius(fowRadius)).toBe(true);
 });
