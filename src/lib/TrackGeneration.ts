@@ -95,7 +95,7 @@ export default class TrackGeneration {
      * 
      */
     createMapArray() {
-        this.innerTrack = this.generateInnerTrack.generateInnnerRaceTrack();
+        this.innerTrack = this.generateInnerTrack.generate();
 
         let innerBoundsCheck = this.#checkInnerTrackBounds(this.innerTrack, this.innerBoundsSize, this.mapHeight, this.mapWidth);
 

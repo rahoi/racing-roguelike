@@ -87,6 +87,29 @@ export default class GenerateInnerTrack {
         this.maxTrackLength = maxTrackLength;
     }
 
+    generate() {
+        let innerTrack:number[][] = this.generateInnnerRaceTrack();
+
+        // creates a new array of inner points if the current one is shorter than the minimum desired track length
+        while (innerTrack.length < this.minTrackLength || innerTrack.length > this.maxTrackLength) {
+            innerTrack = this.generateInnnerRaceTrack();
+        }
+
+        // finds orientation, start line and plsyer start points, and offsets the inner track array so its first point is the player's start point 
+        this.isClockwise = this.#findIfClockwiseTrack(innerTrack);
+
+        this.startIndexBeforeOffset = this.#findStartIndexBeforeOffset(innerTrack);
+        
+        this.startLinePt = this.#findStartLineCoord(innerTrack, this.startIndexBeforeOffset);
+        this.innerStartTile = this.#findStartTile(innerTrack, this.startIndexBeforeOffset, this.isClockwise);
+        this.playerStartPt = this.#findPlayerStart(innerTrack, this.startIndexBeforeOffset);
+
+        innerTrack = this.#offsetInnerTrack(innerTrack, this.startIndexBeforeOffset);
+        this.innerTrack = innerTrack;
+
+        return innerTrack;
+    }
+
     /**
      * generates an array of points for the inner portion of the race track
      * 
@@ -124,23 +147,6 @@ export default class GenerateInnerTrack {
 
         // fills in the missing points in the inner track array
         let innerTrack:number[][] = this.#fillInTrack(splinePts);
-
-        // creates a new array of inner points if the current one is shorter than the minimum desired track length 
-        if (innerTrack.length < this.minTrackLength) {
-            this.generateInnnerRaceTrack();
-        }
-        // finds orientation, start line and plsyer start points, and offsets the inner track array so its first point is the player's start point 
-        else {
-            this.isClockwise = this.#findIfClockwiseTrack(innerTrack);
-
-            this.startIndexBeforeOffset = this.#findStartIndexBeforeOffset(innerTrack);
-            
-            this.startLinePt = this.#findStartLineCoord(innerTrack, this.startIndexBeforeOffset);
-            this.innerStartTile = this.#findStartTile(innerTrack, this.startIndexBeforeOffset, this.isClockwise);
-            this.playerStartPt = this.#findPlayerStart(innerTrack, this.startIndexBeforeOffset);
-
-            innerTrack = this.#offsetInnerTrack(innerTrack, this.startIndexBeforeOffset);
-        }
 
         this.innerTrack = innerTrack;
         return innerTrack;

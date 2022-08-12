@@ -76,7 +76,6 @@ Below are major features of the game that have been implemented and are working 
 
 - [Procedurally Generated Race Track](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - Vehicle Movement
-- [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/track-generation.md)
 - [Fog of War](https://github.com/rahoi/racing-roguelike/blob/main/docs/fow-of-war.md)
 - [Checkpoints](https://github.com/rahoi/racing-roguelike/blob/main/docs/checkpoints.md)
 - Different Vehicle Classes
@@ -88,3 +87,11 @@ Below are some features that have not been implemented, but are the next steps t
 - Vehicle Power Ups/Items
 - Enemies/Obstacles
 - Global Leaderboard
+
+### Credits
+Special thanks to
+
+- [Kenney](https://www.kenney.nl/assets/racing-pack) for the awesome assets for the vehicles and map
+- [Freesound](https://freesound.org/) for the incredible sound
+- [Icons8](https://icons8.com/icons/set/timer) for a beautiful timer icon
+
