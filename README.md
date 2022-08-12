@@ -20,9 +20,12 @@ To play the current version of Racing Roguelike, click [here](https://rahoi.gith
 - Node.js
     - [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
     - Version 16.15.1
+- Jest
+    - [https://jestjs.io/](https://jestjs.io/)
+    - Version 28.0.7
 - Svelte
     - [https://svelte.dev/](https://svelte.dev/)
-    - Version 3.44.0
+    - Version 3.49.0
 - Vite
     - [https://vitejs.dev/](https://vitejs.dev/)
     - Version 2.9.9
@@ -45,7 +48,7 @@ To play the current version of Racing Roguelike, click [here](https://rahoi.gith
     - Version 1.63.2
 - TypeScript 
     - [https://www.typescriptlang.org/download](https://www.typescriptlang.org/download)
-    - Version 4.5.4
+    - Version 4.7.4
 
 ## Getting Started
 To contribute to Racing Roguelike or branch off and continue the project,
