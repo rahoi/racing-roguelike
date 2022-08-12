@@ -1,6 +1,6 @@
 # Player Physics
 
-Player movement is defined in the [Player](https://github.com/rahoi/racing-roguelike/blob/main/src/lib/Player.ts) class and can be summarized in the following steps:
+Player movement is defined in the [Player](https://github.com/rahoi/racing-roguelike/blob/main/src/lib/Player.ts) class and can be summarized by the following steps:
 1. [Get user input](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#getting-user-input)
 2. [Apply forces](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#applying-forces)
 3. [Calculate Steering](https://github.com/rahoi/racing-roguelike/edit/issue-46/docs/player-physics.md#calculating-steering)
@@ -42,6 +42,8 @@ We find the wheels' locations by adding/subtracting half the vehicle's pixel siz
 > backWheel = pos - wheelBase / 2 </br>
 > frontWheel = pos + wheelBase / 2
 
+![steering-1](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/steering-1.png)
+
 **Second, determine new wheel locations:**
 
 The backWheel will move along the direction of the original vehicle heading/velocity vector. </br>
@@ -50,10 +52,14 @@ The frontWheel will move in the direction of the player's steerAngle.
 > backWheel = backWheel + velocity * dt </br>
 > frontWheel = frontWheel + velocity.rotated(steerAngle) * dt
 
+![steering-2](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/steering-2.png)
+
 **Third, determine new headingVector and heading angle:**
 
 We then normalize the vector between these two wheel positions and set this as our headingVector. </br>
 The angle of this new headingVector will be our new heading angle.
+
+![steering-3](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/steering-3.png)
 
 **Fourth, determine if player is braking or reversing:**
 
@@ -68,6 +74,8 @@ The less traction, the more sliding.
 
 Determine velocity's new direction.
 
+![steering-5](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/steering-5.png)
+
 ## 4. Setting new position
 ```typescript
 setPos(dt: any)
@@ -75,9 +83,9 @@ setPos(dt: any)
 Calculate the new velocity using the computed acceleration and velocity direction. </br>
 Finally, set the position based on this velocity.
 
-> velocity = velocity + acceleration * dt
+> velocity = velocity + acceleration * dt </br>
 > pos = pos + velocity
 
 Check if player is out of bounds, and if so, set velocity to 0 and position the vehicle at the boundary.
 
-[^1]: Steering algorithm is modeled after a Godot recipe found at [kidscancode.org](https://kidscancode.org/godot_recipes/2d/car_steering/)
+[^1]: Steering algorithm is modeled after a Godot recipe described at [kidscancode.org](https://kidscancode.org/godot_recipes/2d/car_steering/).
