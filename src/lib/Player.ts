@@ -49,7 +49,6 @@ export default class Player {
     tractionFast: number
     tractionSlow: number
     offRoadFactor: number
-    player: MatterJS.Vector;
 
     /**
      * Takes as arugments the data necessary for player placement and track interaction.
