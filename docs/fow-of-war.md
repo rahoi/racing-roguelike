@@ -13,5 +13,5 @@ In order to calculate the fog of war, we used the MRPAS javaScript library, or M
 ![Fow](https://github.com/rahoi/racing-roguelike/blob/main/public/assets/fowPicture.png)
 
 For more detailed information about the Mrpas library and Restrictive Precise Angle Shadowcasting Algorithm, you can take a look to the following links:
-[Mrpas](http://www.roguebasin.com/index.php?title=Restrictive_Precise_Angle_Shadowcasting)
-[Restrictive Precise Angle Shadowcasting Algorithm](https://www.npmjs.com/package/mrpas)
+- [Mrpas](http://www.roguebasin.com/index.php?title=Restrictive_Precise_Angle_Shadowcasting)
+- [Restrictive Precise Angle Shadowcasting Algorithm](https://www.npmjs.com/package/mrpas)

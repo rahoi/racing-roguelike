@@ -6,7 +6,7 @@ import Vector from "../src/lib/Vector2";
 import {describe, expect, test} from '@jest/globals'
 
 /**
-* Tests for Checpoints.ts
+* Tests for Checkpoints.ts
 */
  
 // populate ConfigData object to use to create a new Checkpoints object

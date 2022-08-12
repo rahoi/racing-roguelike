@@ -1,4 +1,5 @@
 import { Mrpas } from "mrpas";
+import type Bike from "./Bike";
 import type ConfigData from "./ConfigData";
 import type Player from "./Player";
 
@@ -6,6 +7,7 @@ const n = 40; // size of the Map height and Width
 const blackColor = 0x000000;  //black color
 const grayColor = 0x3e3e3e;   //gray color
 const whiteColor = 0xffffff;  //white color
+var isTileLayer = false;
 
 /**
  * It generates three states of the fog of war (also known as field of view) feature. 
@@ -25,6 +27,7 @@ export default class FowLayer{
     isTileSeen: boolean[][];
     fowRadius: number;
 
+
     /**
     * Initialize the map dimensions and receive the fow radius as a parameter
     * @param mapConfigData data about the Phaser game
@@ -43,12 +46,11 @@ export default class FowLayer{
 
     /**
      * create the layer of the map
-     * @param scene phaser scene where the map layer will be displayed
      * @param map tilemap object that will content the tilemap layer
      */
-	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
-        this.scene = scene;
+	mapLayer(map: Phaser.Tilemaps.Tilemap){
         this.map = map;
+        isTileLayer = true;
        
         const tileset = this.map.addTilesetImage(this.tileKey)
         this.roadLayer = this.map.createLayer(0, tileset, 0, 0)	
@@ -143,4 +145,46 @@ export default class FowLayer{
             setVisibility);
     }
 
+    /**
+     * @returns the radius of the fow
+     */
+    getRadius() {
+        return this.fowRadius;
+    }
+
+    /**
+     * 
+     * @returns true if is a valid tile layer
+     */
+    getLayerType() {
+        return isTileLayer;
+    }
+
+    /**
+     * check if a tile is visible
+     * @param player object
+     * @param radius for the fow
+     * @returns true if the tile is visible
+     */
+    isTileVisible(player: Player, radius:number){
+        var posX = player.getLocX();
+        var posY = player.getLocY();
+
+        if (posX > radius || posY > radius) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 
+     * @param radius of the fow
+     * @returns true if the radius is valid
+     */
+    isValidRadius(radius: number) {
+        if(radius <= 0) {
+            return false;
+        }
+        return true;
+    }
 }
