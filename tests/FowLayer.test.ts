@@ -17,9 +17,8 @@ const backgroundColor = '#bc8044';
 const tilesetImageSheet = '/assets/spritesheet_tiles.png';
 const tileKey = 'tiles;'
 const fowRadius = 4; // tile units
-const mapSize = tileMapHeight;
-const mapArray = new Array(mapSize).fill(false).map(() => new Array(mapSize).fill(false));
 
+// set up all the dimensions of the map
 let mapConfigData:ConfigData = new ConfigData(backgroundColor, tileDimension, tileMapHeight, tileMapWidth, tilesetImageSheet, tileKey);
 
 // create a new GenerateMap onject to generate a race track
@@ -30,7 +29,6 @@ let player:Player = new Player(mapGeneration, mapConfigData)
  
 // create an new fow object 
 let fowLayer:Fow = new Fow(mapConfigData, fowRadius);
-
 
 
 // ----------------------------------Tests----------------------------------
@@ -49,15 +47,21 @@ test('layer of the fog of war', () => {
 
 // testing the tile map dimensions
 test('check mapArray dimensions', () => {
-    expect(mapArray.length).toBe(tileMapHeight);
+    expect(mapGeneration.mapArray.length).toBe(tileMapHeight);
 
-    for (let i = 0; i < mapArray.length; i++) {
-        expect(mapArray[i].length).toBe(tileMapWidth);
+    for (let i = 0; i < mapGeneration.mapArray.length; i++) {
+        expect(mapGeneration.mapArray.length).toBe(tileMapWidth);
     }
 });
 
 
 // check visibility when player is on it
-test('visibility', () => {
-    expect(fowLayer.isValidTile(player)).toBe(false);
+test('check visibility when player is on it', () => {
+    expect(fowLayer.isTileVisible(player, fowRadius)).toBe(false);
+});
+
+
+// check valid radius of the fog of war
+test('check is the fog of war is valid', () => {
+    expect(fowLayer.isValidRadius(fowRadius)).toBe(true);
 });

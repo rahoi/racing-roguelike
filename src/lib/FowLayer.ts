@@ -152,29 +152,21 @@ export default class FowLayer{
         return this.fowRadius;
     }
 
+    /**
+     * 
+     * @returns true if is a valid tile layer
+     */
     getLayerType() {
         return isTileLayer;
     }
 
-    // setVisibility (x:number, y:number) {
-    //     const tile = this.roadLayer.getTileAt(x, y)
-    //     if (!tile) {
-    //         return;
-    //     }
-    //     var d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
-    //         new Phaser.Math.Vector2(px, py)));
-
-    //     // fowRadius - 1 because it removes the irregular corners of
-    //     // the current visibility
-    //     if (d < this.fowRadius -1 ) {
-    //         this.isTileSeen[x][y] = true;
-    //         tile.tint = whiteColor;
-    //     }
-    // }
-
-    isValidTile(player: Player){
-        let radius:number = 4;
-
+    /**
+     * check if a tile is visible
+     * @param player object
+     * @param radius for the fow
+     * @returns true if the tile is visible
+     */
+    isTileVisible(player: Player, radius:number){
         var posX = player.getLocX();
         var posY = player.getLocY();
 
@@ -182,7 +174,17 @@ export default class FowLayer{
             return false;
         }
         return true;
-
     }
 
+    /**
+     * 
+     * @param radius of the fow
+     * @returns true if the radius is valid
+     */
+    isValidRadius(radius: number) {
+        if(radius <= 0) {
+            return false;
+        }
+        return true;
+    }
 }
