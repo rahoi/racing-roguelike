@@ -90,7 +90,7 @@ export default class GameScene extends Phaser.Scene {
         // generate race track data
         this.mapGeneration = new GenerateMap(this.mapConfigData);
 
-        // geberate Tilemap
+        // generate Tilemap
         this.tileMap = new TileMapConstruct(this, this.mapGeneration, this.mapConfigData)
 
         // resets checkpoints
@@ -328,7 +328,7 @@ export default class GameScene extends Phaser.Scene {
     createFow(){
         this.fowRadius = 4; // in tiles
         this.fow = new FowLayer(this.mapConfigData, this.fowRadius);
-        this.fow.mapLayer(this, this.tileMap.tileMap);
+        this.fow.mapLayer(this.tileMap.tileMap);
         this.fow.createFirstLayer(this, this.tileMap.tileMap);
     }
 

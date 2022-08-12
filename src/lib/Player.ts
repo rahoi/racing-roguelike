@@ -44,6 +44,7 @@ export default class Player {
     tractionFast: number
     tractionSlow: number
     offRoadFactor: number
+    player: MatterJS.Vector;
 
     constructor(map: GenerateMap, mapConfigData: ConfigData) {
         // relation between car's x and y position and the mapArray is counter intuitive

@@ -1,4 +1,5 @@
 import { Mrpas } from "mrpas";
+import type Bike from "./Bike";
 import type ConfigData from "./ConfigData";
 import type Player from "./Player";
 
@@ -6,6 +7,7 @@ const n = 40; // size of the Map height and Width
 const blackColor = 0x000000;  //black color
 const grayColor = 0x3e3e3e;   //gray color
 const whiteColor = 0xffffff;  //white color
+var isTileLayer = false;
 
 /**
  * It generates three states of the fog of war (also known as field of view) feature. 
@@ -25,6 +27,7 @@ export default class FowLayer{
     isTileSeen: boolean[][];
     fowRadius: number;
 
+
     /**
     * Initialize the map dimensions and receive the fow radius as a parameter
     * @param mapConfigData data about the Phaser game
@@ -43,12 +46,11 @@ export default class FowLayer{
 
     /**
      * create the layer of the map
-     * @param scene phaser scene where the map layer will be displayed
      * @param map tilemap object that will content the tilemap layer
      */
-	mapLayer(scene: Phaser.Scene, map: Phaser.Tilemaps.Tilemap){
-        this.scene = scene;
+	mapLayer(map: Phaser.Tilemaps.Tilemap){
         this.map = map;
+        isTileLayer = true;
        
         const tileset = this.map.addTilesetImage(this.tileKey)
         this.roadLayer = this.map.createLayer(0, tileset, 0, 0)	
@@ -141,6 +143,46 @@ export default class FowLayer{
             this.fowRadius,
             isVisible,
             setVisibility);
+    }
+
+    /**
+     * @returns the radius of the fow
+     */
+    getRadius() {
+        return this.fowRadius;
+    }
+
+    getLayerType() {
+        return isTileLayer;
+    }
+
+    // setVisibility (x:number, y:number) {
+    //     const tile = this.roadLayer.getTileAt(x, y)
+    //     if (!tile) {
+    //         return;
+    //     }
+    //     var d = Math.floor(new Phaser.Math.Vector2(x, y).distance(
+    //         new Phaser.Math.Vector2(px, py)));
+
+    //     // fowRadius - 1 because it removes the irregular corners of
+    //     // the current visibility
+    //     if (d < this.fowRadius -1 ) {
+    //         this.isTileSeen[x][y] = true;
+    //         tile.tint = whiteColor;
+    //     }
+    // }
+
+    isValidTile(player: Player){
+        let radius:number = 4;
+
+        var posX = player.getLocX();
+        var posY = player.getLocY();
+
+        if (posX > radius || posY > radius) {
+            return false;
+        }
+        return true;
+
     }
 
 }
